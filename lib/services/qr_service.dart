@@ -41,13 +41,16 @@ class QrService {
 
   /// 시스템 프린트 다이얼로그를 통해 QR 코드 인쇄
   /// [sizeCm] 인쇄할 QR 크기 (cm, 정사각형). 1cm = 28.3465 PDF points
+  /// [printTitle] 인쇄 상단 문구. null = appName 사용, "" = 표시 안 함
   Future<void> printQrCode({
     required Uint8List imageBytes,
     required String appName,
     double sizeCm = 5.0,
+    String? printTitle,
   }) async {
     const cmToPt = 28.3465;
     final qrPt = sizeCm * cmToPt;
+    final titleText = printTitle ?? appName;
 
     final doc = pw.Document();
     final image = pw.MemoryImage(imageBytes);
@@ -60,23 +63,17 @@ class QrService {
             child: pw.Column(
               mainAxisAlignment: pw.MainAxisAlignment.center,
               children: [
-                pw.Text(
-                  appName,
-                  style: pw.TextStyle(
-                    fontSize: 20,
-                    fontWeight: pw.FontWeight.bold,
+                if (titleText.isNotEmpty) ...[
+                  pw.Text(
+                    titleText,
+                    style: pw.TextStyle(
+                      fontSize: 20,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
                   ),
-                ),
-                pw.SizedBox(height: 20),
+                  pw.SizedBox(height: 20),
+                ],
                 pw.Image(image, width: qrPt, height: qrPt),
-                pw.SizedBox(height: 12),
-                pw.Text(
-                  'Scan to launch app',
-                  style: pw.TextStyle(
-                    fontSize: 12,
-                    color: PdfColors.grey600,
-                  ),
-                ),
               ],
             ),
           );

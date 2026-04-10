@@ -20,15 +20,18 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
   bool _historySaved = false;
   bool _customizeExpanded = false;
   late TextEditingController _labelController;
+  late TextEditingController _printTitleController;
 
   @override
   void initState() {
     super.initState();
     _labelController = TextEditingController();
+    _printTitleController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       _labelController.text = args['appName'] as String;
+      _printTitleController.text = args['appName'] as String;
       // 마지막 사용한 인쇄 크기 복원
       final lastSize = await SettingsService.getLastPrintSizeCm();
       ref.read(qrResultProvider.notifier).setPrintSizeCm(lastSize);
@@ -39,6 +42,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
   @override
   void dispose() {
     _labelController.dispose();
+    _printTitleController.dispose();
     super.dispose();
   }
 
@@ -101,6 +105,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
     final deepLink = args['deepLink'] as String;
 
     final state = ref.watch(qrResultProvider);
+    // null = 앱 이름 사용, "" = 표시 안 함
     final label = state.customLabel ?? appName;
 
     return Scaffold(
@@ -134,14 +139,16 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                         color: state.qrColor,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    if (label.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -158,15 +165,17 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
             _CustomizePanel(
               expanded: _customizeExpanded,
               labelController: _labelController,
+              printTitleController: _printTitleController,
               selectedColor: state.qrColor,
               printSizeCm: state.printSizeCm,
               onToggle: () =>
                   setState(() => _customizeExpanded = !_customizeExpanded),
               onLabelChanged: (v) {
-                ref
-                    .read(qrResultProvider.notifier)
-                    .setCustomLabel(v.isEmpty ? null : v);
+                ref.read(qrResultProvider.notifier).setCustomLabel(v);
                 _recapture();
+              },
+              onPrintTitleChanged: (v) {
+                ref.read(qrResultProvider.notifier).setPrintTitle(v);
               },
               onColorSelected: (c) {
                 ref.read(qrResultProvider.notifier).setQrColor(c);
@@ -211,9 +220,11 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                     onTap: () async {
                       await SettingsService.saveLastPrintSizeCm(
                           state.printSizeCm);
-                      ref
-                          .read(qrResultProvider.notifier)
-                          .printQrCode(label, sizeCm: state.printSizeCm);
+                      ref.read(qrResultProvider.notifier).printQrCode(
+                            label,
+                            sizeCm: state.printSizeCm,
+                            printTitle: state.printTitle,
+                          );
                     },
                   ),
                 ),
@@ -259,20 +270,24 @@ const _kSizeStep = 0.5;
 class _CustomizePanel extends StatelessWidget {
   final bool expanded;
   final TextEditingController labelController;
+  final TextEditingController printTitleController;
   final Color selectedColor;
   final double printSizeCm;
   final VoidCallback onToggle;
   final ValueChanged<String> onLabelChanged;
+  final ValueChanged<String> onPrintTitleChanged;
   final ValueChanged<Color> onColorSelected;
   final ValueChanged<double> onSizeChanged;
 
   const _CustomizePanel({
     required this.expanded,
     required this.labelController,
+    required this.printTitleController,
     required this.selectedColor,
     required this.printSizeCm,
     required this.onToggle,
     required this.onLabelChanged,
+    required this.onPrintTitleChanged,
     required this.onColorSelected,
     required this.onSizeChanged,
   });
@@ -319,8 +334,28 @@ class _CustomizePanel extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 라벨 편집
-                  const Text('하단 문구',
+                  // 인쇄 상단 문구
+                  const Text('인쇄 상단 문구',
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: printTitleController,
+                    onChanged: onPrintTitleChanged,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: '비워두면 표시 안 함',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // QR 하단 문구
+                  const Text('QR 하단 문구',
                       style:
                           TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 8),
@@ -329,6 +364,7 @@ class _CustomizePanel extends StatelessWidget {
                     onChanged: onLabelChanged,
                     decoration: InputDecoration(
                       isDense: true,
+                      hintText: '비워두면 표시 안 함',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -356,55 +392,44 @@ class _CustomizePanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // 인쇄 크기 스텝퍼
-                  const Text('인쇄 크기 (정사각형)',
-                      style:
-                          TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 10),
+                  // 인쇄 크기 슬라이더
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton.outlined(
-                        onPressed: printSizeCm > _kMinPrintSize
-                            ? () => onSizeChanged(
-                                (printSizeCm - _kSizeStep)
-                                    .clamp(_kMinPrintSize, _kMaxPrintSize))
-                            : null,
-                        icon: const Icon(Icons.remove),
-                        iconSize: 20,
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            '${printSizeCm.toStringAsFixed(1)} cm',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                      const Text('인쇄 크기 (정사각형)',
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w500)),
+                      Text(
+                        '${printSizeCm.toStringAsFixed(1)} cm',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                      ),
-                      IconButton.outlined(
-                        onPressed: printSizeCm < _kMaxPrintSize
-                            ? () => onSizeChanged(
-                                (printSizeCm + _kSizeStep)
-                                    .clamp(_kMinPrintSize, _kMaxPrintSize))
-                            : null,
-                        icon: const Icon(Icons.add),
-                        iconSize: 20,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  Slider(
+                    value: printSizeCm,
+                    min: _kMinPrintSize,
+                    max: _kMaxPrintSize,
+                    divisions: ((_kMaxPrintSize - _kMinPrintSize) / _kSizeStep)
+                        .round(),
+                    label: '${printSizeCm.toStringAsFixed(1)} cm',
+                    onChanged: onSizeChanged,
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         '${_kMinPrintSize.toStringAsFixed(1)} cm',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 11, color: Colors.grey),
                       ),
                       Text(
                         '${_kMaxPrintSize.toStringAsFixed(0)} cm',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 11, color: Colors.grey),
                       ),
                     ],
                   ),

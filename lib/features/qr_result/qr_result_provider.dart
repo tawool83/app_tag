@@ -30,9 +30,10 @@ class QrResultState {
   final QrActionStatus shareStatus;
   final QrActionStatus printStatus;
   final String? errorMessage;
-  final String? customLabel;       // null = 앱 이름 사용
+  final String? customLabel;       // null = 앱 이름 사용, "" = 표시 안 함
   final Color qrColor;
   final double printSizeCm;        // 인쇄 크기 (cm)
+  final String? printTitle;        // null = 앱 이름 사용, "" = 표시 안 함
 
   const QrResultState({
     this.capturedImage,
@@ -43,6 +44,7 @@ class QrResultState {
     this.customLabel,
     this.qrColor = const Color(0xFF000000),
     this.printSizeCm = 5.0,
+    this.printTitle,
   });
 
   QrResultState copyWith({
@@ -54,6 +56,7 @@ class QrResultState {
     Object? customLabel = _sentinel,
     Color? qrColor,
     double? printSizeCm,
+    Object? printTitle = _sentinel,
   }) =>
       QrResultState(
         capturedImage: capturedImage ?? this.capturedImage,
@@ -66,6 +69,9 @@ class QrResultState {
             : customLabel as String?,
         qrColor: qrColor ?? this.qrColor,
         printSizeCm: printSizeCm ?? this.printSizeCm,
+        printTitle: printTitle == _sentinel
+            ? this.printTitle
+            : printTitle as String?,
       );
 }
 
@@ -91,6 +97,10 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
 
   void setPrintSizeCm(double sizeCm) {
     state = state.copyWith(printSizeCm: sizeCm);
+  }
+
+  void setPrintTitle(String? title) {
+    state = state.copyWith(printTitle: title);
   }
 
   Future<void> saveToGallery(String appName) async {
@@ -122,7 +132,8 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
     }
   }
 
-  Future<void> printQrCode(String appName, {double? sizeCm}) async {
+  Future<void> printQrCode(String appName,
+      {double? sizeCm, String? printTitle}) async {
     if (state.capturedImage == null) return;
     state = state.copyWith(printStatus: QrActionStatus.loading);
     try {
@@ -130,6 +141,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
         imageBytes: state.capturedImage!,
         appName: appName,
         sizeCm: sizeCm ?? state.printSizeCm,
+        printTitle: printTitle ?? state.printTitle,
       );
       state = state.copyWith(printStatus: QrActionStatus.success);
     } catch (_) {
