@@ -90,40 +90,49 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              appName,
-              style:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight - 48,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    appName,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 40),
+                  _buildStatusWidget(state),
+                  const SizedBox(height: 32),
+                  _buildStatusText(state),
+                  const SizedBox(height: 24),
+                  // Android일 때만 iOS 단축어 함께 기록 옵션 표시
+                  if (isAndroid && state.status == NfcWriteStatus.waiting)
+                    _buildIosShortcutSection(args),
+                  if (state.status == NfcWriteStatus.error)
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        ref.read(nfcWriterProvider.notifier).reset();
+                        _startWrite(args);
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('다시 시도'),
+                    ),
+                  if (state.status == NfcWriteStatus.waiting)
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('취소'),
+                    ),
+                ],
+              ),
             ),
-            const SizedBox(height: 40),
-            _buildStatusWidget(state),
-            const SizedBox(height: 32),
-            _buildStatusText(state),
-            const SizedBox(height: 24),
-            // Android일 때만 iOS 단축어 함께 기록 옵션 표시
-            if (isAndroid && state.status == NfcWriteStatus.waiting)
-              _buildIosShortcutSection(args),
-            if (state.status == NfcWriteStatus.error)
-              ElevatedButton.icon(
-                onPressed: () {
-                  ref.read(nfcWriterProvider.notifier).reset();
-                  _startWrite(args);
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text('다시 시도'),
-              ),
-            if (state.status == NfcWriteStatus.waiting)
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('취소'),
-              ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
