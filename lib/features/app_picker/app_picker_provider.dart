@@ -17,7 +17,9 @@ final filteredAppsProvider = Provider<List<AppInfo>>((ref) {
     data: (apps) {
       if (query.isEmpty) return apps;
       return apps
-          .where((a) => a.appName.toLowerCase().contains(query))
+          .where((a) =>
+              a.appName.toLowerCase().contains(query) ||
+              a.packageName.toLowerCase().contains(query))
           .toList();
     },
     loading: () => [],
