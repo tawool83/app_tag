@@ -24,7 +24,7 @@ android {
         applicationId = "com.tawool.app_tag"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23  // Android 6.0 (device_apps 요구사항)
+        minSdk = flutter.minSdkVersion  // Android 6.0 (device_apps 요구사항)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

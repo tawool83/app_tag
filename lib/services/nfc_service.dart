@@ -18,35 +18,29 @@ class NfcService {
     return NfcManager.instance.isAvailable();
   }
 
-  /// NFC 태그에 딥링크 NDEF 레코드 기록
-  Future<void> writeNdefTag({
-    required String deepLink,
-    required void Function() onSuccess,
-    required void Function(String error) onError,
+  /// 태그에서 기존 NDEF 레코드 목록 반환
+  /// 빈 태그 또는 읽기 실패 시 빈 리스트 반환 (에러 아님)
+  Future<List<NdefRecord>> readNdefRecords(NfcTag tag) async {
+    try {
+      final ndef = Ndef.from(tag);
+      if (ndef == null) return [];
+      final message = await ndef.read();
+      return message.records;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// 병합된 NDEF 레코드 목록을 태그에 기록
+  Future<void> writeNdefMessage({
+    required NfcTag tag,
+    required List<NdefRecord> records,
   }) async {
-    NfcManager.instance.startSession(
-      onDiscovered: (NfcTag tag) async {
-        try {
-          final ndef = Ndef.from(tag);
-          if (ndef == null || !ndef.isWritable) {
-            await NfcManager.instance.stopSession(
-              errorMessage: '쓰기 불가능한 태그입니다.',
-            );
-            onError('쓰기 불가능한 태그입니다.');
-            return;
-          }
-          final record = NdefRecord.createUri(Uri.parse(deepLink));
-          await ndef.write(NdefMessage([record]));
-          await NfcManager.instance.stopSession();
-          onSuccess();
-        } catch (e) {
-          await NfcManager.instance.stopSession(
-            errorMessage: '기록 실패: $e',
-          );
-          onError('NFC 기록에 실패했습니다.');
-        }
-      },
-    );
+    final ndef = Ndef.from(tag);
+    if (ndef == null || !ndef.isWritable) {
+      throw Exception('쓰기 불가능한 태그입니다.');
+    }
+    await ndef.write(NdefMessage(records));
   }
 
   Future<void> stopNfcSession() async {

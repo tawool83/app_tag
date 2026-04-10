@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,8 @@ class NfcWriterScreen extends ConsumerStatefulWidget {
 
 class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
   bool _historySaved = false;
+  bool _includeIos = false;
+  final _iosShortcutController = TextEditingController();
 
   @override
   void initState() {
@@ -22,8 +25,22 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      ref.read(nfcWriterProvider.notifier).startWrite(args['deepLink']);
+      _startWrite(args);
     });
+  }
+
+  @override
+  void dispose() {
+    _iosShortcutController.dispose();
+    super.dispose();
+  }
+
+  void _startWrite(Map<String, dynamic> args) {
+    ref.read(nfcWriterProvider.notifier).startWrite(
+          deepLink: args['deepLink'],
+          iosShortcutName:
+              _includeIos ? _iosShortcutController.text.trim() : null,
+        );
   }
 
   Future<void> _onWriteSuccess(Map<String, dynamic> args) async {
@@ -55,10 +72,10 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final appName = args['appName'] as String;
+    final isAndroid = Platform.isAndroid;
 
     final state = ref.watch(nfcWriterProvider);
 
-    // 성공 시 이력 저장 및 자동 이동
     ref.listen(nfcWriterProvider, (_, next) {
       if (next.status == NfcWriteStatus.success) {
         _onWriteSuccess(args);
@@ -80,21 +97,22 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
           children: [
             Text(
               appName,
-              style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.bold),
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 40),
             _buildStatusWidget(state),
             const SizedBox(height: 32),
             _buildStatusText(state),
             const SizedBox(height: 24),
+            // Android일 때만 iOS 단축어 함께 기록 옵션 표시
+            if (isAndroid && state.status == NfcWriteStatus.waiting)
+              _buildIosShortcutSection(args),
             if (state.status == NfcWriteStatus.error)
               ElevatedButton.icon(
                 onPressed: () {
                   ref.read(nfcWriterProvider.notifier).reset();
-                  ref
-                      .read(nfcWriterProvider.notifier)
-                      .startWrite(args['deepLink']);
+                  _startWrite(args);
                 },
                 icon: const Icon(Icons.refresh),
                 label: const Text('다시 시도'),
@@ -110,6 +128,54 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
     );
   }
 
+  Widget _buildIosShortcutSection(Map<String, dynamic> args) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Checkbox(
+                value: _includeIos,
+                onChanged: (v) {
+                  setState(() => _includeIos = v ?? false);
+                  // iOS 옵션 변경 시 재기록
+                  ref.read(nfcWriterProvider.notifier).reset();
+                  _startWrite(args);
+                },
+              ),
+              const Text('iOS 단축어도 함께 기록'),
+            ],
+          ),
+          if (_includeIos) ...[
+            const SizedBox(height: 8),
+            TextField(
+              controller: _iosShortcutController,
+              decoration: InputDecoration(
+                labelText: 'iOS 단축어 이름',
+                hintText: '예: 카카오톡',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                isDense: true,
+              ),
+              onSubmitted: (_) {
+                ref.read(nfcWriterProvider.notifier).reset();
+                _startWrite(args);
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatusWidget(NfcWriterState state) {
     switch (state.status) {
       case NfcWriteStatus.waiting:
@@ -119,11 +185,9 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
           child: CircularProgressIndicator(strokeWidth: 6),
         );
       case NfcWriteStatus.success:
-        return const Icon(Icons.check_circle,
-            size: 120, color: Colors.green);
+        return const Icon(Icons.check_circle, size: 120, color: Colors.green);
       case NfcWriteStatus.error:
-        return const Icon(Icons.error_outline,
-            size: 120, color: Colors.red);
+        return const Icon(Icons.error_outline, size: 120, color: Colors.red);
       default:
         return const Icon(Icons.nfc, size: 120, color: Colors.grey);
     }
