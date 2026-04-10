@@ -1,0 +1,6 @@
+# Archive Index — 2026-04
+
+| Feature | Archived At | Match Rate | Path |
+|---------|-------------|------------|------|
+| apptag-flutter | 2026-04-10 | 97% | [apptag-flutter/](apptag-flutter/) |
+| nfc-cross-platform | 2026-04-10 | 92% | [nfc-cross-platform/](nfc-cross-platform/) |

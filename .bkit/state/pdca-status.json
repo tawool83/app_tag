@@ -2,24 +2,25 @@
   "version": "3.0",
   "lastUpdated": "2026-04-10T04:15:21.469Z",
   "activeFeatures": [
-    "AppTag-Flutter",
     "imagegallerysaver"
   ],
-  "primaryFeature": "AppTag-Flutter",
+  "primaryFeature": "imagegallerysaver",
   "features": {
     "AppTag-Flutter": {
-      "phase": "act",
-      "phaseNumber": 5,
-      "matchRate": null,
+      "phase": "archived",
+      "matchRate": 97,
       "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-09T06:58:13.308Z",
-        "lastUpdated": "2026-04-09T06:58:13.309Z"
-      },
-      "previousPhase": "check",
-      "autoAdvanced": true
+      "startedAt": "2026-04-09T06:58:13.308Z",
+      "archivedAt": "2026-04-10T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/apptag-flutter/"
+    },
+    "nfc-cross-platform": {
+      "phase": "archived",
+      "matchRate": 92,
+      "iterationCount": 0,
+      "startedAt": "2026-04-10T00:00:00.000Z",
+      "archivedAt": "2026-04-10T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/nfc-cross-platform/"
     },
     "imagegallerysaver": {
       "phase": "do",
