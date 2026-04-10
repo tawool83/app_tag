@@ -8,8 +8,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AppTag'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: '사용 안내',
+            onPressed: () => Navigator.pushNamed(context, '/help'),
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             tooltip: '생성 이력',
@@ -22,11 +26,15 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.qr_code_scanner, size: 80, color: Colors.blueGrey),
+            const Icon(Icons.qr_code_scanner, size: 160, color: Colors.blueGrey),
             const SizedBox(height: 24),
             const Text(
-              'AppTag',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              'App Tag',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'BitcountGridDouble',
+              ),
             ),
             const SizedBox(height: 12),
             const Text(

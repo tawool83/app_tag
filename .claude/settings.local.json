@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "mcp__claude_ai_Notion__notion-fetch",
-      "mcp__claude_ai_Notion__notion-update-page"
+      "mcp__claude_ai_Notion__notion-update-page",
+      "Bash(unzip -o Bitcount_Grid_Double.zip)",
+      "Bash(flutter pub:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(git -C /c/repository/app_tag diff HEAD)",
+      "Bash(git:*)"
     ]
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/qr_service.dart';
 import '../../services/history_service.dart';
@@ -9,12 +10,29 @@ final historyServiceProvider =
 
 enum QrActionStatus { idle, loading, success, error }
 
+/// WCAG 대비비 ≥ 4.5:1 (흰 배경 기준) 안전 색상 팔레트
+const qrSafeColors = [
+  Color(0xFF000000), // 검정
+  Color(0xFF003366), // 남색
+  Color(0xFF0000CD), // 진파랑
+  Color(0xFF006400), // 진초록
+  Color(0xFF8B0000), // 진빨강
+  Color(0xFF4B0082), // 진보라
+  Color(0xFF006666), // 청록
+  Color(0xFF5C3317), // 진갈색
+  Color(0xFFCC4400), // 진주황
+  Color(0xFF1B0060), // 인디고
+];
+
 class QrResultState {
   final Uint8List? capturedImage;
   final QrActionStatus saveStatus;
   final QrActionStatus shareStatus;
   final QrActionStatus printStatus;
   final String? errorMessage;
+  final String? customLabel;       // null = 앱 이름 사용
+  final Color qrColor;
+  final double printSizeCm;        // 인쇄 크기 (cm)
 
   const QrResultState({
     this.capturedImage,
@@ -22,6 +40,9 @@ class QrResultState {
     this.shareStatus = QrActionStatus.idle,
     this.printStatus = QrActionStatus.idle,
     this.errorMessage,
+    this.customLabel,
+    this.qrColor = const Color(0xFF000000),
+    this.printSizeCm = 5.0,
   });
 
   QrResultState copyWith({
@@ -30,6 +51,9 @@ class QrResultState {
     QrActionStatus? shareStatus,
     QrActionStatus? printStatus,
     String? errorMessage,
+    Object? customLabel = _sentinel,
+    Color? qrColor,
+    double? printSizeCm,
   }) =>
       QrResultState(
         capturedImage: capturedImage ?? this.capturedImage,
@@ -37,8 +61,16 @@ class QrResultState {
         shareStatus: shareStatus ?? this.shareStatus,
         printStatus: printStatus ?? this.printStatus,
         errorMessage: errorMessage ?? this.errorMessage,
+        customLabel: customLabel == _sentinel
+            ? this.customLabel
+            : customLabel as String?,
+        qrColor: qrColor ?? this.qrColor,
+        printSizeCm: printSizeCm ?? this.printSizeCm,
       );
 }
+
+// nullable 필드 null 재설정을 위한 sentinel
+const _sentinel = Object();
 
 class QrResultNotifier extends StateNotifier<QrResultState> {
   final QrService _qrService;
@@ -47,6 +79,18 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
 
   void setCapturedImage(Uint8List bytes) {
     state = state.copyWith(capturedImage: bytes);
+  }
+
+  void setCustomLabel(String? label) {
+    state = state.copyWith(customLabel: label);
+  }
+
+  void setQrColor(Color color) {
+    state = state.copyWith(qrColor: color);
+  }
+
+  void setPrintSizeCm(double sizeCm) {
+    state = state.copyWith(printSizeCm: sizeCm);
   }
 
   Future<void> saveToGallery(String appName) async {
@@ -78,13 +122,14 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
     }
   }
 
-  Future<void> printQrCode(String appName) async {
+  Future<void> printQrCode(String appName, {double? sizeCm}) async {
     if (state.capturedImage == null) return;
     state = state.copyWith(printStatus: QrActionStatus.loading);
     try {
       await _qrService.printQrCode(
         imageBytes: state.capturedImage!,
         appName: appName,
+        sizeCm: sizeCm ?? state.printSizeCm,
       );
       state = state.copyWith(printStatus: QrActionStatus.success);
     } catch (_) {

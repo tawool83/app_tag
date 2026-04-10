@@ -25,13 +25,16 @@ class TagHistoryAdapter extends TypeAdapter<TagHistory> {
       createdAt: fields[5] as DateTime,
       packageName: fields[6] as String?,
       appIconBytes: fields[7] as Uint8List?,
+      qrLabel: fields[8] as String?,
+      qrColor: fields[9] as int?,
+      printSizeCm: fields[10] as double?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TagHistory obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +50,13 @@ class TagHistoryAdapter extends TypeAdapter<TagHistory> {
       ..writeByte(6)
       ..write(obj.packageName)
       ..writeByte(7)
-      ..write(obj.appIconBytes);
+      ..write(obj.appIconBytes)
+      ..writeByte(8)
+      ..write(obj.qrLabel)
+      ..writeByte(9)
+      ..write(obj.qrColor)
+      ..writeByte(10)
+      ..write(obj.printSizeCm);
   }
 
   @override

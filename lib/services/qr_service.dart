@@ -40,10 +40,15 @@ class QrService {
   }
 
   /// 시스템 프린트 다이얼로그를 통해 QR 코드 인쇄
+  /// [sizeCm] 인쇄할 QR 크기 (cm, 정사각형). 1cm = 28.3465 PDF points
   Future<void> printQrCode({
     required Uint8List imageBytes,
     required String appName,
+    double sizeCm = 5.0,
   }) async {
+    const cmToPt = 28.3465;
+    final qrPt = sizeCm * cmToPt;
+
     final doc = pw.Document();
     final image = pw.MemoryImage(imageBytes);
 
@@ -63,7 +68,7 @@ class QrService {
                   ),
                 ),
                 pw.SizedBox(height: 20),
-                pw.Image(image, width: 200, height: 200),
+                pw.Image(image, width: qrPt, height: qrPt),
                 pw.SizedBox(height: 12),
                 pw.Text(
                   'Scan to launch app',

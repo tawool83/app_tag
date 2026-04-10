@@ -6,6 +6,7 @@ import '../features/output_selector/output_selector_screen.dart';
 import '../features/qr_result/qr_result_screen.dart';
 import '../features/nfc_writer/nfc_writer_screen.dart';
 import '../features/history/history_screen.dart';
+import '../features/help/help_screen.dart';
 
 class AppRouter {
   static const home = '/';
@@ -15,6 +16,7 @@ class AppRouter {
   static const qrResult = '/qr-result';
   static const nfcWriter = '/nfc-writer';
   static const history = '/history';
+  static const help = '/help';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -41,6 +43,8 @@ class AppRouter {
         );
       case history:
         return MaterialPageRoute(builder: (_) => const HistoryScreen());
+      case help:
+        return MaterialPageRoute(builder: (_) => const HelpScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

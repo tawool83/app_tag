@@ -29,6 +29,15 @@ class TagHistory extends HiveObject {
   @HiveField(7)
   final Uint8List? appIconBytes; // Android app icon (PNG bytes)
 
+  @HiveField(8)
+  final String? qrLabel; // QR 하단 라벨 (커스텀 시)
+
+  @HiveField(9)
+  final int? qrColor; // QR 전경색 ARGB 값 (커스텀 시)
+
+  @HiveField(10)
+  final double? printSizeCm; // 인쇄 크기 (cm, 정사각형)
+
   TagHistory({
     required this.id,
     required this.appName,
@@ -38,5 +47,8 @@ class TagHistory extends HiveObject {
     required this.createdAt,
     this.packageName,
     this.appIconBytes,
+    this.qrLabel,
+    this.qrColor,
+    this.printSizeCm,
   });
 }
