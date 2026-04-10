@@ -1,10 +1,11 @@
 import 'package:nfc_manager/nfc_manager.dart';
 
 class NdefRecordHelper {
-  /// Android URI 레코드 여부 (package: 스킴)
+  /// Android URI 레코드 여부 (Play Store 링크)
   static bool isAndroidRecord(NdefRecord record) {
     final uri = _extractUri(record);
-    return uri != null && uri.startsWith('package:');
+    return uri != null &&
+        uri.contains('play.google.com/store/apps/details');
   }
 
   /// iOS URI 레코드 여부 (shortcuts:// 스킴)

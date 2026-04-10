@@ -1,8 +1,9 @@
 {
   "version": "3.0",
-  "lastUpdated": "2026-04-09T06:58:13.310Z",
+  "lastUpdated": "2026-04-10T04:15:21.469Z",
   "activeFeatures": [
-    "AppTag-Flutter"
+    "AppTag-Flutter",
+    "imagegallerysaver"
   ],
   "primaryFeature": "AppTag-Flutter",
   "features": {
@@ -19,6 +20,19 @@
       },
       "previousPhase": "check",
       "autoAdvanced": true
+    },
+    "imagegallerysaver": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-10T04:15:21.469Z",
+        "lastUpdated": "2026-04-10T04:15:21.469Z"
+      },
+      "lastFile": "C:\\Users\\chunjae\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\image_gallery_saver-2.0.3\\android\\src\\main\\kotlin\\com\\example\\imagegallerysaver\\ImageGallerySaverPlugin.kt"
     }
   },
   "pipeline": {
@@ -29,13 +43,19 @@
   "session": {
     "startedAt": "2026-04-09T06:11:12.207Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-09T06:58:13.310Z"
+    "lastActivity": "2026-04-10T04:15:21.469Z"
   },
   "history": [
     {
       "timestamp": "2026-04-09T06:58:13.309Z",
       "feature": "AppTag-Flutter",
       "phase": "act",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-10T04:15:21.469Z",
+      "feature": "imagegallerysaver",
+      "phase": "do",
       "action": "updated"
     }
   ],

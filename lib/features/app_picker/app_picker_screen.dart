@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/app_info.dart';
+import '../../shared/constants/deep_link_constants.dart';
 import 'app_picker_provider.dart';
 
 class AppPickerScreen extends ConsumerWidget {
@@ -83,7 +84,7 @@ class _AppListTile extends StatelessWidget {
         '/output-selector',
         arguments: {
           'appName': app.appName,
-          'deepLink': 'package:${app.packageName}',
+          'deepLink': DeepLinkConstants.androidIntentLink(app.packageName),
           'packageName': app.packageName,
           'platform': 'android',
           'appIconBytes': app.icon,
