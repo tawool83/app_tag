@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../shared/constants/deep_link_constants.dart';
 import '../../shared/widgets/output_action_buttons.dart';
 
@@ -101,6 +102,28 @@ class _IosInputScreenState extends State<IosInputScreen> {
                       '3. 단축어 이름을 위에 입력한 이름으로 저장\n'
                       '4. 아래 버튼을 눌러 QR/NFC 생성',
                       style: TextStyle(fontSize: 14, height: 1.6),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final uri = Uri.parse(
+                            'https://support.apple.com/ko-kr/guide/shortcuts/welcome/ios');
+                        try {
+                          await launchUrl(uri,
+                              mode: LaunchMode.externalApplication);
+                        } catch (_) {}
+                      },
+                      icon: Icon(Icons.open_in_new,
+                          size: 16, color: Colors.blue.shade700),
+                      label: Text(
+                        'Apple 단축어 공식 사용 설명서',
+                        style: TextStyle(
+                            fontSize: 13, color: Colors.blue.shade700),
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                     ),
                   ],
                 ),
