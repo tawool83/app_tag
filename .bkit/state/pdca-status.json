@@ -2,9 +2,9 @@
   "version": "3.0",
   "lastUpdated": "2026-04-10T04:15:21.469Z",
   "activeFeatures": [
-    "imagegallerysaver"
+    "home-tile-visibility"
   ],
-  "primaryFeature": "imagegallerysaver",
+  "primaryFeature": "home-tile-visibility",
   "features": {
     "AppTag-Flutter": {
       "phase": "archived",
@@ -21,6 +21,24 @@
       "startedAt": "2026-04-10T00:00:00.000Z",
       "archivedAt": "2026-04-10T00:00:00.000Z",
       "archivedTo": "docs/archive/2026-04/nfc-cross-platform/"
+    },
+    "home-tile-visibility": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "timestamps": {
+        "started": "2026-04-11T00:00:00.000Z",
+        "lastUpdated": "2026-04-11T00:00:00.000Z"
+      }
+    },
+    "home-tile-menu": {
+      "phase": "archived",
+      "matchRate": 99,
+      "iterationCount": 1,
+      "startedAt": "2026-04-10T04:00:00.000Z",
+      "archivedAt": "2026-04-11T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/home-tile-menu/"
     },
     "imagegallerysaver": {
       "phase": "do",
