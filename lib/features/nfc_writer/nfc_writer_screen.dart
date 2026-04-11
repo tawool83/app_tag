@@ -63,6 +63,7 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
       createdAt: DateTime.now(),
       packageName: args['packageName'],
       appIconBytes: args['appIconBytes'] as Uint8List?,
+      tagType: args['tagType'] as String?,
     );
     await ref.read(historyServiceProvider).saveHistory(history);
   }

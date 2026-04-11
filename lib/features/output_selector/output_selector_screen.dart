@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app_picker/app_picker_provider.dart';
+
+bool get _isIOSSimulator =>
+    Platform.isIOS &&
+    Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
 
 class OutputSelectorScreen extends ConsumerWidget {
   const OutputSelectorScreen({super.key});
@@ -76,10 +81,12 @@ class OutputSelectorScreen extends ConsumerWidget {
                     ),
                     data: (nfcAvailable) {
                       if (!nfcAvailable) {
-                        return const _OutputCard(
+                        return _OutputCard(
                           icon: Icons.nfc,
                           label: 'NFC 태그',
-                          description: '이 기기는 NFC를 지원하지 않습니다',
+                          description: _isIOSSimulator
+                              ? '시뮬레이터에서는 NFC를 테스트할 수 없습니다'
+                              : '이 기기는 NFC를 지원하지 않습니다',
                           enabled: false,
                         );
                       }

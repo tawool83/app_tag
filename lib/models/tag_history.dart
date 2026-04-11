@@ -38,6 +38,9 @@ class TagHistory extends HiveObject {
   @HiveField(10)
   final double? printSizeCm; // 인쇄 크기 (cm, 정사각형)
 
+  @HiveField(11)
+  final String? tagType; // 태그 유형: 'app' | 'clipboard' | 'website' | 'contact' | 'wifi' | 'location' | 'event' | 'email' | 'sms'
+
   TagHistory({
     required this.id,
     required this.appName,
@@ -50,5 +53,6 @@ class TagHistory extends HiveObject {
     this.qrLabel,
     this.qrColor,
     this.printSizeCm,
+    this.tagType,
   });
 }

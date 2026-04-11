@@ -55,6 +55,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
     final packageName = args['packageName'] as String?;
     final platform = args['platform'] as String;
     final appIconBytes = args['appIconBytes'] as Uint8List?;
+    final tagType = args['tagType'] as String?;
     final state = ref.read(qrResultProvider);
 
     await Future.delayed(const Duration(milliseconds: 300));
@@ -79,6 +80,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
       qrLabel: state.customLabel,
       qrColor: state.qrColor.toARGB32(),
       printSizeCm: state.printSizeCm,
+      tagType: tagType,
     );
     await ref.read(historyServiceProvider).saveHistory(history);
   }
