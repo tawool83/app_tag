@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../shared/utils/tag_payload_encoder.dart';
+import '../../shared/widgets/output_action_buttons.dart';
 
 class EmailTagScreen extends StatefulWidget {
   const EmailTagScreen({super.key});
@@ -22,12 +23,7 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
     super.dispose();
   }
 
-  void _onNext() {
-    if (!_formKey.currentState!.validate()) return;
-    Navigator.pushNamed(
-      context,
-      '/output-selector',
-      arguments: {
+  Map<String, dynamic> _buildArgs() => {
         'appName': '이메일',
         'deepLink': TagPayloadEncoder.email(
           address: _addressController.text.trim(),
@@ -35,11 +31,18 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
           body: _bodyController.text.trim(),
         ),
         'platform': 'universal',
-        'outputType': 'qr',
         'appIconBytes': null,
         'tagType': 'email',
-      },
-    );
+      };
+
+  void _onQr() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pushNamed(context, '/qr-result', arguments: _buildArgs());
+  }
+
+  void _onNfc() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pushNamed(context, '/nfc-writer', arguments: _buildArgs());
   }
 
   @override
@@ -68,7 +71,7 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
                   if (!v.contains('@')) return '올바른 이메일 형식으로 입력해주세요.';
                   return null;
                 },
-              ),
+              ), 
               const SizedBox(height: 16),
               const Text('제목 (선택)',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -93,18 +96,9 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _onNext,
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('다음'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
+              OutputActionButtons(
+                onQrPressed: _onQr,
+                onNfcPressed: _onNfc,
               ),
             ],
           ),

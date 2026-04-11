@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../shared/utils/tag_payload_encoder.dart';
+import '../../shared/widgets/output_action_buttons.dart';
 
 class SmsTagScreen extends StatefulWidget {
   const SmsTagScreen({super.key});
@@ -20,23 +21,25 @@ class _SmsTagScreenState extends State<SmsTagScreen> {
     super.dispose();
   }
 
-  void _onNext() {
-    if (!_formKey.currentState!.validate()) return;
-    Navigator.pushNamed(
-      context,
-      '/output-selector',
-      arguments: {
+  Map<String, dynamic> _buildArgs() => {
         'appName': 'SMS',
         'deepLink': TagPayloadEncoder.sms(
           phone: _phoneController.text.trim(),
           message: _messageController.text.trim(),
         ),
         'platform': 'universal',
-        'outputType': 'qr',
         'appIconBytes': null,
         'tagType': 'sms',
-      },
-    );
+      };
+
+  void _onQr() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pushNamed(context, '/qr-result', arguments: _buildArgs());
+  }
+
+  void _onNfc() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pushNamed(context, '/nfc-writer', arguments: _buildArgs());
   }
 
   @override
@@ -76,18 +79,9 @@ class _SmsTagScreenState extends State<SmsTagScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _onNext,
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('다음'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
+              OutputActionButtons(
+                onQrPressed: _onQr,
+                onNfcPressed: _onNfc,
               ),
             ],
           ),

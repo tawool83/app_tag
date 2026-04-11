@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../shared/utils/tag_payload_encoder.dart';
+import '../../shared/widgets/output_action_buttons.dart';
 
 class EventTagScreen extends StatefulWidget {
   const EventTagScreen({super.key});
@@ -71,34 +72,42 @@ class _EventTagScreenState extends State<EventTagScreen> {
     });
   }
 
-  void _onNext() {
-    if (!_formKey.currentState!.validate()) return;
+  Map<String, dynamic>? _buildArgs() {
     final start = _combine(_startDate, _startTime);
     final end = _combine(_endDate, _endTime);
     if (!end.isAfter(start)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('종료 일시는 시작 일시 이후여야 합니다.')),
       );
-      return;
+      return null;
     }
-    Navigator.pushNamed(
-      context,
-      '/output-selector',
-      arguments: {
-        'appName': '이벤트/일정',
-        'deepLink': TagPayloadEncoder.event(
-          title: _titleController.text.trim(),
-          start: start,
-          end: end,
-          location: _locationController.text.trim(),
-          description: _descController.text.trim(),
-        ),
-        'platform': 'universal',
-        'outputType': 'qr',
-        'appIconBytes': null,
-        'tagType': 'event',
-      },
-    );
+    return {
+      'appName': '이벤트/일정',
+      'deepLink': TagPayloadEncoder.event(
+        title: _titleController.text.trim(),
+        start: start,
+        end: end,
+        location: _locationController.text.trim(),
+        description: _descController.text.trim(),
+      ),
+      'platform': 'universal',
+      'appIconBytes': null,
+      'tagType': 'event',
+    };
+  }
+
+  void _onQr() {
+    if (!_formKey.currentState!.validate()) return;
+    final args = _buildArgs();
+    if (args == null) return;
+    Navigator.pushNamed(context, '/qr-result', arguments: args);
+  }
+
+  void _onNfc() {
+    if (!_formKey.currentState!.validate()) return;
+    final args = _buildArgs();
+    if (args == null) return;
+    Navigator.pushNamed(context, '/nfc-writer', arguments: args);
   }
 
   String _fmtDate(DateTime d) => '${d.year}.${d.month.toString().padLeft(2,'0')}.${d.day.toString().padLeft(2,'0')}';
@@ -197,18 +206,9 @@ class _EventTagScreenState extends State<EventTagScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _onNext,
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('다음'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
+              OutputActionButtons(
+                onQrPressed: _onQr,
+                onNfcPressed: _onNfc,
               ),
             ],
           ),

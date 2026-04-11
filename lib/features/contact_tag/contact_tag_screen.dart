@@ -75,7 +75,7 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
 
     Navigator.pushNamed(
       context,
-      '/output-selector',
+      '/qr-result',
       arguments: {
         'appName': '연락처',
         'deepLink': TagPayloadEncoder.contact(
@@ -84,7 +84,6 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
           email: email,
         ),
         'platform': 'universal',
-        'outputType': 'qr',
         'appIconBytes': null,
         'tagType': 'contact',
       },

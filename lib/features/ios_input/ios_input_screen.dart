@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../shared/constants/deep_link_constants.dart';
+import '../../shared/widgets/output_action_buttons.dart';
 
 class IosInputScreen extends StatefulWidget {
   const IosInputScreen({super.key});
@@ -18,18 +19,24 @@ class _IosInputScreenState extends State<IosInputScreen> {
     super.dispose();
   }
 
-  void _onNext() {
-    if (!_formKey.currentState!.validate()) return;
+  Map<String, dynamic> _buildArgs() {
     final name = _controller.text.trim();
-    Navigator.pushNamed(
-      context,
-      '/output-selector',
-      arguments: {
-        'appName': name,
-        'deepLink': DeepLinkConstants.iosShortcutLink(name),
-        'platform': 'ios',
-      },
-    );
+    return {
+      'appName': name,
+      'deepLink': DeepLinkConstants.iosShortcutLink(name),
+      'platform': 'ios',
+      'appIconBytes': null,
+    };
+  }
+
+  void _onQr() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pushNamed(context, '/qr-result', arguments: _buildArgs());
+  }
+
+  void _onNfc() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pushNamed(context, '/nfc-writer', arguments: _buildArgs());
   }
 
   @override
@@ -99,19 +106,9 @@ class _IosInputScreenState extends State<IosInputScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _onNext,
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('다음'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
+              OutputActionButtons(
+                onQrPressed: _onQr,
+                onNfcPressed: _onNfc,
               ),
             ],
           ),
