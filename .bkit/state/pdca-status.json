@@ -22,6 +22,14 @@
       "archivedAt": "2026-04-10T00:00:00.000Z",
       "archivedTo": "docs/archive/2026-04/nfc-cross-platform/"
     },
+    "contact-picker": {
+      "phase": "archived",
+      "matchRate": 98,
+      "iterationCount": 0,
+      "startedAt": "2026-04-12T00:00:00.000Z",
+      "archivedAt": "2026-04-12T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/contact-picker/"
+    },
     "home-tile-visibility": {
       "phase": "do",
       "phaseNumber": 3,

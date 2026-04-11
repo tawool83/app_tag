@@ -28,6 +28,8 @@
 	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>NFC 태그에 앱 딥링크를 기록하기 위해 NFC를 사용합니다.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>연락처 태그를 만들기 위해 연락처에 접근합니다.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

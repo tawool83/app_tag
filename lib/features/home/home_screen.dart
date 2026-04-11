@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../services/settings_service.dart';
 
@@ -55,8 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return [
       _TileItem(
         key: 'app',
-        icon: Platform.isAndroid ? Icons.apps : Icons.shortcut,
-        label: Platform.isAndroid ? '앱 실행' : '단축키',
+        icon: Platform.isAndroid ? Icons.apps : CupertinoIcons.square_stack_3d_up,
+        label: Platform.isAndroid ? '앱 실행' : '단축어',
         iconColor: Colors.indigo,
         onTap: () => Navigator.pushNamed(
           context,
@@ -139,12 +140,20 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     return AppBar(
+      leadingWidth: 72,
       leading: const Padding(
-        padding: EdgeInsets.only(left: 16),
-        child: Icon(Icons.nfc),
+        padding: EdgeInsets.only(left: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.qr_code),
+            SizedBox(width: 4),
+            Icon(Icons.nfc),
+          ],
+        ),
       ),
       title: const Text(
-        'App Tag',
+        'QR, NFC 생성기',
         style: TextStyle(
             fontFamily: 'BitcountGridDouble', fontWeight: FontWeight.bold),
       ),

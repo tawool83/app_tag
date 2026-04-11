@@ -6,6 +6,9 @@
     <!-- 앱 목록 조회 (Android 11+) -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
+    <!-- 연락처 읽기 -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
     <!-- QR 이미지 갤러리 저장 (Android 9 이하) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />

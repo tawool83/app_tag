@@ -10,6 +10,7 @@ import '../features/help/help_screen.dart';
 import '../features/clipboard_tag/clipboard_tag_screen.dart';
 import '../features/website_tag/website_tag_screen.dart';
 import '../features/contact_tag/contact_tag_screen.dart';
+import '../features/contact_tag/contact_manual_form.dart';
 import '../features/wifi_tag/wifi_tag_screen.dart';
 import '../features/location_tag/location_tag_screen.dart';
 import '../features/event_tag/event_tag_screen.dart';
@@ -28,6 +29,7 @@ class AppRouter {
   static const clipboardTag   = '/clipboard-tag';
   static const websiteTag     = '/website-tag';
   static const contactTag     = '/contact-tag';
+  static const contactManual  = '/contact-manual';
   static const wifiTag        = '/wifi-tag';
   static const locationTag    = '/location-tag';
   static const eventTag       = '/event-tag';
@@ -67,6 +69,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const WebsiteTagScreen());
       case contactTag:
         return MaterialPageRoute(builder: (_) => const ContactTagScreen());
+      case contactManual:
+        return MaterialPageRoute(builder: (_) => const ContactManualFormScreen());
       case wifiTag:
         return MaterialPageRoute(builder: (_) => const WifiTagScreen());
       case locationTag:
