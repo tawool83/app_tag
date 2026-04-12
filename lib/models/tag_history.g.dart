@@ -32,13 +32,14 @@ class TagHistoryAdapter extends TypeAdapter<TagHistory> {
       qrEyeShape: fields[12] as String?,
       qrDataModuleShape: fields[13] as String?,
       qrEmbedIcon: fields[14] as bool?,
+      qrCenterEmoji: fields[15] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TagHistory obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -68,7 +69,9 @@ class TagHistoryAdapter extends TypeAdapter<TagHistory> {
       ..writeByte(13)
       ..write(obj.qrDataModuleShape)
       ..writeByte(14)
-      ..write(obj.qrEmbedIcon);
+      ..write(obj.qrEmbedIcon)
+      ..writeByte(15)
+      ..write(obj.qrCenterEmoji);
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,111 @@ import 'package:uuid/uuid.dart';
 import '../../models/tag_history.dart';
 import '../../services/settings_service.dart';
 import 'qr_result_provider.dart';
+
+// 중앙 아이콘 옵션
+enum _QrCenterOption { none, defaultIcon, emoji }
+
+// 이모지 카테고리 목록
+const _kEmojiCategories = [
+  ('스마일', ['😀', '😂', '🥰', '😎', '🤔', '🥳', '😴', '🤩']),
+  ('제스처', ['👋', '👍', '🙌', '💪', '🤝', '🤙', '👏', '✌️']),
+  ('사물', ['📱', '💻', '🖥️', '📷', '🎧', '📺', '⌚', '🔋']),
+  ('장소', ['🏠', '🏢', '🏪', '🏨', '🏦', '🏥', '🏫', '⛪']),
+  ('음식', ['🍕', '🍔', '🍜', '☕', '🍺', '🍰', '🍎', '🥗']),
+  ('자연', ['🌸', '🌺', '🌈', '⭐', '🌙', '☀️', '🌊', '🍀']),
+  ('활동', ['🎮', '🎵', '🎨', '⚽', '🎯', '🎲', '📚', '✏️']),
+  ('교통', ['🚗', '✈️', '🚂', '🚢', '🚲', '🛵', '🚀', '🗺️']),
+];
+
+// 태그 타입별 아이콘/색상
+(IconData, Color) _tagTypeIconColor(String? tagType) {
+  switch (tagType) {
+    case 'app': return (Icons.apps, Colors.indigo);
+    case 'clipboard': return (Icons.content_paste, Colors.blueGrey);
+    case 'website': return (Icons.language, Colors.blue);
+    case 'contact': return (Icons.contact_phone, Colors.green);
+    case 'wifi': return (Icons.wifi, Colors.teal);
+    case 'location': return (Icons.location_on, Colors.red);
+    case 'event': return (Icons.event, Colors.orange);
+    case 'email': return (Icons.email, Colors.deepPurple);
+    case 'sms': return (Icons.sms, Colors.pink);
+    default: return (Icons.qr_code, Colors.grey);
+  }
+}
+
+// Material 아이콘 → PNG bytes 렌더링 (둥근 배경 포함)
+Future<Uint8List> _renderMaterialIcon(IconData icon, Color color) async {
+  const size = 96.0;
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  // 흰 바탕
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 0, size, size),
+    Paint()..color = Colors.white,
+  );
+  // 색상 원형 배경
+  canvas.drawCircle(
+    const Offset(size / 2, size / 2),
+    size / 2 - 4,
+    Paint()..color = color.withValues(alpha: 0.15),
+  );
+  final tp = TextPainter(
+    text: TextSpan(
+      text: String.fromCharCode(icon.codePoint),
+      style: TextStyle(
+        fontFamily: icon.fontFamily,
+        package: icon.fontPackage,
+        fontSize: 56,
+        color: color,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+  )..layout(maxWidth: size);
+  tp.paint(canvas, Offset((size - tp.width) / 2, (size - tp.height) / 2));
+  final picture = recorder.endRecording();
+  final img = await picture.toImage(size.toInt(), size.toInt());
+  final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+  return bytes!.buffer.asUint8List();
+}
+
+// 이모지 → PNG bytes 렌더링
+Future<Uint8List> _renderEmoji(String emoji) async {
+  const size = 96.0;
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 0, size, size),
+    Paint()..color = Colors.white,
+  );
+  final tp = TextPainter(
+    text: TextSpan(text: emoji, style: const TextStyle(fontSize: 68)),
+    textDirection: TextDirection.ltr,
+  )..layout(maxWidth: size);
+  tp.paint(canvas, Offset((size - tp.width) / 2, (size - tp.height) / 2));
+  final picture = recorder.endRecording();
+  final img = await picture.toImage(size.toInt(), size.toInt());
+  final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+  return bytes!.buffer.asUint8List();
+}
+
+// 현재 상태에서 중앙 이미지 제공자 계산
+ImageProvider? _centerImageProvider(QrResultState state) {
+  if (!state.embedIcon) return null;
+  if (state.centerEmoji != null && state.emojiIconBytes != null) {
+    return MemoryImage(state.emojiIconBytes!);
+  }
+  if (state.defaultIconBytes != null) {
+    return MemoryImage(state.defaultIconBytes!);
+  }
+  return null;
+}
+
+// 현재 상태에서 중앙 아이콘 옵션 계산
+_QrCenterOption _currentCenterOption(QrResultState state) {
+  if (!state.embedIcon) return _QrCenterOption.none;
+  if (state.centerEmoji != null) return _QrCenterOption.emoji;
+  return _QrCenterOption.defaultIcon;
+}
 
 class QrResultScreen extends ConsumerStatefulWidget {
   const QrResultScreen({super.key});
@@ -32,16 +138,40 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       _labelController.text = args['appName'] as String;
       _printTitleController.text = args['appName'] as String;
+
       // 마지막 사용한 설정값 복원
       final lastSize = await SettingsService.getLastPrintSizeCm();
       final eyeShapeStr = await SettingsService.getQrEyeShape();
       final moduleShapeStr = await SettingsService.getQrDataModuleShape();
       final embedIcon = await SettingsService.getQrEmbedIcon();
+      final savedEmoji = await SettingsService.getQrCenterEmoji();
+
       final notifier = ref.read(qrResultProvider.notifier);
       notifier.setPrintSizeCm(lastSize);
-      notifier.setEyeShape(eyeShapeStr == 'circle' ? QrEyeShape.circle : QrEyeShape.square);
-      notifier.setDataModuleShape(moduleShapeStr == 'circle' ? QrDataModuleShape.circle : QrDataModuleShape.square);
+      notifier.setEyeShape(
+          eyeShapeStr == 'circle' ? QrEyeShape.circle : QrEyeShape.square);
+      notifier.setDataModuleShape(moduleShapeStr == 'circle'
+          ? QrDataModuleShape.circle
+          : QrDataModuleShape.square);
       notifier.setEmbedIcon(embedIcon);
+
+      // 기본 아이콘 렌더링 (앱 아이콘 또는 태그 타입 Material 아이콘)
+      final appIconBytes = args['appIconBytes'] as Uint8List?;
+      final tagType = args['tagType'] as String?;
+      if (appIconBytes != null) {
+        notifier.setDefaultIconBytes(appIconBytes);
+      } else {
+        final (icon, color) = _tagTypeIconColor(tagType);
+        final rendered = await _renderMaterialIcon(icon, color);
+        if (mounted) notifier.setDefaultIconBytes(rendered);
+      }
+
+      // 저장된 이모지 복원
+      if (savedEmoji != null && mounted) {
+        final emojiBytes = await _renderEmoji(savedEmoji);
+        if (mounted) notifier.setCenterEmoji(savedEmoji, emojiBytes);
+      }
+
       _captureAndSaveHistory(args);
     });
   }
@@ -91,6 +221,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
       qrEyeShape: state.eyeShape == QrEyeShape.circle ? 'circle' : 'square',
       qrDataModuleShape: state.dataModuleShape == QrDataModuleShape.circle ? 'circle' : 'square',
       qrEmbedIcon: state.embedIcon,
+      qrCenterEmoji: state.centerEmoji,
     );
     await ref.read(historyServiceProvider).saveHistory(history);
   }
@@ -152,14 +283,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                         dataModuleShape: state.dataModuleShape,
                         color: state.qrColor,
                       ),
-                      embeddedImage: state.embedIcon &&
-                              args['appIconBytes'] != null
-                          ? MemoryImage(
-                              args['appIconBytes'] as Uint8List)
-                          : null,
-                      embeddedImageStyle: state.embedIcon
-                          ? const QrEmbeddedImageStyle(
-                              size: Size(48, 48))
+                      embeddedImage: _centerImageProvider(state),
+                      embeddedImageStyle: _centerImageProvider(state) != null
+                          ? const QrEmbeddedImageStyle(size: Size(48, 48))
                           : null,
                     ),
                     if (label.isNotEmpty) ...[
@@ -193,8 +319,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
               printSizeCm: state.printSizeCm,
               eyeShape: state.eyeShape,
               dataModuleShape: state.dataModuleShape,
-              embedIcon: state.embedIcon,
-              hasAppIcon: args['appIconBytes'] != null,
+              centerOption: _currentCenterOption(state),
+              centerEmoji: state.centerEmoji,
+              hasDefaultIcon: state.defaultIconBytes != null,
               onToggle: () =>
                   setState(() => _customizeExpanded = !_customizeExpanded),
               onLabelChanged: (v) {
@@ -223,9 +350,31 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                     shape == QrDataModuleShape.circle ? 'circle' : 'square');
                 _recapture();
               },
-              onEmbedIconChanged: (embed) {
-                ref.read(qrResultProvider.notifier).setEmbedIcon(embed);
-                SettingsService.saveQrEmbedIcon(embed);
+              onCenterOptionChanged: (option) {
+                final notifier = ref.read(qrResultProvider.notifier);
+                switch (option) {
+                  case _QrCenterOption.none:
+                    notifier.setEmbedIcon(false);
+                    SettingsService.saveQrEmbedIcon(false);
+                    break;
+                  case _QrCenterOption.defaultIcon:
+                    notifier.setEmbedIcon(true);
+                    notifier.clearEmoji();
+                    SettingsService.saveQrEmbedIcon(true);
+                    SettingsService.saveQrCenterEmoji(null);
+                    break;
+                  case _QrCenterOption.emoji:
+                    notifier.setEmbedIcon(true);
+                    SettingsService.saveQrEmbedIcon(true);
+                    break;
+                }
+                _recapture();
+              },
+              onEmojiSelected: (emoji) async {
+                final bytes = await _renderEmoji(emoji);
+                if (!mounted) return;
+                ref.read(qrResultProvider.notifier).setCenterEmoji(emoji, bytes);
+                SettingsService.saveQrCenterEmoji(emoji);
                 _recapture();
               },
             ),
@@ -319,8 +468,9 @@ class _CustomizePanel extends StatelessWidget {
   final double printSizeCm;
   final QrEyeShape eyeShape;
   final QrDataModuleShape dataModuleShape;
-  final bool embedIcon;
-  final bool hasAppIcon;
+  final _QrCenterOption centerOption;
+  final String? centerEmoji;
+  final bool hasDefaultIcon;
   final VoidCallback onToggle;
   final ValueChanged<String> onLabelChanged;
   final ValueChanged<String> onPrintTitleChanged;
@@ -328,7 +478,8 @@ class _CustomizePanel extends StatelessWidget {
   final ValueChanged<double> onSizeChanged;
   final ValueChanged<QrEyeShape> onEyeShapeChanged;
   final ValueChanged<QrDataModuleShape> onDataModuleShapeChanged;
-  final ValueChanged<bool> onEmbedIconChanged;
+  final ValueChanged<_QrCenterOption> onCenterOptionChanged;
+  final ValueChanged<String> onEmojiSelected;
 
   const _CustomizePanel({
     required this.expanded,
@@ -338,8 +489,9 @@ class _CustomizePanel extends StatelessWidget {
     required this.printSizeCm,
     required this.eyeShape,
     required this.dataModuleShape,
-    required this.embedIcon,
-    required this.hasAppIcon,
+    required this.centerOption,
+    required this.centerEmoji,
+    required this.hasDefaultIcon,
     required this.onToggle,
     required this.onLabelChanged,
     required this.onPrintTitleChanged,
@@ -347,7 +499,8 @@ class _CustomizePanel extends StatelessWidget {
     required this.onSizeChanged,
     required this.onEyeShapeChanged,
     required this.onDataModuleShapeChanged,
-    required this.onEmbedIconChanged,
+    required this.onCenterOptionChanged,
+    required this.onEmojiSelected,
   });
 
   @override
@@ -522,20 +675,29 @@ class _CustomizePanel extends StatelessWidget {
                     onChanged: onEyeShapeChanged,
                   ),
 
-                  // 중앙 아이콘 (appIconBytes가 있을 때만)
-                  if (hasAppIcon) ...[
-                    const SizedBox(height: 16),
-                    const Text('중앙 아이콘',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 8),
-                    _ShapeToggle<bool>(
-                      selected: embedIcon,
-                      options: const [
-                        (false, '없음'),
-                        (true, '앱 아이콘'),
-                      ],
-                      onChanged: onEmbedIconChanged,
+                  // 중앙 아이콘
+                  const SizedBox(height: 16),
+                  const Text('중앙 아이콘',
+                      style: TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  _ShapeToggle<_QrCenterOption>(
+                    selected: centerOption,
+                    options: [
+                      (_QrCenterOption.none, '없음'),
+                      if (hasDefaultIcon)
+                        (_QrCenterOption.defaultIcon, '기본 아이콘'),
+                      (_QrCenterOption.emoji, '이모지'),
+                    ],
+                    onChanged: onCenterOptionChanged,
+                  ),
+
+                  // 이모지 선택 그리드
+                  if (centerOption == _QrCenterOption.emoji) ...[
+                    const SizedBox(height: 12),
+                    _EmojiGrid(
+                      selectedEmoji: centerEmoji,
+                      onEmojiTap: onEmojiSelected,
                     ),
                   ],
                 ],
@@ -544,6 +706,65 @@ class _CustomizePanel extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+// ── 이모지 그리드 ──────────────────────────────────────────────────────────────
+
+class _EmojiGrid extends StatelessWidget {
+  final String? selectedEmoji;
+  final ValueChanged<String> onEmojiTap;
+
+  const _EmojiGrid({required this.selectedEmoji, required this.onEmojiTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _kEmojiCategories.map((cat) {
+        final (name, emojis) = cat;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(name,
+                style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: emojis.map((emoji) {
+                final isSelected = selectedEmoji == emoji;
+                return GestureDetector(
+                  onTap: () => onEmojiTap(emoji),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(emoji,
+                          style: const TextStyle(fontSize: 22)),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 10),
+          ],
+        );
+      }).toList(),
     );
   }
 }

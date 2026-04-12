@@ -2,13 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/app_info.dart';
 import '../../shared/constants/deep_link_constants.dart';
+import '../../shared/widgets/output_action_buttons.dart';
 import 'app_picker_provider.dart';
 
-class AppPickerScreen extends ConsumerWidget {
+class AppPickerScreen extends ConsumerStatefulWidget {
   const AppPickerScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppPickerScreen> createState() => _AppPickerScreenState();
+}
+
+class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
+  AppInfo? _selectedApp;
+
+  Map<String, dynamic> _buildArgs() => {
+        'appName': _selectedApp!.appName,
+        'deepLink': DeepLinkConstants.androidIntentLink(_selectedApp!.packageName),
+        'packageName': _selectedApp!.packageName,
+        'platform': 'android',
+        'appIconBytes': _selectedApp!.icon,
+      };
+
+  void _onQr() {
+    if (_selectedApp == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('앱을 선택해주세요.')),
+      );
+      return;
+    }
+    Navigator.pushNamed(context, '/qr-result', arguments: _buildArgs());
+  }
+
+  void _onNfc() {
+    if (_selectedApp == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('앱을 선택해주세요.')),
+      );
+      return;
+    }
+    Navigator.pushNamed(context, '/nfc-writer', arguments: _buildArgs());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appsAsync = ref.watch(appListProvider);
     final filtered = ref.watch(filteredAppsProvider);
 
@@ -35,29 +71,54 @@ class AppPickerScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: appsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 12),
-              const Text('앱 목록을 불러올 수 없습니다.'),
-              const SizedBox(height: 8),
-              Text('$e', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
-          ),
-        ),
-        data: (_) => filtered.isEmpty
-            ? const Center(child: Text('검색 결과가 없습니다.'))
-            : ListView.builder(
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  final app = filtered[index];
-                  return _AppListTile(app: app);
-                },
+      body: Column(
+        children: [
+          // ── 앱 목록 ──────────────────────────────────────────────
+          Expanded(
+            child: appsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const SizedBox(height: 12),
+                    const Text('앱 목록을 불러올 수 없습니다.'),
+                    const SizedBox(height: 8),
+                    Text('$e',
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.grey)),
+                  ],
+                ),
               ),
+              data: (_) => filtered.isEmpty
+                  ? const Center(child: Text('검색 결과가 없습니다.'))
+                  : ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final app = filtered[index];
+                        final isSelected = _selectedApp?.packageName ==
+                            app.packageName;
+                        return _AppListTile(
+                          app: app,
+                          isSelected: isSelected,
+                          onTap: () =>
+                              setState(() => _selectedApp = app),
+                        );
+                      },
+                    ),
+            ),
+          ),
+
+          // ── QR / NFC 버튼 ────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: OutputActionButtons(
+              onQrPressed: _onQr,
+              onNfcPressed: _onNfc,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -65,11 +126,21 @@ class AppPickerScreen extends ConsumerWidget {
 
 class _AppListTile extends StatelessWidget {
   final AppInfo app;
-  const _AppListTile({required this.app});
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _AppListTile({
+    required this.app,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      selected: isSelected,
+      selectedTileColor:
+          Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
       leading: app.icon != null
           ? Image.memory(app.icon!, width: 40, height: 40)
           : const Icon(Icons.android, size: 40),
@@ -79,17 +150,11 @@ class _AppListTile extends StatelessWidget {
         style: const TextStyle(fontSize: 12, color: Colors.grey),
         overflow: TextOverflow.ellipsis,
       ),
-      onTap: () => Navigator.pushNamed(
-        context,
-        '/output-selector',
-        arguments: {
-          'appName': app.appName,
-          'deepLink': DeepLinkConstants.androidIntentLink(app.packageName),
-          'packageName': app.packageName,
-          'platform': 'android',
-          'appIconBytes': app.icon,
-        },
-      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle,
+              color: Theme.of(context).colorScheme.primary)
+          : null,
+      onTap: onTap,
     );
   }
 }

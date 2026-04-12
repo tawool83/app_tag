@@ -38,6 +38,9 @@ class QrResultState {
   final QrEyeShape eyeShape;
   final QrDataModuleShape dataModuleShape;
   final bool embedIcon;
+  final Uint8List? defaultIconBytes;  // 태그 타입 기본 아이콘 (앱아이콘 또는 Material 아이콘 렌더링)
+  final String? centerEmoji;          // 선택된 이모지 문자
+  final Uint8List? emojiIconBytes;    // 렌더링된 이모지 PNG bytes
 
   const QrResultState({
     this.capturedImage,
@@ -51,7 +54,10 @@ class QrResultState {
     this.printTitle,
     this.eyeShape = QrEyeShape.square,
     this.dataModuleShape = QrDataModuleShape.square,
-    this.embedIcon = false,
+    this.embedIcon = true,   // 기본값: 중앙 아이콘 ON
+    this.defaultIconBytes,
+    this.centerEmoji,
+    this.emojiIconBytes,
   });
 
   QrResultState copyWith({
@@ -67,6 +73,9 @@ class QrResultState {
     QrEyeShape? eyeShape,
     QrDataModuleShape? dataModuleShape,
     bool? embedIcon,
+    Object? defaultIconBytes = _sentinel,
+    Object? centerEmoji = _sentinel,
+    Object? emojiIconBytes = _sentinel,
   }) =>
       QrResultState(
         capturedImage: capturedImage ?? this.capturedImage,
@@ -85,6 +94,15 @@ class QrResultState {
         eyeShape: eyeShape ?? this.eyeShape,
         dataModuleShape: dataModuleShape ?? this.dataModuleShape,
         embedIcon: embedIcon ?? this.embedIcon,
+        defaultIconBytes: defaultIconBytes == _sentinel
+            ? this.defaultIconBytes
+            : defaultIconBytes as Uint8List?,
+        centerEmoji: centerEmoji == _sentinel
+            ? this.centerEmoji
+            : centerEmoji as String?,
+        emojiIconBytes: emojiIconBytes == _sentinel
+            ? this.emojiIconBytes
+            : emojiIconBytes as Uint8List?,
       );
 }
 
@@ -126,6 +144,18 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
 
   void setEmbedIcon(bool embed) {
     state = state.copyWith(embedIcon: embed);
+  }
+
+  void setDefaultIconBytes(Uint8List bytes) {
+    state = state.copyWith(defaultIconBytes: bytes);
+  }
+
+  void setCenterEmoji(String emoji, Uint8List rendered) {
+    state = state.copyWith(centerEmoji: emoji, emojiIconBytes: rendered);
+  }
+
+  void clearEmoji() {
+    state = state.copyWith(centerEmoji: null, emojiIconBytes: null);
   }
 
   Future<void> saveToGallery(String appName) async {

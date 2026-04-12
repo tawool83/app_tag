@@ -6,6 +6,7 @@ const _kHiddenTileKeys = 'hidden_tile_keys';
 const _kQrEyeShape = 'qr_eye_shape';
 const _kQrDataModuleShape = 'qr_data_module_shape';
 const _kQrEmbedIcon = 'qr_embed_icon';
+const _kQrCenterEmoji = 'qr_center_emoji';
 
 class SettingsService {
   static Future<double> getLastPrintSizeCm() async {
@@ -58,5 +59,19 @@ class SettingsService {
   static Future<void> saveQrEmbedIcon(bool embed) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kQrEmbedIcon, embed);
+  }
+
+  static Future<String?> getQrCenterEmoji() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kQrCenterEmoji);
+  }
+
+  static Future<void> saveQrCenterEmoji(String? emoji) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (emoji == null) {
+      await prefs.remove(_kQrCenterEmoji);
+    } else {
+      await prefs.setString(_kQrCenterEmoji, emoji);
+    }
   }
 }

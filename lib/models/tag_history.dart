@@ -50,6 +50,9 @@ class TagHistory extends HiveObject {
   @HiveField(14)
   final bool? qrEmbedIcon; // 중앙 아이콘 삽입 여부
 
+  @HiveField(15)
+  final String? qrCenterEmoji; // 중앙 이모지 문자 (null이면 기본 아이콘)
+
   TagHistory({
     required this.id,
     required this.appName,
@@ -66,5 +69,6 @@ class TagHistory extends HiveObject {
     this.qrEyeShape,
     this.qrDataModuleShape,
     this.qrEmbedIcon,
+    this.qrCenterEmoji,
   });
 }

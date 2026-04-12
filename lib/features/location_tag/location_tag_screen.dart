@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import '../../shared/utils/tag_payload_encoder.dart';
@@ -21,15 +22,52 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
   String? _address;      // 한국식 포맷 주소
   String? _buildingName; // 건물명 (QR 기본 문구)
   bool _isGeocoding = false;
+  LatLng? _myLocation;           // GPS로 얻은 내 위치 (파란 마커)
+  bool _mapReady = false;        // onMapReady 전에는 move() 금지
+  LatLng? _pendingMove;          // 지도 준비 전에 위치가 오면 보관
 
-  static const _initialCenter = LatLng(37.5665, 126.9780); // 서울 시청
-  static const _initialZoom = 12.0;
+  static const _fallbackCenter = LatLng(37.5665, 126.9780); // 서울 시청 (fallback)
+  static const _myLocationZoom = 17.0; // 내 위치 확인 시 확대 줌
+  static const _initialZoom = 12.0;    // 초기(fallback) 줌
+
+  @override
+  void initState() {
+    super.initState();
+    _moveToCurrentLocation();
+  }
 
   @override
   void dispose() {
     _mapController.dispose();
     _labelController.dispose();
     super.dispose();
+  }
+
+  Future<void> _moveToCurrentLocation() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.deniedForever ||
+          permission == LocationPermission.denied) return;
+
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+      final current = LatLng(pos.latitude, pos.longitude);
+      if (!mounted) return;
+      setState(() => _myLocation = current);
+      if (_mapReady) {
+        _mapController.move(current, _myLocationZoom);
+      } else {
+        // 지도가 아직 준비되지 않았으면 보관 → onMapReady에서 처리
+        setState(() => _pendingMove = current);
+      }
+    } catch (_) {
+      // 위치 획득 실패 시 기본 위치(서울 시청) 유지
+    }
   }
 
   Future<void> _onMapTap(TapPosition _, LatLng latLng) async {
@@ -169,9 +207,16 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    initialCenter: _initialCenter,
+                    initialCenter: _fallbackCenter,
                     initialZoom: _initialZoom,
                     onTap: _onMapTap,
+                    onMapReady: () {
+                      _mapReady = true;
+                      if (_pendingMove != null) {
+                        _mapController.move(_pendingMove!, _myLocationZoom);
+                        _pendingMove = null;
+                      }
+                    },
                   ),
                   children: [
                     TileLayer(
@@ -179,6 +224,28 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.app_tag',
                     ),
+                    // 내 위치 마커 (파란 원)
+                    if (_myLocation != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: _myLocation!,
+                            width: 36,
+                            height: 36,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: Colors.blue, width: 2),
+                              ),
+                              child: const Icon(Icons.circle,
+                                  color: Colors.blue, size: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    // 선택 위치 마커 (빨간 핀)
                     if (_selected != null)
                       MarkerLayer(
                         markers: [
@@ -206,6 +273,15 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                       const SizedBox(height: 6),
                       _ZoomButton(icon: Icons.remove, onTap: () => _zoom(-1)),
                     ],
+                  ),
+                ),
+                // ── 내 위치 버튼 ──────────────────────────────────────
+                Positioned(
+                  left: 12,
+                  bottom: 12,
+                  child: _ZoomButton(
+                    icon: Icons.my_location,
+                    onTap: _moveToCurrentLocation,
                   ),
                 ),
               ],

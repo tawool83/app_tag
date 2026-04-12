@@ -365,7 +365,7 @@ class _TileCard extends StatelessWidget {
             Text(
               item.label,
               style: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w600),
+                  fontSize: 21, fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
           ],
