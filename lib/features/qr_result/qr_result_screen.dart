@@ -268,26 +268,56 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    QrImageView(
-                      data: deepLink,
-                      version: QrVersions.auto,
-                      size: 240,
-                      errorCorrectionLevel: state.embedIcon
-                          ? QrErrorCorrectLevel.H
-                          : QrErrorCorrectLevel.M,
-                      eyeStyle: QrEyeStyle(
-                        eyeShape: state.eyeShape,
-                        color: state.qrColor,
-                      ),
-                      dataModuleStyle: QrDataModuleStyle(
-                        dataModuleShape: state.dataModuleShape,
-                        color: state.qrColor,
-                      ),
-                      embeddedImage: _centerImageProvider(state),
-                      embeddedImageStyle: _centerImageProvider(state) != null
-                          ? const QrEmbeddedImageStyle(size: Size(48, 48))
-                          : null,
-                    ),
+                    Builder(builder: (context) {
+                      final centerImage = _centerImageProvider(state);
+                      return SizedBox(
+                        width: 240,
+                        height: 240,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // QR 코드 (도트만 렌더링 — 중앙 아이콘 없음)
+                            QrImageView(
+                              data: deepLink,
+                              version: QrVersions.auto,
+                              size: 240,
+                              // 아이콘이 있으면 H(30%) 오류정정으로 중앙 도트 손실 보완
+                              errorCorrectionLevel: centerImage != null
+                                  ? QrErrorCorrectLevel.H
+                                  : QrErrorCorrectLevel.M,
+                              eyeStyle: QrEyeStyle(
+                                eyeShape: state.eyeShape,
+                                color: state.qrColor,
+                              ),
+                              dataModuleStyle: QrDataModuleStyle(
+                                dataModuleShape: state.dataModuleShape,
+                                color: state.qrColor,
+                              ),
+                            ),
+                            // 중앙 clear zone: 흰 원으로 QR 도트 가림
+                            if (centerImage != null)
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            // 아이콘/이모지 오버레이
+                            if (centerImage != null)
+                              ClipOval(
+                                child: Image(
+                                  image: centerImage,
+                                  width: 48,
+                                  height: 48,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    }),
                     if (label.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
