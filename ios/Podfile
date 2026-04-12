@@ -40,4 +40,24 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
   end
+
+  # flutter_contacts: iOS 13+ 씬 기반 앱에서 window가 nil이 되는 크래시 패치
+  # UIApplication.shared.delegate!.window!!.rootViewController! → 안전한 옵셔널 체인
+  plugin_file = File.expand_path(
+    '../.symlinks/plugins/flutter_contacts/ios/Classes/SwiftFlutterContactsPlugin.swift',
+    __FILE__
+  )
+  if File.exist?(plugin_file)
+    content = File.read(plugin_file)
+    patched = content.gsub(
+      'let rootViewController = UIApplication.shared.delegate!.window!!.rootViewController!',
+      'let rootViewController = (UIApplication.shared.connectedScenes' \
+        '.compactMap { $0 as? UIWindowScene }' \
+        '.flatMap { $0.windows }' \
+        '.first(where: { $0.isKeyWindow })?.rootViewController)' \
+        ' ?? UIApplication.shared.delegate?.window??.rootViewController' \
+        ' ?? UIViewController()'
+    )
+    File.write(plugin_file, patched) if content != patched
+  end
 end
