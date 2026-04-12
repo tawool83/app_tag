@@ -1,8 +1,9 @@
 {
   "version": "3.0",
-  "lastUpdated": "2026-04-10T04:15:21.469Z",
+  "lastUpdated": "2026-04-12T02:13:04.303Z",
   "activeFeatures": [
-    "home-tile-visibility"
+    "home-tile-visibility",
+    "imagegallerysaver"
   ],
   "primaryFeature": "home-tile-visibility",
   "features": {
@@ -63,9 +64,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-10T04:15:21.469Z",
-        "lastUpdated": "2026-04-10T04:15:21.469Z"
+        "lastUpdated": "2026-04-12T02:13:04.303Z"
       },
-      "lastFile": "C:\\Users\\chunjae\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\image_gallery_saver-2.0.3\\android\\src\\main\\kotlin\\com\\example\\imagegallerysaver\\ImageGallerySaverPlugin.kt"
+      "lastFile": "/Users/tawool/.pub-cache/hosted/pub.dev/image_gallery_saver-2.0.3/android/src/main/kotlin/com/example/imagegallerysaver/ImageGallerySaverPlugin.kt"
     },
     "direct-output": {
       "phase": "archived",
@@ -84,7 +85,7 @@
   "session": {
     "startedAt": "2026-04-09T06:11:12.207Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-10T04:15:21.469Z"
+    "lastActivity": "2026-04-12T02:13:04.303Z"
   },
   "history": [
     {
@@ -95,6 +96,12 @@
     },
     {
       "timestamp": "2026-04-10T04:15:21.469Z",
+      "feature": "imagegallerysaver",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T02:13:04.303Z",
       "feature": "imagegallerysaver",
       "phase": "do",
       "action": "updated"

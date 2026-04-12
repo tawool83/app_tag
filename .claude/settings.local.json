@@ -7,7 +7,9 @@
       "Bash(flutter pub:*)",
       "Bash(flutter analyze:*)",
       "Bash(git -C /c/repository/app_tag diff HEAD)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(flutter build:*)",
+      "Bash(pod install:*)"
     ]
   }
 }
