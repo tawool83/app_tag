@@ -248,6 +248,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
     final state = ref.watch(qrResultProvider);
     // null = 앱 이름 사용, "" = 표시 안 함
     final label = state.customLabel ?? appName;
+    final printTitle = state.printTitle ?? appName;
 
     return Scaffold(
       appBar: AppBar(title: const Text('QR 코드')),
@@ -266,6 +267,18 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+                    if (printTitle.isNotEmpty) ...[
+                      Text(
+                        printTitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     Builder(builder: (context) {
                       final centerImage = _centerImageProvider(state);
                       return SizedBox(
