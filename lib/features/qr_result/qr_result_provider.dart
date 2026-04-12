@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/qr_service.dart';
 import '../../services/history_service.dart';
 
@@ -34,6 +35,9 @@ class QrResultState {
   final Color qrColor;
   final double printSizeCm;        // 인쇄 크기 (cm)
   final String? printTitle;        // null = 앱 이름 사용, "" = 표시 안 함
+  final QrEyeShape eyeShape;
+  final QrDataModuleShape dataModuleShape;
+  final bool embedIcon;
 
   const QrResultState({
     this.capturedImage,
@@ -45,6 +49,9 @@ class QrResultState {
     this.qrColor = const Color(0xFF000000),
     this.printSizeCm = 5.0,
     this.printTitle,
+    this.eyeShape = QrEyeShape.square,
+    this.dataModuleShape = QrDataModuleShape.square,
+    this.embedIcon = false,
   });
 
   QrResultState copyWith({
@@ -57,6 +64,9 @@ class QrResultState {
     Color? qrColor,
     double? printSizeCm,
     Object? printTitle = _sentinel,
+    QrEyeShape? eyeShape,
+    QrDataModuleShape? dataModuleShape,
+    bool? embedIcon,
   }) =>
       QrResultState(
         capturedImage: capturedImage ?? this.capturedImage,
@@ -72,6 +82,9 @@ class QrResultState {
         printTitle: printTitle == _sentinel
             ? this.printTitle
             : printTitle as String?,
+        eyeShape: eyeShape ?? this.eyeShape,
+        dataModuleShape: dataModuleShape ?? this.dataModuleShape,
+        embedIcon: embedIcon ?? this.embedIcon,
       );
 }
 
@@ -101,6 +114,18 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
 
   void setPrintTitle(String? title) {
     state = state.copyWith(printTitle: title);
+  }
+
+  void setEyeShape(QrEyeShape shape) {
+    state = state.copyWith(eyeShape: shape);
+  }
+
+  void setDataModuleShape(QrDataModuleShape shape) {
+    state = state.copyWith(dataModuleShape: shape);
+  }
+
+  void setEmbedIcon(bool embed) {
+    state = state.copyWith(embedIcon: embed);
   }
 
   Future<void> saveToGallery(String appName) async {

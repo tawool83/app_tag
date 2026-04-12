@@ -41,6 +41,15 @@ class TagHistory extends HiveObject {
   @HiveField(11)
   final String? tagType; // 태그 유형: 'app' | 'clipboard' | 'website' | 'contact' | 'wifi' | 'location' | 'event' | 'email' | 'sms'
 
+  @HiveField(12)
+  final String? qrEyeShape; // 'square' | 'circle'
+
+  @HiveField(13)
+  final String? qrDataModuleShape; // 'square' | 'circle'
+
+  @HiveField(14)
+  final bool? qrEmbedIcon; // 중앙 아이콘 삽입 여부
+
   TagHistory({
     required this.id,
     required this.appName,
@@ -54,5 +63,8 @@ class TagHistory extends HiveObject {
     this.qrColor,
     this.printSizeCm,
     this.tagType,
+    this.qrEyeShape,
+    this.qrDataModuleShape,
+    this.qrEmbedIcon,
   });
 }

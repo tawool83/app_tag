@@ -32,9 +32,16 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       _labelController.text = args['appName'] as String;
       _printTitleController.text = args['appName'] as String;
-      // 마지막 사용한 인쇄 크기 복원
+      // 마지막 사용한 설정값 복원
       final lastSize = await SettingsService.getLastPrintSizeCm();
-      ref.read(qrResultProvider.notifier).setPrintSizeCm(lastSize);
+      final eyeShapeStr = await SettingsService.getQrEyeShape();
+      final moduleShapeStr = await SettingsService.getQrDataModuleShape();
+      final embedIcon = await SettingsService.getQrEmbedIcon();
+      final notifier = ref.read(qrResultProvider.notifier);
+      notifier.setPrintSizeCm(lastSize);
+      notifier.setEyeShape(eyeShapeStr == 'circle' ? QrEyeShape.circle : QrEyeShape.square);
+      notifier.setDataModuleShape(moduleShapeStr == 'circle' ? QrDataModuleShape.circle : QrDataModuleShape.square);
+      notifier.setEmbedIcon(embedIcon);
       _captureAndSaveHistory(args);
     });
   }
@@ -81,6 +88,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
       qrColor: state.qrColor.toARGB32(),
       printSizeCm: state.printSizeCm,
       tagType: tagType,
+      qrEyeShape: state.eyeShape == QrEyeShape.circle ? 'circle' : 'square',
+      qrDataModuleShape: state.dataModuleShape == QrDataModuleShape.circle ? 'circle' : 'square',
+      qrEmbedIcon: state.embedIcon,
     );
     await ref.read(historyServiceProvider).saveHistory(history);
   }
@@ -131,15 +141,26 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                       data: deepLink,
                       version: QrVersions.auto,
                       size: 240,
-                      errorCorrectionLevel: QrErrorCorrectLevel.M,
+                      errorCorrectionLevel: state.embedIcon
+                          ? QrErrorCorrectLevel.H
+                          : QrErrorCorrectLevel.M,
                       eyeStyle: QrEyeStyle(
-                        eyeShape: QrEyeShape.square,
+                        eyeShape: state.eyeShape,
                         color: state.qrColor,
                       ),
                       dataModuleStyle: QrDataModuleStyle(
-                        dataModuleShape: QrDataModuleShape.square,
+                        dataModuleShape: state.dataModuleShape,
                         color: state.qrColor,
                       ),
+                      embeddedImage: state.embedIcon &&
+                              args['appIconBytes'] != null
+                          ? MemoryImage(
+                              args['appIconBytes'] as Uint8List)
+                          : null,
+                      embeddedImageStyle: state.embedIcon
+                          ? const QrEmbeddedImageStyle(
+                              size: Size(48, 48))
+                          : null,
                     ),
                     if (label.isNotEmpty) ...[
                       const SizedBox(height: 8),
@@ -170,6 +191,10 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
               printTitleController: _printTitleController,
               selectedColor: state.qrColor,
               printSizeCm: state.printSizeCm,
+              eyeShape: state.eyeShape,
+              dataModuleShape: state.dataModuleShape,
+              embedIcon: state.embedIcon,
+              hasAppIcon: args['appIconBytes'] != null,
               onToggle: () =>
                   setState(() => _customizeExpanded = !_customizeExpanded),
               onLabelChanged: (v) {
@@ -185,6 +210,23 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
               },
               onSizeChanged: (s) {
                 ref.read(qrResultProvider.notifier).setPrintSizeCm(s);
+              },
+              onEyeShapeChanged: (shape) {
+                ref.read(qrResultProvider.notifier).setEyeShape(shape);
+                SettingsService.saveQrEyeShape(
+                    shape == QrEyeShape.circle ? 'circle' : 'square');
+                _recapture();
+              },
+              onDataModuleShapeChanged: (shape) {
+                ref.read(qrResultProvider.notifier).setDataModuleShape(shape);
+                SettingsService.saveQrDataModuleShape(
+                    shape == QrDataModuleShape.circle ? 'circle' : 'square');
+                _recapture();
+              },
+              onEmbedIconChanged: (embed) {
+                ref.read(qrResultProvider.notifier).setEmbedIcon(embed);
+                SettingsService.saveQrEmbedIcon(embed);
+                _recapture();
               },
             ),
 
@@ -275,11 +317,18 @@ class _CustomizePanel extends StatelessWidget {
   final TextEditingController printTitleController;
   final Color selectedColor;
   final double printSizeCm;
+  final QrEyeShape eyeShape;
+  final QrDataModuleShape dataModuleShape;
+  final bool embedIcon;
+  final bool hasAppIcon;
   final VoidCallback onToggle;
   final ValueChanged<String> onLabelChanged;
   final ValueChanged<String> onPrintTitleChanged;
   final ValueChanged<Color> onColorSelected;
   final ValueChanged<double> onSizeChanged;
+  final ValueChanged<QrEyeShape> onEyeShapeChanged;
+  final ValueChanged<QrDataModuleShape> onDataModuleShapeChanged;
+  final ValueChanged<bool> onEmbedIconChanged;
 
   const _CustomizePanel({
     required this.expanded,
@@ -287,11 +336,18 @@ class _CustomizePanel extends StatelessWidget {
     required this.printTitleController,
     required this.selectedColor,
     required this.printSizeCm,
+    required this.eyeShape,
+    required this.dataModuleShape,
+    required this.embedIcon,
+    required this.hasAppIcon,
     required this.onToggle,
     required this.onLabelChanged,
     required this.onPrintTitleChanged,
     required this.onColorSelected,
     required this.onSizeChanged,
+    required this.onEyeShapeChanged,
+    required this.onDataModuleShapeChanged,
+    required this.onEmbedIconChanged,
   });
 
   @override
@@ -435,12 +491,113 @@ class _CustomizePanel extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+
+                  // 도트 모양
+                  const Text('데이터 도트 모양',
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  _ShapeToggle<QrDataModuleShape>(
+                    selected: dataModuleShape,
+                    options: const [
+                      (QrDataModuleShape.square, '■ 사각형'),
+                      (QrDataModuleShape.circle, '● 원형'),
+                    ],
+                    onChanged: onDataModuleShapeChanged,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 눈(finder) 모양
+                  const Text('눈(코너) 모양',
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  _ShapeToggle<QrEyeShape>(
+                    selected: eyeShape,
+                    options: const [
+                      (QrEyeShape.square, '■ 사각형'),
+                      (QrEyeShape.circle, '● 원형'),
+                    ],
+                    onChanged: onEyeShapeChanged,
+                  ),
+
+                  // 중앙 아이콘 (appIconBytes가 있을 때만)
+                  if (hasAppIcon) ...[
+                    const SizedBox(height: 16),
+                    const Text('중앙 아이콘',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 8),
+                    _ShapeToggle<bool>(
+                      selected: embedIcon,
+                      options: const [
+                        (false, '없음'),
+                        (true, '앱 아이콘'),
+                      ],
+                      onChanged: onEmbedIconChanged,
+                    ),
+                  ],
                 ],
               ),
             ),
           ],
         ],
       ),
+    );
+  }
+}
+
+// ── 모양 선택 토글 ────────────────────────────────────────────────────────────
+
+class _ShapeToggle<T> extends StatelessWidget {
+  final T selected;
+  final List<(T, String)> options;
+  final ValueChanged<T> onChanged;
+
+  const _ShapeToggle({
+    required this.selected,
+    required this.options,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: options.map((opt) {
+        final (value, label) = opt;
+        final isSelected = selected == value;
+        return Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: GestureDetector(
+            onTap: () => onChanged(value),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.grey.shade300,
+                ),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected ? Colors.white : Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

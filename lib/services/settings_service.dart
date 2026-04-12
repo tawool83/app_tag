@@ -3,6 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _kPrintSizeCm = 'print_size_cm';
 const _kDefaultPrintSizeCm = 5.0;
 const _kHiddenTileKeys = 'hidden_tile_keys';
+const _kQrEyeShape = 'qr_eye_shape';
+const _kQrDataModuleShape = 'qr_data_module_shape';
+const _kQrEmbedIcon = 'qr_embed_icon';
 
 class SettingsService {
   static Future<double> getLastPrintSizeCm() async {
@@ -25,5 +28,35 @@ class SettingsService {
   static Future<void> saveHiddenTileKeys(Set<String> keys) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kHiddenTileKeys, keys.join(','));
+  }
+
+  static Future<String> getQrEyeShape() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kQrEyeShape) ?? 'square';
+  }
+
+  static Future<void> saveQrEyeShape(String shape) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kQrEyeShape, shape);
+  }
+
+  static Future<String> getQrDataModuleShape() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kQrDataModuleShape) ?? 'square';
+  }
+
+  static Future<void> saveQrDataModuleShape(String shape) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kQrDataModuleShape, shape);
+  }
+
+  static Future<bool> getQrEmbedIcon() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kQrEmbedIcon) ?? false;
+  }
+
+  static Future<void> saveQrEmbedIcon(bool embed) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kQrEmbedIcon, embed);
   }
 }
