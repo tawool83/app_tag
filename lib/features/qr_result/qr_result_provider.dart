@@ -54,7 +54,7 @@ class QrResultState {
     this.printTitle,
     this.eyeShape = QrEyeShape.square,
     this.dataModuleShape = QrDataModuleShape.square,
-    this.embedIcon = true,   // 기본값: 중앙 아이콘 ON
+    this.embedIcon = false,  // 기본값: 중앙 아이콘 OFF (SharedPreferences 로드 전 깜빡임 방지)
     this.defaultIconBytes,
     this.centerEmoji,
     this.emojiIconBytes,
