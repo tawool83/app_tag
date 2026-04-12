@@ -9,6 +9,10 @@
     <!-- 연락처 읽기 -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
+    <!-- 위치 (지도 태그 현재 위치) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <!-- QR 이미지 갤러리 저장 (Android 9 이하) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
