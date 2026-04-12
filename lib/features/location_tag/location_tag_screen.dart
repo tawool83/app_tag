@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../shared/utils/tag_payload_encoder.dart';
 import '../../shared/widgets/output_action_buttons.dart';
 
@@ -11,68 +12,54 @@ class LocationTagScreen extends StatefulWidget {
 }
 
 class _LocationTagScreenState extends State<LocationTagScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _latController = TextEditingController();
-  final _lngController = TextEditingController();
+  final _mapController = MapController();
   final _labelController = TextEditingController();
+
+  LatLng? _selected;
+
+  static const _initialCenter = LatLng(37.5665, 126.9780); // 서울 시청
 
   @override
   void dispose() {
-    _latController.dispose();
-    _lngController.dispose();
+    _mapController.dispose();
     _labelController.dispose();
     super.dispose();
   }
 
-  Map<String, dynamic> _buildArgs() {
-    final lat = double.parse(_latController.text.trim());
-    final lng = double.parse(_lngController.text.trim());
-    return {
-      'appName': '위치',
-      'deepLink': TagPayloadEncoder.location(
-        lat: lat,
-        lng: lng,
-        label: _labelController.text.trim(),
-      ),
-      'platform': 'universal',
-      'appIconBytes': null,
-      'tagType': 'location',
-    };
+  void _onMapTap(TapPosition _, LatLng latLng) {
+    setState(() => _selected = latLng);
   }
 
+  Map<String, dynamic> _buildArgs() => {
+        'appName': '위치',
+        'deepLink': TagPayloadEncoder.location(
+          lat: _selected!.latitude,
+          lng: _selected!.longitude,
+          label: _labelController.text.trim(),
+        ),
+        'platform': 'universal',
+        'appIconBytes': null,
+        'tagType': 'location',
+      };
+
   void _onQr() {
-    if (!_formKey.currentState!.validate()) return;
+    if (_selected == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('지도에서 위치를 선택해주세요.')),
+      );
+      return;
+    }
     Navigator.pushNamed(context, '/qr-result', arguments: _buildArgs());
   }
 
   void _onNfc() {
-    if (!_formKey.currentState!.validate()) return;
+    if (_selected == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('지도에서 위치를 선택해주세요.')),
+      );
+      return;
+    }
     Navigator.pushNamed(context, '/nfc-writer', arguments: _buildArgs());
-  }
-
-  Future<void> _previewMap() async {
-    if (_latController.text.isEmpty || _lngController.text.isEmpty) return;
-    final lat = double.tryParse(_latController.text.trim());
-    final lng = double.tryParse(_lngController.text.trim());
-    if (lat == null || lng == null) return;
-    final uri = Uri.parse('https://maps.google.com/?q=$lat,$lng');
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
-  }
-
-  String? _validateLatitude(String? v) {
-    if (v == null || v.trim().isEmpty) return '위도를 입력해주세요.';
-    final d = double.tryParse(v.trim());
-    if (d == null) return '숫자를 입력해주세요.';
-    if (d < -90 || d > 90) return '-90 ~ 90 범위로 입력해주세요.';
-    return null;
-  }
-
-  String? _validateLongitude(String? v) {
-    if (v == null || v.trim().isEmpty) return '경도를 입력해주세요.';
-    final d = double.tryParse(v.trim());
-    if (d == null) return '숫자를 입력해주세요.';
-    if (d < -180 || d > 180) return '-180 ~ 180 범위로 입력해주세요.';
-    return null;
   }
 
   @override
@@ -82,59 +69,81 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('위도 *',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _latController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true, signed: true),
-                      decoration: InputDecoration(
-                        hintText: '37.566535',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      validator: _validateLatitude,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('경도 *',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _lngController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true, signed: true),
-                      decoration: InputDecoration(
-                        hintText: '126.977969',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      validator: _validateLongitude,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('장소명 (선택)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _labelController,
-                      decoration: InputDecoration(
-                        hintText: '예: 서울시청',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton.icon(
-                      onPressed: _previewMap,
-                      icon: const Icon(Icons.map_outlined),
-                      label: const Text('지도에서 미리보기'),
-                    ),
-                  ],
+            flex: 3,
+            child: FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: _initialCenter,
+                initialZoom: 12,
+                onTap: _onMapTap,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.example.app_tag',
                 ),
+                if (_selected != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: _selected!,
+                        width: 40,
+                        height: 40,
+                        child: const Icon(
+                          Icons.location_pin,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_selected == null)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          Icon(Icons.touch_app, size: 16, color: Colors.grey),
+                          SizedBox(width: 6),
+                          Text(
+                            '지도를 탭하여 위치를 선택하세요.',
+                            style: TextStyle(color: Colors.grey, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  _CoordField(
+                    label: '위도',
+                    value: _selected?.latitude,
+                  ),
+                  const SizedBox(height: 12),
+                  _CoordField(
+                    label: '경도',
+                    value: _selected?.longitude,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('장소명 (선택)',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _labelController,
+                    decoration: InputDecoration(
+                      hintText: '예: 서울시청',
+                      isDense: true,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -147,6 +156,47 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CoordField extends StatelessWidget {
+  final String label;
+  final double? value;
+
+  const _CoordField({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        TextField(
+          readOnly: true,
+          controller: TextEditingController(
+            text: value != null ? value!.toStringAsFixed(6) : '',
+          ),
+          decoration: InputDecoration(
+            hintText: '지도에서 선택',
+            hintStyle: const TextStyle(color: Colors.grey),
+            isDense: true,
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
