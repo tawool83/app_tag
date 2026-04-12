@@ -49,60 +49,68 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('이메일 태그')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('이메일 주소 *',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _addressController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  hintText: 'example@email.com',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return '이메일 주소를 입력해주세요.';
-                  if (!v.contains('@')) return '올바른 이메일 형식으로 입력해주세요.';
-                  return null;
-                },
-              ), 
-              const SizedBox(height: 16),
-              const Text('제목 (선택)',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _subjectController,
-                decoration: InputDecoration(
-                  hintText: '이메일 제목',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('이메일 주소 *',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _addressController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: 'example@email.com',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return '이메일 주소를 입력해주세요.';
+                        if (!v.contains('@')) return '올바른 이메일 형식으로 입력해주세요.';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('제목 (선택)',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _subjectController,
+                      decoration: InputDecoration(
+                        hintText: '이메일 제목',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('내용 (선택)',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _bodyController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: '이메일 본문',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text('내용 (선택)',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _bodyController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: '이메일 본문',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-              const SizedBox(height: 32),
-              OutputActionButtons(
-                onQrPressed: _onQr,
-                onNfcPressed: _onNfc,
-              ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: OutputActionButtons(
+              onQrPressed: _onQr,
+              onNfcPressed: _onNfc,
+            ),
+          ),
+        ],
       ),
     );
   }

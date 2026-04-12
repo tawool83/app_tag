@@ -79,65 +79,73 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('위치 태그')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('위도 *',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _latController,
-                keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true, signed: true),
-                decoration: InputDecoration(
-                  hintText: '37.566535',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('위도 *',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _latController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true, signed: true),
+                      decoration: InputDecoration(
+                        hintText: '37.566535',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      validator: _validateLatitude,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('경도 *',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _lngController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true, signed: true),
+                      decoration: InputDecoration(
+                        hintText: '126.977969',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      validator: _validateLongitude,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('장소명 (선택)',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _labelController,
+                      decoration: InputDecoration(
+                        hintText: '예: 서울시청',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: _previewMap,
+                      icon: const Icon(Icons.map_outlined),
+                      label: const Text('지도에서 미리보기'),
+                    ),
+                  ],
                 ),
-                validator: _validateLatitude,
               ),
-              const SizedBox(height: 16),
-              const Text('경도 *',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _lngController,
-                keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true, signed: true),
-                decoration: InputDecoration(
-                  hintText: '126.977969',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                validator: _validateLongitude,
-              ),
-              const SizedBox(height: 16),
-              const Text('장소명 (선택)',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _labelController,
-                decoration: InputDecoration(
-                  hintText: '예: 서울시청',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextButton.icon(
-                onPressed: _previewMap,
-                icon: const Icon(Icons.map_outlined),
-                label: const Text('지도에서 미리보기'),
-              ),
-              const SizedBox(height: 32),
-              OutputActionButtons(
-                onQrPressed: _onQr,
-                onNfcPressed: _onNfc,
-              ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: OutputActionButtons(
+              onQrPressed: _onQr,
+              onNfcPressed: _onNfc,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -50,41 +50,49 @@ class _ContactManualFormScreenState extends State<ContactManualFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('직접 입력')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _label('이름 *'),
-              _field(_nameController,
-                  hint: '홍길동',
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? '이름을 입력해주세요.' : null),
-              const SizedBox(height: 16),
-              _label('전화번호'),
-              _field(_phoneController,
-                  hint: '010-0000-0000',
-                  keyboardType: TextInputType.phone),
-              const SizedBox(height: 16),
-              _label('이메일'),
-              _field(_emailController,
-                  hint: 'example@email.com',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return null;
-                    if (!v.contains('@')) return '올바른 이메일 형식으로 입력해주세요.';
-                    return null;
-                  }),
-              const SizedBox(height: 32),
-              OutputActionButtons(
-                onQrPressed: _onQr,
-                onNfcPressed: _onNfc,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _label('이름 *'),
+                    _field(_nameController,
+                        hint: '홍길동',
+                        validator: (v) =>
+                            (v == null || v.trim().isEmpty) ? '이름을 입력해주세요.' : null),
+                    const SizedBox(height: 16),
+                    _label('전화번호'),
+                    _field(_phoneController,
+                        hint: '010-0000-0000',
+                        keyboardType: TextInputType.phone),
+                    const SizedBox(height: 16),
+                    _label('이메일'),
+                    _field(_emailController,
+                        hint: 'example@email.com',
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return null;
+                          if (!v.contains('@')) return '올바른 이메일 형식으로 입력해주세요.';
+                          return null;
+                        }),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: OutputActionButtons(
+              onQrPressed: _onQr,
+              onNfcPressed: _onNfc,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -41,39 +41,47 @@ class _WebsiteTagScreenState extends State<WebsiteTagScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('웹 사이트 태그')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('URL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _controller,
-                keyboardType: TextInputType.url,
-                decoration: InputDecoration(
-                  hintText: 'https://example.com',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('URL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _controller,
+                      keyboardType: TextInputType.url,
+                      decoration: InputDecoration(
+                        hintText: 'https://example.com',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'URL을 입력해주세요.';
+                        final url = v.trim();
+                        final normalized = url.startsWith('http') ? url : 'https://$url';
+                        final uri = Uri.tryParse(normalized);
+                        if (uri == null || !uri.hasAuthority) return '올바른 URL 형식으로 입력해주세요.';
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'URL을 입력해주세요.';
-                  final url = v.trim();
-                  final normalized = url.startsWith('http') ? url : 'https://$url';
-                  final uri = Uri.tryParse(normalized);
-                  if (uri == null || !uri.hasAuthority) return '올바른 URL 형식으로 입력해주세요.';
-                  return null;
-                },
               ),
-              const SizedBox(height: 32),
-              OutputActionButtons(
-                onQrPressed: _onQr,
-                onNfcPressed: _onNfc,
-              ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: OutputActionButtons(
+              onQrPressed: _onQr,
+              onNfcPressed: _onNfc,
+            ),
+          ),
+        ],
       ),
     );
   }

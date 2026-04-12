@@ -56,68 +56,76 @@ class _WifiTagScreenState extends State<WifiTagScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('WiFi 태그')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('네트워크 이름 (SSID) *',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _ssidController,
-                decoration: InputDecoration(
-                  hintText: 'MyWiFi',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'SSID를 입력해주세요.' : null,
-              ),
-              const SizedBox(height: 16),
-              const Text('보안 방식',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _securityType,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                items: _securityOptions
-                    .map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2)))
-                    .toList(),
-                onChanged: (v) => setState(() => _securityType = v!),
-              ),
-              if (_securityType != 'nopass') ...[
-                const SizedBox(height: 16),
-                const Text('비밀번호',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    hintText: '비밀번호',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('네트워크 이름 (SSID) *',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _ssidController,
+                      decoration: InputDecoration(
+                        hintText: 'MyWiFi',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'SSID를 입력해주세요.' : null,
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    const Text('보안 방식',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: _securityType,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      items: _securityOptions
+                          .map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2)))
+                          .toList(),
+                      onChanged: (v) => setState(() => _securityType = v!),
+                    ),
+                    if (_securityType != 'nopass') ...[
+                      const SizedBox(height: 16),
+                      const Text('비밀번호',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          hintText: '비밀번호',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          suffixIcon: IconButton(
+                            icon: Icon(_obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                            onPressed: () =>
+                                setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-              const SizedBox(height: 32),
-              OutputActionButtons(
-                onQrPressed: _onQr,
-                onNfcPressed: _onNfc,
               ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: OutputActionButtons(
+              onQrPressed: _onQr,
+              onNfcPressed: _onNfc,
+            ),
+          ),
+        ],
       ),
     );
   }
