@@ -43,13 +43,50 @@
 - **순수 JSON**: 렌더링에 필요한 모든 정보를 JSON으로 표현
 - **qr_flutter 호환**: `QrEyeShape`, `QrDataModuleShape` 등 기존 필드 재사용
 - **그라디언트 확장**: `QrPainter` + `CustomPainter`로 그라디언트 직접 렌더링
-- **하위 호환**: 미지원 필드는 무시(앱 구버전도 동작)
+- **하위 호환**: 앱이 지원하는 엔진 버전 이하의 템플릿만 표시 (상위 버전 템플릿 자동 숨김)
+
+### 2.1.1 버전 관리 전략
+
+두 가지 독립적인 버전을 관리합니다:
+
+| 버전 | 위치 | 의미 |
+|------|------|------|
+| `schemaVersion` | JSON 루트 | 전체 JSON 구조의 breaking change 여부 |
+| `minEngineVersion` | 템플릿 개별 | 이 템플릿을 렌더링하려면 필요한 최소 엔진 버전 |
+
+**앱 코드 상수**:
+```dart
+// lib/services/template_service.dart
+/// 현재 앱이 지원하는 템플릿 엔진 버전.
+/// 새 스타일 기능 추가 시 앱 업데이트와 함께 값을 올린다.
+const int kTemplateEngineVersion = 1;
+```
+
+**필터링 규칙**: `template.minEngineVersion <= kTemplateEngineVersion` 인 것만 표시
+
+**동작 예시**:
+```
+앱 v1.0  →  kTemplateEngineVersion = 1
+  Instagram  (minEngineVersion: 1) → ✅ 표시
+  Facebook   (minEngineVersion: 1) → ✅ 표시
+  AnimatedQR (minEngineVersion: 2) → ❌ 숨김 (미래 기능)
+
+앱 v2.0  →  kTemplateEngineVersion = 2
+  AnimatedQR (minEngineVersion: 2) → ✅ 이제 표시됨
+```
+
+**엔진 버전 히스토리** (계획):
+| 버전 | 추가 기능 |
+|------|---------|
+| 1 | 단색/그라디언트 전경, 도트/눈 모양, URL 중앙 아이콘 |
+| 2 | (예정) 프레임/테두리, 배경 이미지, 패턴 |
+| 3 | (예정) 애니메이션 도트 |
 
 ### 2.2 JSON 스키마
 
 ```json
 {
-  "version": 1,
+  "schemaVersion": 1,
   "updatedAt": "2026-04-12T00:00:00Z",
   "categories": [
     {
@@ -61,7 +98,7 @@
   "templates": [
     {
       "id": "instagram",
-      "version": 1,
+      "minEngineVersion": 1,
       "name": "Instagram",
       "categoryId": "social",
       "order": 1,
@@ -97,6 +134,7 @@
     },
     {
       "id": "facebook",
+      "minEngineVersion": 1,
       "name": "Facebook",
       "categoryId": "social",
       "order": 2,
@@ -121,6 +159,7 @@
     },
     {
       "id": "minimal_black",
+      "minEngineVersion": 1,
       "name": "미니멀 블랙",
       "categoryId": "minimal",
       "order": 1,
@@ -140,7 +179,15 @@
 }
 ```
 
-### 2.3 스타일 필드 정의
+### 2.3 템플릿 루트 필드
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `schemaVersion` | int | JSON 전체 구조 버전 (breaking change 시 증가) |
+| `templates[].minEngineVersion` | int | 이 템플릿을 렌더링하기 위해 필요한 최소 앱 엔진 버전 |
+| `templates[].isPremium` | bool | 유료 여부 (v1.0에서는 무시, 항상 무료로 취급) |
+
+### 2.4 스타일 필드 정의
 
 | 필드 | 타입 | 설명 |
 |------|------|------|
@@ -238,12 +285,14 @@ class GradientQrPainter extends CustomPainter {
 
 ## 4. 기능 요구사항
 
-### FR-1: 템플릿 원격 로딩
+### FR-1: 템플릿 원격 로딩 + 버전 필터링
 - [ ] `TemplateService.fetchTemplates()`: CDN URL에서 JSON 로드 (TTL 1시간)
 - [ ] TTL 내: Hive 캐시 반환
 - [ ] TTL 만료: HTTP GET → 파싱 → 캐시 갱신
 - [ ] 오프라인: 캐시 반환 (캐시 없으면 빌트인 기본 템플릿 사용)
-- [ ] `templates.json` 구조 버전 필드(`"version": 1`) 관리
+- [ ] **버전 필터링**: `kTemplateEngineVersion` 상수 정의, 파싱 후 `minEngineVersion <= kTemplateEngineVersion` 조건으로 필터
+- [ ] `schemaVersion` 불일치(미래 breaking change) 시 빌트인 기본 템플릿으로 폴백
+- [ ] `kTemplateEngineVersion = 1` (v1.0 초기값)
 
 ### FR-2: 템플릿 데이터 모델
 - [ ] `QrTemplate` Dart 클래스 (fromJson/toJson)
