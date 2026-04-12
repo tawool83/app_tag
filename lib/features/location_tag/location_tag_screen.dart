@@ -18,7 +18,8 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
   final _labelController = TextEditingController();
 
   LatLng? _selected;
-  String? _address;
+  String? _address;      // 한국식 포맷 주소
+  String? _buildingName; // 건물명 (QR 기본 문구)
   bool _isGeocoding = false;
 
   static const _initialCenter = LatLng(37.5665, 126.9780); // 서울 시청
@@ -35,6 +36,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
     setState(() {
       _selected = latLng;
       _address = null;
+      _buildingName = null;
       _isGeocoding = true;
     });
     await _reverseGeocode(latLng);
@@ -56,9 +58,12 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
       if (!mounted) return;
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final displayName = data['display_name'] as String?;
+        final addr = data['address'] as Map<String, dynamic>? ?? {};
+        final formatted = _formatKoreanAddress(addr);
+        final building = _extractBuildingName(addr);
         setState(() {
-          _address = displayName;
+          _address = formatted.isNotEmpty ? formatted : null;
+          _buildingName = building;
           _isGeocoding = false;
         });
       } else {
@@ -69,24 +74,66 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
     }
   }
 
+  /// Nominatim address 객체 → 한국식 주소 (큰 단위 → 작은 단위)
+  String _formatKoreanAddress(Map<String, dynamic> addr) {
+    final parts = <String>[];
+
+    final state = addr['state'] as String?;
+    final city = addr['city'] as String? ??
+        addr['town'] as String? ??
+        addr['county'] as String?;
+    final cityDistrict = addr['city_district'] as String?;
+    final suburb = addr['suburb'] as String? ??
+        addr['quarter'] as String? ??
+        addr['neighbourhood'] as String?;
+    final road = addr['road'] as String?;
+    final houseNumber = addr['house_number'] as String?;
+
+    if (state != null) parts.add(state);
+    // city가 state와 동일하면 생략 (서울특별시 등)
+    if (city != null && city != state) parts.add(city);
+    if (cityDistrict != null) parts.add(cityDistrict);
+    if (suburb != null) parts.add(suburb);
+    if (road != null) {
+      parts.add(houseNumber != null ? '$road $houseNumber' : road);
+    }
+
+    return parts.join(' ');
+  }
+
+  /// 건물명/장소명 추출 (우선순위 순)
+  String? _extractBuildingName(Map<String, dynamic> addr) {
+    return addr['amenity'] as String? ??
+        addr['building'] as String? ??
+        addr['shop'] as String? ??
+        addr['office'] as String? ??
+        addr['tourism'] as String? ??
+        addr['leisure'] as String?;
+  }
+
   void _zoom(double delta) {
     final current = _mapController.camera.zoom;
     _mapController.move(_mapController.camera.center, current + delta);
   }
 
-  Map<String, dynamic> _buildArgs() => {
-        'appName': '위치',
-        'deepLink': TagPayloadEncoder.location(
-          lat: _selected!.latitude,
-          lng: _selected!.longitude,
-          label: _labelController.text.trim().isNotEmpty
-              ? _labelController.text.trim()
-              : (_address ?? ''),
-        ),
-        'platform': 'universal',
-        'appIconBytes': null,
-        'tagType': 'location',
-      };
+  Map<String, dynamic> _buildArgs() {
+    // QR 기본 문구: 건물명 → 장소명 입력값 → '위치' 순
+    final label = _labelController.text.trim().isNotEmpty
+        ? _labelController.text.trim()
+        : (_buildingName ?? '위치');
+
+    return {
+      'appName': label,
+      'deepLink': TagPayloadEncoder.location(
+        lat: _selected!.latitude,
+        lng: _selected!.longitude,
+        label: label,
+      ),
+      'platform': 'universal',
+      'appIconBytes': null,
+      'tagType': 'location',
+    };
+  }
 
   void _onQr() {
     if (_selected == null) {
@@ -155,15 +202,9 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                   bottom: 12,
                   child: Column(
                     children: [
-                      _ZoomButton(
-                        icon: Icons.add,
-                        onTap: () => _zoom(1),
-                      ),
+                      _ZoomButton(icon: Icons.add, onTap: () => _zoom(1)),
                       const SizedBox(height: 6),
-                      _ZoomButton(
-                        icon: Icons.remove,
-                        onTap: () => _zoom(-1),
-                      ),
+                      _ZoomButton(icon: Icons.remove, onTap: () => _zoom(-1)),
                     ],
                   ),
                 ),
@@ -222,20 +263,51 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                                       style: TextStyle(fontSize: 13)),
                                 ],
                               )
-                            : Row(
+                            : Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.place,
-                                      size: 16,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      _address ?? '주소를 가져올 수 없습니다.',
-                                      style: const TextStyle(fontSize: 13),
+                                  if (_buildingName != null) ...[
+                                    Row(
+                                      children: [
+                                        Icon(Icons.business,
+                                            size: 14,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            _buildingName!,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                    const SizedBox(height: 4),
+                                  ],
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(Icons.place,
+                                          size: 14,
+                                          color: Colors.grey.shade600),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          _address ?? '주소를 가져올 수 없습니다.',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey.shade700),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -248,7 +320,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                   TextField(
                     controller: _labelController,
                     decoration: InputDecoration(
-                      hintText: '예: 서울시청',
+                      hintText: '비우면 건물명이 자동으로 사용됩니다.',
                       isDense: true,
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10)),
