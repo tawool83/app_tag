@@ -46,6 +46,14 @@
       "archivedAt": "2026-04-11T00:00:00.000Z",
       "archivedTo": "docs/archive/2026-04/home-tile-menu/"
     },
+    "location-map-picker": {
+      "phase": "archived",
+      "matchRate": 97,
+      "iterationCount": 0,
+      "startedAt": "2026-04-12T00:00:00.000Z",
+      "archivedAt": "2026-04-12T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/location-map-picker/"
+    },
     "imagegallerysaver": {
       "phase": "do",
       "phaseNumber": 3,

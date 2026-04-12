@@ -8,3 +8,4 @@
 | contact-picker | 2026-04-12 | 98% | [contact-picker/](contact-picker/) |
 | home-tile-visibility | 2026-04-12 | 99% | [home-tile-visibility/](home-tile-visibility/) |
 | direct-output | 2026-04-12 | 100% | [direct-output/](direct-output/) |
+| location-map-picker | 2026-04-12 | 97% | [location-map-picker/](location-map-picker/) |
