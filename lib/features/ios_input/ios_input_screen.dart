@@ -27,6 +27,7 @@ class _IosInputScreenState extends State<IosInputScreen> {
       'deepLink': DeepLinkConstants.iosShortcutLink(name),
       'platform': 'ios',
       'appIconBytes': null,
+      'tagType': 'app',
     };
   }
 

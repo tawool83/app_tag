@@ -107,12 +107,6 @@ ImageProvider? _centerImageProvider(QrResultState state) {
   return null;
 }
 
-// 현재 상태에서 중앙 아이콘 옵션 계산
-_QrCenterOption _currentCenterOption(QrResultState state) {
-  if (!state.embedIcon) return _QrCenterOption.none;
-  if (state.centerEmoji != null) return _QrCenterOption.emoji;
-  return _QrCenterOption.defaultIcon;
-}
 
 class QrResultScreen extends ConsumerStatefulWidget {
   const QrResultScreen({super.key});
@@ -125,6 +119,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
   final _repaintKey = GlobalKey();
   bool _historySaved = false;
   bool _customizeExpanded = false;
+  bool _emojiModeActive = false; // 이모지 모드 UI 상태 (state와 독립)
   late TextEditingController _labelController;
   late TextEditingController _printTitleController;
 
@@ -169,7 +164,10 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
       // 저장된 이모지 복원
       if (savedEmoji != null && mounted) {
         final emojiBytes = await _renderEmoji(savedEmoji);
-        if (mounted) notifier.setCenterEmoji(savedEmoji, emojiBytes);
+        if (mounted) {
+          notifier.setCenterEmoji(savedEmoji, emojiBytes);
+          setState(() => _emojiModeActive = true);
+        }
       }
 
       _captureAndSaveHistory(args);
@@ -349,7 +347,12 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
               printSizeCm: state.printSizeCm,
               eyeShape: state.eyeShape,
               dataModuleShape: state.dataModuleShape,
-              centerOption: _currentCenterOption(state),
+              // _emojiModeActive: 이모지 탭 후 아직 이모지 미선택 상태도 emoji 모드 유지
+              centerOption: !state.embedIcon
+                  ? _QrCenterOption.none
+                  : _emojiModeActive
+                      ? _QrCenterOption.emoji
+                      : _QrCenterOption.defaultIcon,
               centerEmoji: state.centerEmoji,
               hasDefaultIcon: state.defaultIconBytes != null,
               onToggle: () =>
@@ -382,6 +385,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
               },
               onCenterOptionChanged: (option) {
                 final notifier = ref.read(qrResultProvider.notifier);
+                setState(() => _emojiModeActive = option == _QrCenterOption.emoji);
                 switch (option) {
                   case _QrCenterOption.none:
                     notifier.setEmbedIcon(false);
@@ -396,6 +400,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                   case _QrCenterOption.emoji:
                     notifier.setEmbedIcon(true);
                     SettingsService.saveQrEmbedIcon(true);
+                    // centerEmoji는 그리드에서 선택 시 설정됨
                     break;
                 }
                 _recapture();
