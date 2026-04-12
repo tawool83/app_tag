@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-04-12T00:00:00Z",
+  "categories": [
+    { "id": "minimal",   "name": "미니멀",    "order": 1 },
+    { "id": "social",    "name": "소셜",      "order": 2 },
+    { "id": "business",  "name": "비즈니스",  "order": 3 }
+  ],
+  "templates": [
+    {
+      "id": "minimal_black",
+      "minEngineVersion": 1,
+      "name": "미니멀 블랙",
+      "categoryId": "minimal",
+      "order": 1,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "circle",
+        "eyeShape": "square",
+        "backgroundColor": "#FFFFFF",
+        "foreground": { "type": "solid", "solidColor": "#000000" },
+        "eyeColor": { "type": "solid", "solidColor": "#000000" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "minimal_navy",
+      "minEngineVersion": 1,
+      "name": "네이비",
+      "categoryId": "minimal",
+      "order": 2,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "circle",
+        "eyeShape": "circle",
+        "backgroundColor": "#FFFFFF",
+        "foreground": { "type": "solid", "solidColor": "#003366" },
+        "eyeColor": { "type": "solid", "solidColor": "#003366" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "minimal_indigo",
+      "minEngineVersion": 1,
+      "name": "인디고",
+      "categoryId": "minimal",
+      "order": 3,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "square",
+        "eyeShape": "square",
+        "backgroundColor": "#FFFFFF",
+        "foreground": { "type": "solid", "solidColor": "#1B0060" },
+        "eyeColor": { "type": "solid", "solidColor": "#1B0060" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "social_instagram",
+      "minEngineVersion": 1,
+      "name": "Instagram",
+      "categoryId": "social",
+      "order": 1,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "circle",
+        "eyeShape": "circle",
+        "backgroundColor": "#FFFFFF",
+        "foreground": {
+          "type": "gradient",
+          "gradient": {
+            "type": "linear",
+            "colors": ["#F58529", "#DD2A7B", "#8134AF", "#515BD4"],
+            "stops": [0.0, 0.33, 0.66, 1.0],
+            "angleDegrees": 45
+          }
+        },
+        "eyeColor": { "type": "solid", "solidColor": "#8134AF" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "social_facebook",
+      "minEngineVersion": 1,
+      "name": "Facebook",
+      "categoryId": "social",
+      "order": 2,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "square",
+        "eyeShape": "square",
+        "backgroundColor": "#FFFFFF",
+        "foreground": { "type": "solid", "solidColor": "#1877F2" },
+        "eyeColor": { "type": "solid", "solidColor": "#1877F2" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "social_x",
+      "minEngineVersion": 1,
+      "name": "X (Twitter)",
+      "categoryId": "social",
+      "order": 3,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "square",
+        "eyeShape": "square",
+        "backgroundColor": "#FFFFFF",
+        "foreground": { "type": "solid", "solidColor": "#000000" },
+        "eyeColor": { "type": "solid", "solidColor": "#000000" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "social_youtube",
+      "minEngineVersion": 1,
+      "name": "YouTube",
+      "categoryId": "social",
+      "order": 4,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "circle",
+        "eyeShape": "square",
+        "backgroundColor": "#FFFFFF",
+        "foreground": { "type": "solid", "solidColor": "#FF0000" },
+        "eyeColor": { "type": "solid", "solidColor": "#CC0000" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "biz_clean",
+      "minEngineVersion": 1,
+      "name": "클린",
+      "categoryId": "business",
+      "order": 1,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "square",
+        "eyeShape": "square",
+        "backgroundColor": "#FFFFFF",
+        "foreground": { "type": "solid", "solidColor": "#333333" },
+        "eyeColor": { "type": "solid", "solidColor": "#111111" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "biz_gradient",
+      "minEngineVersion": 1,
+      "name": "그라디언트",
+      "categoryId": "business",
+      "order": 2,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "circle",
+        "eyeShape": "square",
+        "backgroundColor": "#FFFFFF",
+        "foreground": {
+          "type": "gradient",
+          "gradient": {
+            "type": "linear",
+            "colors": ["#003366", "#006666"],
+            "stops": [0.0, 1.0],
+            "angleDegrees": 135
+          }
+        },
+        "eyeColor": { "type": "solid", "solidColor": "#003366" },
+        "centerIcon": { "type": "none" }
+      }
+    },
+    {
+      "id": "biz_elegant",
+      "minEngineVersion": 1,
+      "name": "엘레강트",
+      "categoryId": "business",
+      "order": 3,
+      "thumbnailUrl": null,
+      "isPremium": false,
+      "style": {
+        "dataModuleShape": "circle",
+        "eyeShape": "circle",
+        "backgroundColor": "#FFFFFF",
+        "foreground": { "type": "solid", "solidColor": "#4B0082" },
+        "eyeColor": { "type": "solid", "solidColor": "#4B0082" },
+        "centerIcon": { "type": "none" }
+      }
+    }
+  ]
+}

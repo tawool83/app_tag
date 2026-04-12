@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../models/qr_template.dart';
 import '../../services/qr_service.dart';
 import '../../services/history_service.dart';
 
@@ -38,9 +39,13 @@ class QrResultState {
   final QrEyeShape eyeShape;
   final QrDataModuleShape dataModuleShape;
   final bool embedIcon;
-  final Uint8List? defaultIconBytes;  // 태그 타입 기본 아이콘 (앱아이콘 또는 Material 아이콘 렌더링)
-  final String? centerEmoji;          // 선택된 이모지 문자
-  final Uint8List? emojiIconBytes;    // 렌더링된 이모지 PNG bytes
+  final Uint8List? defaultIconBytes;       // 태그 타입 기본 아이콘
+  final String? centerEmoji;               // 선택된 이모지 문자
+  final Uint8List? emojiIconBytes;         // 렌더링된 이모지 PNG bytes
+  // 템플릿 관련
+  final String? activeTemplateId;          // 선택된 템플릿 ID (UI 하이라이트용)
+  final QrGradient? templateGradient;      // non-null이면 GradientQrPainter 사용
+  final Uint8List? templateCenterIconBytes; // 템플릿 URL 아이콘 로드 결과
 
   const QrResultState({
     this.capturedImage,
@@ -54,10 +59,13 @@ class QrResultState {
     this.printTitle,
     this.eyeShape = QrEyeShape.square,
     this.dataModuleShape = QrDataModuleShape.square,
-    this.embedIcon = false,  // 기본값: 중앙 아이콘 OFF (SharedPreferences 로드 전 깜빡임 방지)
+    this.embedIcon = false,
     this.defaultIconBytes,
     this.centerEmoji,
     this.emojiIconBytes,
+    this.activeTemplateId,
+    this.templateGradient,
+    this.templateCenterIconBytes,
   });
 
   QrResultState copyWith({
@@ -76,6 +84,9 @@ class QrResultState {
     Object? defaultIconBytes = _sentinel,
     Object? centerEmoji = _sentinel,
     Object? emojiIconBytes = _sentinel,
+    Object? activeTemplateId = _sentinel,
+    Object? templateGradient = _sentinel,
+    Object? templateCenterIconBytes = _sentinel,
   }) =>
       QrResultState(
         capturedImage: capturedImage ?? this.capturedImage,
@@ -103,6 +114,15 @@ class QrResultState {
         emojiIconBytes: emojiIconBytes == _sentinel
             ? this.emojiIconBytes
             : emojiIconBytes as Uint8List?,
+        activeTemplateId: activeTemplateId == _sentinel
+            ? this.activeTemplateId
+            : activeTemplateId as String?,
+        templateGradient: templateGradient == _sentinel
+            ? this.templateGradient
+            : templateGradient as QrGradient?,
+        templateCenterIconBytes: templateCenterIconBytes == _sentinel
+            ? this.templateCenterIconBytes
+            : templateCenterIconBytes as Uint8List?,
       );
 }
 
@@ -156,6 +176,31 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
 
   void clearEmoji() {
     state = state.copyWith(centerEmoji: null, emojiIconBytes: null);
+  }
+
+  /// 템플릿 적용: 스타일 필드 일괄 갱신
+  void applyTemplate(QrTemplate template, {Uint8List? centerIconBytes}) {
+    final style = template.style;
+    state = state.copyWith(
+      activeTemplateId: template.id,
+      eyeShape: style.eyeShape,
+      dataModuleShape: style.dataModuleShape,
+      qrColor: style.foreground.solidColor ?? const Color(0xFF000000),
+      templateGradient: style.foreground.gradient,
+      embedIcon: style.centerIcon.type != 'none',
+      templateCenterIconBytes: centerIconBytes,
+      centerEmoji: null,
+      emojiIconBytes: null,
+    );
+  }
+
+  /// 템플릿 해제 (커스텀 설정 모드로 복귀)
+  void clearTemplate() {
+    state = state.copyWith(
+      activeTemplateId: null,
+      templateGradient: null,
+      templateCenterIconBytes: null,
+    );
   }
 
   Future<void> saveToGallery(String appName) async {

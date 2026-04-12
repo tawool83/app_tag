@@ -6,7 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/tag_history.dart';
+import '../../models/qr_template.dart';
 import '../../services/settings_service.dart';
+import '../../services/template_service.dart';
+import 'gradient_qr_painter.dart';
 import 'qr_result_provider.dart';
 
 // 중앙 아이콘 옵션
@@ -96,9 +99,13 @@ Future<Uint8List> _renderEmoji(String emoji) async {
 }
 
 // 현재 상태에서 중앙 이미지 제공자 계산
+// 우선순위: templateCenterIcon > emojiIcon > defaultIcon > 없음
 ImageProvider? _centerImageProvider(QrResultState state) {
   if (!state.embedIcon) return null;
-  if (state.centerEmoji != null && state.emojiIconBytes != null) {
+  if (state.templateCenterIconBytes != null) {
+    return MemoryImage(state.templateCenterIconBytes!);
+  }
+  if (state.emojiIconBytes != null) {
     return MemoryImage(state.emojiIconBytes!);
   }
   if (state.defaultIconBytes != null) {
@@ -122,6 +129,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
   bool _emojiModeActive = false; // 이모지 모드 UI 상태 (state와 독립)
   late TextEditingController _labelController;
   late TextEditingController _printTitleController;
+  QrTemplateManifest _templateManifest = QrTemplateManifest.empty;
 
   @override
   void initState() {
@@ -171,6 +179,11 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
       }
 
       _captureAndSaveHistory(args);
+
+      // 템플릿 목록 로드 (백그라운드)
+      TemplateService.getTemplates().then((manifest) {
+        if (mounted) setState(() => _templateManifest = manifest);
+      });
     });
   }
 
@@ -281,30 +294,43 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                     ],
                     Builder(builder: (context) {
                       final centerImage = _centerImageProvider(state);
+                      final hasGradient = state.templateGradient != null;
+                      final ecLevel = centerImage != null
+                          ? QrErrorCorrectLevel.H
+                          : QrErrorCorrectLevel.M;
                       return SizedBox(
                         width: 240,
                         height: 240,
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // QR 코드 (도트만 렌더링 — 중앙 아이콘 없음)
-                            QrImageView(
-                              data: deepLink,
-                              version: QrVersions.auto,
-                              size: 240,
-                              // 아이콘이 있으면 H(30%) 오류정정으로 중앙 도트 손실 보완
-                              errorCorrectionLevel: centerImage != null
-                                  ? QrErrorCorrectLevel.H
-                                  : QrErrorCorrectLevel.M,
-                              eyeStyle: QrEyeStyle(
-                                eyeShape: state.eyeShape,
-                                color: state.qrColor,
+                            // QR 코드: 그라디언트 or 단색
+                            if (hasGradient)
+                              CustomPaint(
+                                size: const Size(240, 240),
+                                painter: GradientQrPainter(
+                                  data: deepLink,
+                                  eyeShape: state.eyeShape,
+                                  dataModuleShape: state.dataModuleShape,
+                                  gradient: state.templateGradient!,
+                                  errorCorrectionLevel: ecLevel,
+                                ),
+                              )
+                            else
+                              QrImageView(
+                                data: deepLink,
+                                version: QrVersions.auto,
+                                size: 240,
+                                errorCorrectionLevel: ecLevel,
+                                eyeStyle: QrEyeStyle(
+                                  eyeShape: state.eyeShape,
+                                  color: state.qrColor,
+                                ),
+                                dataModuleStyle: QrDataModuleStyle(
+                                  dataModuleShape: state.dataModuleShape,
+                                  color: state.qrColor,
+                                ),
                               ),
-                              dataModuleStyle: QrDataModuleStyle(
-                                dataModuleShape: state.dataModuleShape,
-                                color: state.qrColor,
-                              ),
-                            ),
                             // 중앙 clear zone: 흰 원으로 QR 도트 가림
                             if (centerImage != null)
                               Container(
@@ -360,6 +386,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
               printSizeCm: state.printSizeCm,
               eyeShape: state.eyeShape,
               dataModuleShape: state.dataModuleShape,
+              templateManifest: _templateManifest,
+              activeTemplateId: state.activeTemplateId,
               // _emojiModeActive: 이모지 탭 후 아직 이모지 미선택 상태도 emoji 모드 유지
               centerOption: !state.embedIcon
                   ? _QrCenterOption.none
@@ -423,6 +451,25 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen> {
                 if (!mounted) return;
                 ref.read(qrResultProvider.notifier).setCenterEmoji(emoji, bytes);
                 SettingsService.saveQrCenterEmoji(emoji);
+                _recapture();
+              },
+              onTemplateSelected: (template) async {
+                Uint8List? iconBytes;
+                if (template.style.centerIcon.type == 'url' &&
+                    template.style.centerIcon.url != null) {
+                  iconBytes = await TemplateService.loadImageBytes(
+                      template.style.centerIcon.url!);
+                }
+                if (!mounted) return;
+                ref
+                    .read(qrResultProvider.notifier)
+                    .applyTemplate(template, centerIconBytes: iconBytes);
+                SettingsService.saveActiveTemplateId(template.id);
+                _recapture();
+              },
+              onTemplateClear: () {
+                ref.read(qrResultProvider.notifier).clearTemplate();
+                SettingsService.saveActiveTemplateId(null);
                 _recapture();
               },
             ),
@@ -519,6 +566,9 @@ class _CustomizePanel extends StatelessWidget {
   final _QrCenterOption centerOption;
   final String? centerEmoji;
   final bool hasDefaultIcon;
+  // 템플릿
+  final QrTemplateManifest templateManifest;
+  final String? activeTemplateId;
   final VoidCallback onToggle;
   final ValueChanged<String> onLabelChanged;
   final ValueChanged<String> onPrintTitleChanged;
@@ -528,6 +578,8 @@ class _CustomizePanel extends StatelessWidget {
   final ValueChanged<QrDataModuleShape> onDataModuleShapeChanged;
   final ValueChanged<_QrCenterOption> onCenterOptionChanged;
   final ValueChanged<String> onEmojiSelected;
+  final ValueChanged<QrTemplate> onTemplateSelected;
+  final VoidCallback onTemplateClear;
 
   const _CustomizePanel({
     required this.expanded,
@@ -540,6 +592,8 @@ class _CustomizePanel extends StatelessWidget {
     required this.centerOption,
     required this.centerEmoji,
     required this.hasDefaultIcon,
+    required this.templateManifest,
+    required this.activeTemplateId,
     required this.onToggle,
     required this.onLabelChanged,
     required this.onPrintTitleChanged,
@@ -549,6 +603,8 @@ class _CustomizePanel extends StatelessWidget {
     required this.onDataModuleShapeChanged,
     required this.onCenterOptionChanged,
     required this.onEmojiSelected,
+    required this.onTemplateSelected,
+    required this.onTemplateClear,
   });
 
   @override
@@ -593,6 +649,18 @@ class _CustomizePanel extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 템플릿 갤러리
+                  const Text('템플릿',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  _TemplateGallery(
+                    manifest: templateManifest,
+                    activeTemplateId: activeTemplateId,
+                    onTemplateSelected: onTemplateSelected,
+                    onTemplateClear: onTemplateClear,
+                  ),
+                  const SizedBox(height: 16),
+
                   // 인쇄 상단 문구
                   const Text('인쇄 상단 문구',
                       style:
@@ -753,6 +821,274 @@ class _CustomizePanel extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+// ── 템플릿 갤러리 ─────────────────────────────────────────────────────────────
+
+class _TemplateGallery extends StatefulWidget {
+  final QrTemplateManifest manifest;
+  final String? activeTemplateId;
+  final ValueChanged<QrTemplate> onTemplateSelected;
+  final VoidCallback onTemplateClear;
+
+  const _TemplateGallery({
+    required this.manifest,
+    required this.activeTemplateId,
+    required this.onTemplateSelected,
+    required this.onTemplateClear,
+  });
+
+  @override
+  State<_TemplateGallery> createState() => _TemplateGalleryState();
+}
+
+class _TemplateGalleryState extends State<_TemplateGallery> {
+  String? _selectedCategoryId; // null = 전체
+
+  List<QrTemplate> get _filtered {
+    final templates = widget.manifest.templates;
+    if (_selectedCategoryId == null) return templates;
+    return templates
+        .where((t) => t.categoryId == _selectedCategoryId)
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final categories = widget.manifest.categories;
+    final templates = _filtered;
+
+    if (widget.manifest.templates.isEmpty) {
+      return const SizedBox(
+        height: 48,
+        child: Center(
+          child: Text('템플릿 로딩 중...', style: TextStyle(color: Colors.grey, fontSize: 13)),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 카테고리 탭 칩
+        if (categories.isNotEmpty) ...[
+          SizedBox(
+            height: 32,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _CategoryChip(
+                  label: '전체',
+                  isSelected: _selectedCategoryId == null,
+                  onTap: () => setState(() => _selectedCategoryId = null),
+                ),
+                ...categories.map((cat) => _CategoryChip(
+                      label: cat.name,
+                      isSelected: _selectedCategoryId == cat.id,
+                      onTap: () => setState(() => _selectedCategoryId = cat.id),
+                    )),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        // 템플릿 타일 (가로 스크롤)
+        SizedBox(
+          height: 88,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              // 없음(커스텀) 타일
+              _TemplateTile(
+                label: '없음',
+                isSelected: widget.activeTemplateId == null,
+                onTap: widget.onTemplateClear,
+                child: const Icon(Icons.tune, size: 28, color: Colors.grey),
+              ),
+              const SizedBox(width: 8),
+              ...templates.map((t) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _TemplateTile(
+                      label: t.name,
+                      isSelected: widget.activeTemplateId == t.id,
+                      onTap: () => widget.onTemplateSelected(t),
+                      child: _TemplatePreviewTile(template: t),
+                    ),
+                  )),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.grey.shade300,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: isSelected ? Colors.white : Colors.black87,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TemplateTile extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _TemplateTile({
+    required this.label,
+    required this.isSelected,
+    required this.child,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey.shade300,
+                width: isSelected ? 2.5 : 1,
+              ),
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+            ),
+            child: Stack(
+              children: [
+                Center(child: child),
+                if (isSelected)
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.check, size: 10, color: Colors.white),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            width: 64,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 10, color: Colors.black54),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 템플릿 미리보기: thumbnailUrl이 있으면 네트워크 이미지, 없으면 그라디언트/색상 표시
+class _TemplatePreviewTile extends StatelessWidget {
+  final QrTemplate template;
+
+  const _TemplatePreviewTile({required this.template});
+
+  @override
+  Widget build(BuildContext context) {
+    if (template.thumbnailUrl != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          template.thumbnailUrl!,
+          width: 60,
+          height: 60,
+          fit: BoxFit.cover,
+          errorBuilder: (ctx, err, st) => _buildColorPreview(),
+        ),
+      );
+    }
+    return _buildColorPreview();
+  }
+
+  Widget _buildColorPreview() {
+    final style = template.style;
+    final gradient = style.foreground.gradient;
+    if (gradient != null && gradient.colors.length >= 2) {
+      return Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradient.colors,
+            stops: gradient.stops,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      );
+    }
+    final color = style.foreground.solidColor ?? Colors.black;
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
       ),
     );
   }

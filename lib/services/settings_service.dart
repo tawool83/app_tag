@@ -7,6 +7,7 @@ const _kQrEyeShape = 'qr_eye_shape';
 const _kQrDataModuleShape = 'qr_data_module_shape';
 const _kQrEmbedIcon = 'qr_embed_icon';
 const _kQrCenterEmoji = 'qr_center_emoji';
+const _kActiveTemplateId = 'active_template_id';
 
 class SettingsService {
   static Future<double> getLastPrintSizeCm() async {
@@ -72,6 +73,20 @@ class SettingsService {
       await prefs.remove(_kQrCenterEmoji);
     } else {
       await prefs.setString(_kQrCenterEmoji, emoji);
+    }
+  }
+
+  static Future<String?> getActiveTemplateId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kActiveTemplateId);
+  }
+
+  static Future<void> saveActiveTemplateId(String? id) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (id == null) {
+      await prefs.remove(_kActiveTemplateId);
+    } else {
+      await prefs.setString(_kActiveTemplateId, id);
     }
   }
 }

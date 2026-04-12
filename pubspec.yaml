@@ -62,10 +62,11 @@ dependencies:
   shared_preferences: ^2.3.0
   flutter_contacts: ^1.1.9+1
 
-  # 지도
+  # 지도 / 위치
   flutter_map: ^7.0.0
   latlong2: ^0.9.0
   http: ^1.2.0
+  geolocator: ^12.0.0
 
 dev_dependencies:
   flutter_test:
@@ -84,6 +85,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/default_templates.json
 
   fonts:
     - family: BitcountGridDouble
