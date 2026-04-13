@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import '../../models/qr_template.dart';
 import '../../services/qr_service.dart';
 import '../../services/history_service.dart';
@@ -11,6 +10,26 @@ final historyServiceProvider =
     Provider<HistoryService>((ref) => HistoryService());
 
 enum QrActionStatus { idle, loading, success, error }
+
+/// 꾸미기 탭 그라디언트 프리셋 팔레트 (흰 배경 기준 스캔 안전)
+const kQrPresetGradients = [
+  QrGradient(type: 'linear', angleDegrees: 45,
+      colors: [Color(0xFF0066CC), Color(0xFF6A0DAD)]),  // 블루-퍼플
+  QrGradient(type: 'linear', angleDegrees: 45,
+      colors: [Color(0xFFCC3300), Color(0xFFCC8800)]),  // 선셋
+  QrGradient(type: 'linear', angleDegrees: 135,
+      colors: [Color(0xFF006644), Color(0xFF003388)]),  // 에메랄드-네이비
+  QrGradient(type: 'linear', angleDegrees: 45,
+      colors: [Color(0xFFCC0055), Color(0xFF660099)]),  // 로즈-퍼플
+  QrGradient(type: 'linear', angleDegrees: 135,
+      colors: [Color(0xFF0077B6), Color(0xFF023E8A)]),  // 오션
+  QrGradient(type: 'linear', angleDegrees: 45,
+      colors: [Color(0xFF1B5E20), Color(0xFF1A237E)]),  // 포레스트
+  QrGradient(type: 'linear', angleDegrees: 135,
+      colors: [Color(0xFF1A237E), Color(0xFF006064)]),  // 미드나잇
+  QrGradient(type: 'radial',
+      colors: [Color(0xFF880000), Color(0xFF4A0080)]),  // 라디얼 다크
+];
 
 /// WCAG 대비비 ≥ 4.5:1 (흰 배경 기준) 안전 색상 팔레트
 const qrSafeColors = [
@@ -26,25 +45,30 @@ const qrSafeColors = [
   Color(0xFF1B0060), // 인디고
 ];
 
+/// QR finder pattern(눈) 모양 프리셋
+enum QrEyeStyle { square, rounded, circle, smooth }
+
 class QrResultState {
   final Uint8List? capturedImage;
   final QrActionStatus saveStatus;
   final QrActionStatus shareStatus;
   final QrActionStatus printStatus;
   final String? errorMessage;
-  final String? customLabel;       // null = 앱 이름 사용, "" = 표시 안 함
+  final String? customLabel;               // null = 앱 이름 사용, "" = 표시 안 함
   final Color qrColor;
-  final double printSizeCm;        // 인쇄 크기 (cm)
-  final String? printTitle;        // null = 앱 이름 사용, "" = 표시 안 함
-  final QrEyeShape eyeShape;
-  final QrDataModuleShape dataModuleShape;
+  final double printSizeCm;               // 인쇄 크기 (cm)
+  final String? printTitle;               // null = 앱 이름 사용, "" = 표시 안 함
+  final double roundFactor;               // 도트 둥글기 (0.0~1.0)
+  final QrEyeStyle eyeStyle;              // 아이(finder pattern) 모양
+  final QrGradient? customGradient;       // 꾸미기 탭에서 직접 선택한 그라디언트
   final bool embedIcon;
   final Uint8List? defaultIconBytes;       // 태그 타입 기본 아이콘
   final String? centerEmoji;               // 선택된 이모지 문자
   final Uint8List? emojiIconBytes;         // 렌더링된 이모지 PNG bytes
+  final String? tagType;                   // 현재 태그 타입 (추천 탭 필터링용)
   // 템플릿 관련
   final String? activeTemplateId;          // 선택된 템플릿 ID (UI 하이라이트용)
-  final QrGradient? templateGradient;      // non-null이면 GradientQrPainter 사용
+  final QrGradient? templateGradient;      // non-null이면 그라디언트 렌더링
   final Uint8List? templateCenterIconBytes; // 템플릿 URL 아이콘 로드 결과
 
   const QrResultState({
@@ -57,12 +81,14 @@ class QrResultState {
     this.qrColor = const Color(0xFF000000),
     this.printSizeCm = 5.0,
     this.printTitle,
-    this.eyeShape = QrEyeShape.square,
-    this.dataModuleShape = QrDataModuleShape.square,
+    this.roundFactor = 0.0,
+    this.eyeStyle = QrEyeStyle.square,
+    this.customGradient,
     this.embedIcon = false,
     this.defaultIconBytes,
     this.centerEmoji,
     this.emojiIconBytes,
+    this.tagType,
     this.activeTemplateId,
     this.templateGradient,
     this.templateCenterIconBytes,
@@ -78,12 +104,14 @@ class QrResultState {
     Color? qrColor,
     double? printSizeCm,
     Object? printTitle = _sentinel,
-    QrEyeShape? eyeShape,
-    QrDataModuleShape? dataModuleShape,
+    double? roundFactor,
+    QrEyeStyle? eyeStyle,
+    Object? customGradient = _sentinel,
     bool? embedIcon,
     Object? defaultIconBytes = _sentinel,
     Object? centerEmoji = _sentinel,
     Object? emojiIconBytes = _sentinel,
+    Object? tagType = _sentinel,
     Object? activeTemplateId = _sentinel,
     Object? templateGradient = _sentinel,
     Object? templateCenterIconBytes = _sentinel,
@@ -102,8 +130,11 @@ class QrResultState {
         printTitle: printTitle == _sentinel
             ? this.printTitle
             : printTitle as String?,
-        eyeShape: eyeShape ?? this.eyeShape,
-        dataModuleShape: dataModuleShape ?? this.dataModuleShape,
+        roundFactor: roundFactor ?? this.roundFactor,
+        eyeStyle: eyeStyle ?? this.eyeStyle,
+        customGradient: customGradient == _sentinel
+            ? this.customGradient
+            : customGradient as QrGradient?,
         embedIcon: embedIcon ?? this.embedIcon,
         defaultIconBytes: defaultIconBytes == _sentinel
             ? this.defaultIconBytes
@@ -114,6 +145,7 @@ class QrResultState {
         emojiIconBytes: emojiIconBytes == _sentinel
             ? this.emojiIconBytes
             : emojiIconBytes as Uint8List?,
+        tagType: tagType == _sentinel ? this.tagType : tagType as String?,
         activeTemplateId: activeTemplateId == _sentinel
             ? this.activeTemplateId
             : activeTemplateId as String?,
@@ -154,12 +186,20 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
     state = state.copyWith(printTitle: title);
   }
 
-  void setEyeShape(QrEyeShape shape) {
-    state = state.copyWith(eyeShape: shape);
+  void setRoundFactor(double factor) {
+    state = state.copyWith(roundFactor: factor);
   }
 
-  void setDataModuleShape(QrDataModuleShape shape) {
-    state = state.copyWith(dataModuleShape: shape);
+  void setEyeStyle(QrEyeStyle style) {
+    state = state.copyWith(eyeStyle: style);
+  }
+
+  void setCustomGradient(QrGradient? gradient) {
+    state = state.copyWith(customGradient: gradient);
+  }
+
+  void setTagType(String? tagType) {
+    state = state.copyWith(tagType: tagType);
   }
 
   void setEmbedIcon(bool embed) {
@@ -183,8 +223,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
     final style = template.style;
     state = state.copyWith(
       activeTemplateId: template.id,
-      eyeShape: style.eyeShape,
-      dataModuleShape: style.dataModuleShape,
+      roundFactor: template.roundFactor ?? 0.0,
       qrColor: style.foreground.solidColor ?? const Color(0xFF000000),
       templateGradient: style.foreground.gradient,
       embedIcon: style.centerIcon.type != 'none',

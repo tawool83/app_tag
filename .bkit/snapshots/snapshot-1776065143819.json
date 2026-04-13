@@ -1,11 +1,12 @@
 {
-  "timestamp": "2026-04-11T13:40:09.125Z",
+  "timestamp": "2026-04-13T07:25:43.818Z",
   "reason": "compaction",
   "status": {
     "version": "3.0",
-    "lastUpdated": "2026-04-10T04:15:21.469Z",
+    "lastUpdated": "2026-04-12T02:13:04.303Z",
     "activeFeatures": [
-      "home-tile-visibility"
+      "home-tile-visibility",
+      "imagegallerysaver"
     ],
     "primaryFeature": "home-tile-visibility",
     "features": {
@@ -25,15 +26,21 @@
         "archivedAt": "2026-04-10T00:00:00.000Z",
         "archivedTo": "docs/archive/2026-04/nfc-cross-platform/"
       },
-      "home-tile-visibility": {
-        "phase": "do",
-        "phaseNumber": 3,
-        "matchRate": null,
+      "contact-picker": {
+        "phase": "archived",
+        "matchRate": 98,
         "iterationCount": 0,
-        "timestamps": {
-          "started": "2026-04-11T00:00:00.000Z",
-          "lastUpdated": "2026-04-11T00:00:00.000Z"
-        }
+        "startedAt": "2026-04-12T00:00:00.000Z",
+        "archivedAt": "2026-04-12T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/contact-picker/"
+      },
+      "home-tile-visibility": {
+        "phase": "archived",
+        "matchRate": 99,
+        "iterationCount": 0,
+        "startedAt": "2026-04-11T00:00:00.000Z",
+        "archivedAt": "2026-04-12T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/home-tile-visibility/"
       },
       "home-tile-menu": {
         "phase": "archived",
@@ -42,6 +49,14 @@
         "startedAt": "2026-04-10T04:00:00.000Z",
         "archivedAt": "2026-04-11T00:00:00.000Z",
         "archivedTo": "docs/archive/2026-04/home-tile-menu/"
+      },
+      "location-map-picker": {
+        "phase": "archived",
+        "matchRate": 97,
+        "iterationCount": 0,
+        "startedAt": "2026-04-12T00:00:00.000Z",
+        "archivedAt": "2026-04-12T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/location-map-picker/"
       },
       "imagegallerysaver": {
         "phase": "do",
@@ -52,9 +67,17 @@
         "documents": {},
         "timestamps": {
           "started": "2026-04-10T04:15:21.469Z",
-          "lastUpdated": "2026-04-10T04:15:21.469Z"
+          "lastUpdated": "2026-04-12T02:13:04.303Z"
         },
-        "lastFile": "C:\\Users\\chunjae\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\image_gallery_saver-2.0.3\\android\\src\\main\\kotlin\\com\\example\\imagegallerysaver\\ImageGallerySaverPlugin.kt"
+        "lastFile": "/Users/tawool/.pub-cache/hosted/pub.dev/image_gallery_saver-2.0.3/android/src/main/kotlin/com/example/imagegallerysaver/ImageGallerySaverPlugin.kt"
+      },
+      "direct-output": {
+        "phase": "archived",
+        "matchRate": 100,
+        "iterationCount": 0,
+        "startedAt": "2026-04-12T00:00:00.000Z",
+        "archivedAt": "2026-04-12T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/direct-output/"
       }
     },
     "pipeline": {
@@ -65,7 +88,7 @@
     "session": {
       "startedAt": "2026-04-09T06:11:12.207Z",
       "onboardingCompleted": false,
-      "lastActivity": "2026-04-10T04:15:21.469Z"
+      "lastActivity": "2026-04-12T02:13:04.303Z"
     },
     "history": [
       {
@@ -76,6 +99,12 @@
       },
       {
         "timestamp": "2026-04-10T04:15:21.469Z",
+        "feature": "imagegallerysaver",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-12T02:13:04.303Z",
         "feature": "imagegallerysaver",
         "phase": "do",
         "action": "updated"

@@ -53,6 +53,9 @@ class TagHistory extends HiveObject {
   @HiveField(15)
   final String? qrCenterEmoji; // 중앙 이모지 문자 (null이면 기본 아이콘)
 
+  @HiveField(16)
+  final double? qrRoundFactor; // pretty_qr_code roundFactor (0.0~1.0)
+
   TagHistory({
     required this.id,
     required this.appName,
@@ -70,5 +73,6 @@ class TagHistory extends HiveObject {
     this.qrDataModuleShape,
     this.qrEmbedIcon,
     this.qrCenterEmoji,
+    this.qrRoundFactor,
   });
 }

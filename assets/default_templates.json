@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-04-12T00:00:00Z",
+  "updatedAt": "2026-04-13T00:00:00Z",
   "categories": [
     { "id": "minimal",   "name": "미니멀",    "order": 1 },
     { "id": "social",    "name": "소셜",      "order": 2 },
@@ -13,10 +13,12 @@
       "name": "미니멀 블랙",
       "categoryId": "minimal",
       "order": 1,
+      "tagTypes": ["all"],
+      "roundFactor": 0.0,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
-        "dataModuleShape": "circle",
+        "dataModuleShape": "square",
         "eyeShape": "square",
         "backgroundColor": "#FFFFFF",
         "foreground": { "type": "solid", "solidColor": "#000000" },
@@ -30,6 +32,8 @@
       "name": "네이비",
       "categoryId": "minimal",
       "order": 2,
+      "tagTypes": ["all"],
+      "roundFactor": 1.0,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
@@ -47,6 +51,8 @@
       "name": "인디고",
       "categoryId": "minimal",
       "order": 3,
+      "tagTypes": ["all"],
+      "roundFactor": 0.5,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
@@ -64,6 +70,8 @@
       "name": "Instagram",
       "categoryId": "social",
       "order": 1,
+      "tagTypes": ["website", "clipboard"],
+      "roundFactor": 1.0,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
@@ -89,6 +97,8 @@
       "name": "Facebook",
       "categoryId": "social",
       "order": 2,
+      "tagTypes": ["website", "clipboard"],
+      "roundFactor": 0.0,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
@@ -106,6 +116,8 @@
       "name": "X (Twitter)",
       "categoryId": "social",
       "order": 3,
+      "tagTypes": ["website", "clipboard"],
+      "roundFactor": 0.0,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
@@ -123,6 +135,8 @@
       "name": "YouTube",
       "categoryId": "social",
       "order": 4,
+      "tagTypes": ["website", "clipboard"],
+      "roundFactor": 0.8,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
@@ -140,6 +154,8 @@
       "name": "클린",
       "categoryId": "business",
       "order": 1,
+      "tagTypes": ["contact", "email", "sms"],
+      "roundFactor": 0.0,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
@@ -157,6 +173,8 @@
       "name": "그라디언트",
       "categoryId": "business",
       "order": 2,
+      "tagTypes": ["contact", "email", "location"],
+      "roundFactor": 1.0,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {
@@ -182,6 +200,8 @@
       "name": "엘레강트",
       "categoryId": "business",
       "order": 3,
+      "tagTypes": ["contact", "wifi", "event"],
+      "roundFactor": 1.0,
       "thumbnailUrl": null,
       "isPremium": false,
       "style": {

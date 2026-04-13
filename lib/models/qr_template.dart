@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 // ── 헬퍼 ──────────────────────────────────────────────────────────────────────
 
@@ -98,8 +97,8 @@ class QrCenterIconData {
 // ── QrStyleData ───────────────────────────────────────────────────────────────
 
 class QrStyleData {
-  final QrDataModuleShape dataModuleShape;
-  final QrEyeShape eyeShape;
+  final String dataModuleShape; // 'square' | 'circle' (레거시 호환용, roundFactor로 대체)
+  final String eyeShape;        // 'square' | 'circle' (레거시 호환용, roundFactor로 대체)
   final Color backgroundColor;
   final QrForeground foreground;
   final QrForeground? eyeColor; // null = foreground 상속
@@ -115,12 +114,8 @@ class QrStyleData {
   });
 
   factory QrStyleData.fromJson(Map<String, dynamic> json) => QrStyleData(
-        dataModuleShape: json['dataModuleShape'] == 'circle'
-            ? QrDataModuleShape.circle
-            : QrDataModuleShape.square,
-        eyeShape: json['eyeShape'] == 'circle'
-            ? QrEyeShape.circle
-            : QrEyeShape.square,
+        dataModuleShape: json['dataModuleShape'] as String? ?? 'square',
+        eyeShape: json['eyeShape'] as String? ?? 'square',
         backgroundColor:
             _hexToColor(json['backgroundColor'] as String? ?? '#FFFFFF'),
         foreground: QrForeground.fromJson(
@@ -168,6 +163,8 @@ class QrTemplate {
   final String? thumbnailUrl;
   final bool isPremium;
   final QrStyleData style;
+  final List<String> tagTypes;  // [] | ['all'] | ['website','contact']
+  final double? roundFactor;    // 0.0~1.0, null = 스타일 기본값
 
   const QrTemplate({
     required this.id,
@@ -178,6 +175,8 @@ class QrTemplate {
     this.thumbnailUrl,
     this.isPremium = false,
     required this.style,
+    this.tagTypes = const [],
+    this.roundFactor,
   });
 
   factory QrTemplate.fromJson(Map<String, dynamic> json) => QrTemplate(
@@ -189,6 +188,11 @@ class QrTemplate {
         thumbnailUrl: json['thumbnailUrl'] as String?,
         isPremium: json['isPremium'] as bool? ?? false,
         style: QrStyleData.fromJson(json['style'] as Map<String, dynamic>),
+        tagTypes: (json['tagTypes'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            const [],
+        roundFactor: (json['roundFactor'] as num?)?.toDouble(),
       );
 }
 
