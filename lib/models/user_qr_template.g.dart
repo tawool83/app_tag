@@ -41,8 +41,8 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
       syncedToCloud: fields[21] as bool,
       thumbnailBytes: fields[22] as Uint8List?,
       dotStyleIndex: fields[23] as int,
-      eyeOuterIndex: fields[24] as int,
-      eyeInnerIndex: fields[25] as int,
+      eyeOuterIndex: (fields[24] as int?) ?? 0,
+      eyeInnerIndex: (fields[25] as int?) ?? 0,
       randomEyeSeed: fields[26] as int?,
     );
   }
