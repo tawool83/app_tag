@@ -11,6 +11,7 @@ import '../../models/sticker_config.dart' show StickerText;
 import '../../models/user_qr_template.dart';
 import '../../repositories/template_repository.dart';
 import '../../repositories/user_template_repository.dart';
+import '../../services/qr_readability_service.dart';
 import '../../services/settings_service.dart';
 import '../../shared/constants/app_config.dart' show validateQrData;
 import 'qr_result_provider.dart';
@@ -112,7 +113,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   @override
   void initState() {
     super.initState();
-    // 탭: 템플릿 / 배경화면 / 모양 / 색상 / 로고
+    // 탭: 템플릿 / 배경 / 모양 / 색상 / 로고
     _tabController = TabController(length: 5, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -248,6 +249,49 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     }
   }
 
+  Future<bool> _showLowReadabilityWarning(ReadabilityScore score) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('인식률이 낮습니다'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '현재 인식률: ${score.total}%',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text('QR 코드가 일부 스캐너에서\n인식되지 않을 수 있습니다.'),
+            const SizedBox(height: 8),
+            Text(
+              '주요 원인: ${score.mainIssue}',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('그래도 저장'),
+          ),
+        ],
+      ),
+    );
+    return result == true;
+  }
+
   Future<void> _showSaveTemplateSheet() async {
     final nameCtrl = TextEditingController();
     final confirmed = await showModalBottomSheet<bool>(
@@ -328,7 +372,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           : null,
       roundFactor: state.roundFactor,
       dotStyleIndex: state.dotStyle.index,
-      eyeStyleIndex: state.eyeStyle.index,
+      eyeOuterIndex: state.eyeOuter.index,
+      eyeInnerIndex: state.eyeInner.index,
+      randomEyeSeed: state.randomEyeSeed,
       quietZoneColorValue: state.quietZoneColor.toARGB32(),
       // 스티커 레이어
       logoPositionIndex: state.sticker.logoPosition.index,
@@ -388,26 +434,30 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     final deepLink = args['deepLink'] as String;
 
     final state = ref.watch(qrResultProvider);
+    final score = QrReadabilityService.calculate(state, deepLink);
 
     return Scaffold(
       appBar: AppBar(title: const Text('QR 코드')),
       body: Column(
         children: [
-          // ① QR 미리보기
+          // ① QR 미리보기 + 인식률 배지
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: QrPreviewSection(
               repaintKey: _repaintKey,
               deepLink: deepLink,
+              score: score,
             ),
           ),
 
-          // ② 탭 바: 템플릿 / 배경화면 / 모양 / 색상 / 로고
+          // ② 탭 바: 템플릿 / 배경 / 모양 / 색상 / 로고
           TabBar(
             controller: _tabController,
+            isScrollable: true,
+            tabAlignment: TabAlignment.center,
             tabs: const [
               Tab(text: '템플릿'),
-              Tab(text: '배경화면'),
+              Tab(text: '배경'),
               Tab(text: '모양'),
               Tab(text: '색상'),
               Tab(text: '로고'),
@@ -428,7 +478,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                   onTemplateClear: _onTemplateClear,
                   onChanged: _recapture,
                 ),
-                // 1: 배경화면
+                // 1: 배경
                 BackgroundTab(onChanged: _recapture),
                 // 2: 모양 (도트 + 눈)
                 QrShapeTab(
@@ -436,8 +486,20 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                     ref.read(qrResultProvider.notifier).setDotStyle(s);
                     _recapture();
                   },
-                  onEyeStyleChanged: (s) {
-                    ref.read(qrResultProvider.notifier).setEyeStyle(s);
+                  onEyeOuterChanged: (s) {
+                    ref.read(qrResultProvider.notifier).setEyeOuter(s);
+                    _recapture();
+                  },
+                  onEyeInnerChanged: (s) {
+                    ref.read(qrResultProvider.notifier).setEyeInner(s);
+                    _recapture();
+                  },
+                  onRandomEyeRequested: () {
+                    ref.read(qrResultProvider.notifier).regenerateEyeSeed();
+                    _recapture();
+                  },
+                  onRandomEyeCleared: () {
+                    ref.read(qrResultProvider.notifier).clearRandomEye();
                     _recapture();
                   },
                 ),
@@ -461,9 +523,20 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           // ④ 액션 버튼
           _ActionButtons(
             state: state,
-            onSaveGallery: () =>
-                ref.read(qrResultProvider.notifier).saveToGallery(appName),
-            onSaveTemplate: _showSaveTemplateSheet,
+            onSaveGallery: () async {
+              if (score.shouldWarnOnSave) {
+                final proceed = await _showLowReadabilityWarning(score);
+                if (!proceed || !mounted) return;
+              }
+              ref.read(qrResultProvider.notifier).saveToGallery(appName);
+            },
+            onSaveTemplate: () async {
+              if (score.shouldWarnOnSave) {
+                final proceed = await _showLowReadabilityWarning(score);
+                if (!proceed || !mounted) return;
+              }
+              _showSaveTemplateSheet();
+            },
             onShare: () =>
                 ref.read(qrResultProvider.notifier).shareImage(appName),
           ),

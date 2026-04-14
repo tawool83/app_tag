@@ -86,6 +86,16 @@ class UserQrTemplate extends HiveObject {
   @HiveField(23)
   int dotStyleIndex;
 
+  // 눈 모양 독립 선택
+  @HiveField(24)
+  int eyeOuterIndex; // QrEyeOuter.index
+
+  @HiveField(25)
+  int eyeInnerIndex; // QrEyeInner.index
+
+  @HiveField(26)
+  int? randomEyeSeed; // non-null → 랜덤 눈 모양
+
   UserQrTemplate({
     required this.id,
     required this.name,
@@ -111,5 +121,8 @@ class UserQrTemplate extends HiveObject {
     this.syncedToCloud = false,
     this.thumbnailBytes,
     this.dotStyleIndex = 0,
+    this.eyeOuterIndex = 0,
+    this.eyeInnerIndex = 0,
+    this.randomEyeSeed,
   });
 }

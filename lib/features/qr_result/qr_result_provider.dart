@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,8 +51,11 @@ const qrSafeColors = [
   Color(0xFF1B0060), // 인디고
 ];
 
-/// QR finder pattern(눈) 모양 프리셋
-enum QrEyeStyle { square, rounded, circle, smooth }
+/// QR finder pattern 외곽 링 모양
+enum QrEyeOuter { square, rounded, circle, smooth }
+
+/// QR finder pattern 내부 채움 모양
+enum QrEyeInner { square, circle, diamond, star }
 
 class QrResultState {
   final Uint8List? capturedImage;
@@ -62,7 +66,9 @@ class QrResultState {
   final Color qrColor;
   final double printSizeCm;               // 인쇄 크기 (cm)
   final double roundFactor;               // 도트 둥글기 (0.0~1.0)
-  final QrEyeStyle eyeStyle;              // 아이(finder pattern) 모양
+  final QrEyeOuter eyeOuter;             // finder pattern 외곽 링 모양
+  final QrEyeInner eyeInner;             // finder pattern 내부 채움 모양
+  final int? randomEyeSeed;              // non-null → 시드 기반 랜덤 눈 모양
   final QrGradient? customGradient;       // 꾸미기 탭에서 직접 선택한 그라디언트
   final bool embedIcon;
   final Uint8List? defaultIconBytes;       // 태그 타입 기본 아이콘
@@ -89,7 +95,9 @@ class QrResultState {
     this.qrColor = const Color(0xFF000000),
     this.printSizeCm = 5.0,
     this.roundFactor = 0.0,
-    this.eyeStyle = QrEyeStyle.square,
+    this.eyeOuter = QrEyeOuter.square,
+    this.eyeInner = QrEyeInner.square,
+    this.randomEyeSeed,
     this.customGradient,
     this.embedIcon = false,
     this.defaultIconBytes,
@@ -114,7 +122,9 @@ class QrResultState {
     Color? qrColor,
     double? printSizeCm,
     double? roundFactor,
-    QrEyeStyle? eyeStyle,
+    QrEyeOuter? eyeOuter,
+    QrEyeInner? eyeInner,
+    Object? randomEyeSeed = _sentinel,
     Object? customGradient = _sentinel,
     bool? embedIcon,
     Object? defaultIconBytes = _sentinel,
@@ -138,7 +148,11 @@ class QrResultState {
         qrColor: qrColor ?? this.qrColor,
         printSizeCm: printSizeCm ?? this.printSizeCm,
         roundFactor: roundFactor ?? this.roundFactor,
-        eyeStyle: eyeStyle ?? this.eyeStyle,
+        eyeOuter: eyeOuter ?? this.eyeOuter,
+        eyeInner: eyeInner ?? this.eyeInner,
+        randomEyeSeed: randomEyeSeed == _sentinel
+            ? this.randomEyeSeed
+            : randomEyeSeed as int?,
         customGradient: customGradient == _sentinel
             ? this.customGradient
             : customGradient as QrGradient?,
@@ -182,7 +196,12 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
   }
 
   void setQrColor(Color color) {
-    state = state.copyWith(qrColor: color);
+    // 색상 직접 변경 시 템플릿 그라디언트 해제 (마지막 선택 우선)
+    state = state.copyWith(
+      qrColor: color,
+      templateGradient: null,
+      activeTemplateId: null,
+    );
   }
 
   void setPrintSizeCm(double sizeCm) {
@@ -193,12 +212,28 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
     state = state.copyWith(roundFactor: factor);
   }
 
-  void setEyeStyle(QrEyeStyle style) {
-    state = state.copyWith(eyeStyle: style);
-  }
+  void setEyeOuter(QrEyeOuter outer) =>
+      state = state.copyWith(eyeOuter: outer, randomEyeSeed: null);
+
+  void setEyeInner(QrEyeInner inner) =>
+      state = state.copyWith(eyeInner: inner, randomEyeSeed: null);
+
+  void regenerateEyeSeed() =>
+      state = state.copyWith(randomEyeSeed: math.Random().nextInt(0xFFFFFF) + 1);
+
+  void clearRandomEye() => state = state.copyWith(randomEyeSeed: null);
 
   void setCustomGradient(QrGradient? gradient) {
-    state = state.copyWith(customGradient: gradient);
+    if (gradient != null) {
+      // 그라디언트 직접 선택 시 템플릿 그라디언트 해제 (마지막 선택 우선)
+      state = state.copyWith(
+        customGradient: gradient,
+        templateGradient: null,
+        activeTemplateId: null,
+      );
+    } else {
+      state = state.copyWith(customGradient: null);
+    }
   }
 
   void setTagType(String? tagType) {
@@ -229,6 +264,8 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       roundFactor: template.roundFactor ?? 0.0,
       qrColor: style.foreground.solidColor ?? const Color(0xFF000000),
       templateGradient: style.foreground.gradient,
+      // 기존 커스텀 그라디언트 초기화 (템플릿이 우선)
+      customGradient: null,
       embedIcon: style.centerIcon.type != 'none',
       templateCenterIconBytes: centerIconBytes,
       centerEmoji: null,
@@ -267,7 +304,9 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       customGradient: gradient,
       roundFactor: t.roundFactor,
       dotStyle: QrDotStyle.values[t.dotStyleIndex.clamp(0, QrDotStyle.values.length - 1)],
-      eyeStyle: QrEyeStyle.values[t.eyeStyleIndex],
+      eyeOuter: QrEyeOuter.values[t.eyeOuterIndex.clamp(0, QrEyeOuter.values.length - 1)],
+      eyeInner: QrEyeInner.values[t.eyeInnerIndex.clamp(0, QrEyeInner.values.length - 1)],
+      randomEyeSeed: t.randomEyeSeed,
       quietZoneColor: Color(t.quietZoneColorValue),
       sticker: StickerConfig(
         logoPosition: LogoPosition.values[t.logoPositionIndex],

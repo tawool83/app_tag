@@ -41,13 +41,16 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
       syncedToCloud: fields[21] as bool,
       thumbnailBytes: fields[22] as Uint8List?,
       dotStyleIndex: fields[23] as int,
+      eyeOuterIndex: fields[24] as int,
+      eyeInnerIndex: fields[25] as int,
+      randomEyeSeed: fields[26] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserQrTemplate obj) {
     writer
-      ..writeByte(24)
+      ..writeByte(27)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -95,7 +98,13 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
       ..writeByte(22)
       ..write(obj.thumbnailBytes)
       ..writeByte(23)
-      ..write(obj.dotStyleIndex);
+      ..write(obj.dotStyleIndex)
+      ..writeByte(24)
+      ..write(obj.eyeOuterIndex)
+      ..writeByte(25)
+      ..write(obj.eyeInnerIndex)
+      ..writeByte(26)
+      ..write(obj.randomEyeSeed);
   }
 
   @override
