@@ -50,17 +50,17 @@ class BackgroundTab extends ConsumerWidget {
 
             const SizedBox(height: 12),
 
-            // 스케일 슬라이더
-            _SectionLabel('크기'),
+            // 줌 슬라이더
+            _SectionLabel('줌'),
             Row(
               children: [
-                const Icon(Icons.photo_size_select_small, size: 18, color: Colors.grey),
+                const Icon(Icons.zoom_out, size: 18, color: Colors.grey),
                 Expanded(
                   child: Slider(
                     value: bg.scale,
-                    min: 0.5,
-                    max: 2.0,
-                    divisions: 30,
+                    min: 1.0,
+                    max: 3.0,
+                    divisions: 40,
                     label: '${(bg.scale * 100).round()}%',
                     onChanged: (v) {
                       ref
@@ -70,9 +70,58 @@ class BackgroundTab extends ConsumerWidget {
                     },
                   ),
                 ),
-                const Icon(Icons.photo_size_select_large, size: 18, color: Colors.grey),
+                const Icon(Icons.zoom_in, size: 18, color: Colors.grey),
               ],
             ),
+
+            // 위치 슬라이더 (줌 > 1.0일 때만 표시)
+            if (bg.scale > 1.0) ...[
+              _SectionLabel('가로 위치'),
+              Row(
+                children: [
+                  const Icon(Icons.arrow_back, size: 18, color: Colors.grey),
+                  Expanded(
+                    child: Slider(
+                      value: bg.alignX,
+                      min: -1.0,
+                      max: 1.0,
+                      divisions: 40,
+                      label: bg.alignX.toStringAsFixed(1),
+                      onChanged: (v) {
+                        ref
+                            .read(qrResultProvider.notifier)
+                            .setBackground(bg.copyWith(alignX: v));
+                        onChanged();
+                      },
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward, size: 18, color: Colors.grey),
+                ],
+              ),
+
+              _SectionLabel('세로 위치'),
+              Row(
+                children: [
+                  const Icon(Icons.arrow_upward, size: 18, color: Colors.grey),
+                  Expanded(
+                    child: Slider(
+                      value: bg.alignY,
+                      min: -1.0,
+                      max: 1.0,
+                      divisions: 40,
+                      label: bg.alignY.toStringAsFixed(1),
+                      onChanged: (v) {
+                        ref
+                            .read(qrResultProvider.notifier)
+                            .setBackground(bg.copyWith(alignY: v));
+                        onChanged();
+                      },
+                    ),
+                  ),
+                  const Icon(Icons.arrow_downward, size: 18, color: Colors.grey),
+                ],
+              ),
+            ],
 
             const SizedBox(height: 8),
 
@@ -139,10 +188,7 @@ class BackgroundTab extends ConsumerWidget {
 
     if (context.mounted) {
       ref.read(qrResultProvider.notifier).setBackground(
-            ref.read(qrResultProvider).background.copyWith(imageBytes: bytes),
-          );
-      ref.read(qrResultProvider.notifier).setBackground(
-            ref.read(qrResultProvider).background.copyWith(imageBytes: bytes, scale: 1.0),
+            BackgroundConfig(imageBytes: bytes),
           );
       onChanged();
     }

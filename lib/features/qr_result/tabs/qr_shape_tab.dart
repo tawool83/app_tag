@@ -139,10 +139,11 @@ class _DotStyleGrid extends StatelessWidget {
 // ── 눈 외곽 모양 행 ──────────────────────────────────────────────────────────
 
 const _kOuterLabels = {
-  QrEyeOuter.square:  '사각',
-  QrEyeOuter.rounded: '둥글기',
-  QrEyeOuter.circle:  '원형',
-  QrEyeOuter.smooth:  '부드럽게',
+  QrEyeOuter.square:      '사각',
+  QrEyeOuter.rounded:     '둥글기',
+  QrEyeOuter.circle:      '원형',
+  QrEyeOuter.circleRound: '원형도넛',
+  QrEyeOuter.smooth:      '부드럽게',
 };
 
 class _OuterShapeRow extends StatelessWidget {
@@ -317,21 +318,6 @@ class _OuterIconPainter extends CustomPainter {
   final Color color;
   const _OuterIconPainter(this.outer, this.color);
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true;
-    final r = Rect.fromLTWH(0, 0, size.width, size.height);
-    final hole = r.deflate(size.width / 5); // 링 두께 ≈ 1/5
-
-    final path = Path()..fillType = PathFillType.evenOdd;
-    _addOuter(path, r);
-    path.addRect(hole);
-    canvas.drawPath(path, paint);
-  }
-
   void _addOuter(Path path, Rect r) {
     switch (outer) {
       case QrEyeOuter.square:
@@ -340,9 +326,31 @@ class _OuterIconPainter extends CustomPainter {
         path.addRRect(RRect.fromRectAndRadius(r, Radius.circular(r.width * 0.18)));
       case QrEyeOuter.circle:
         path.addOval(r);
+      case QrEyeOuter.circleRound:
+        path.addOval(r); // 외곽 원형 + 원형 구멍 → addOval(hole)로 처리
       case QrEyeOuter.smooth:
         path.addRRect(RRect.fromRectAndRadius(r, Radius.circular(r.width * 0.32)));
     }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+    final r = Rect.fromLTWH(0, 0, size.width, size.height);
+    final hole = r.deflate(size.width / 5);
+
+    final path = Path()..fillType = PathFillType.evenOdd;
+    _addOuter(path, r);
+    // circleRound는 구멍도 원형
+    if (outer == QrEyeOuter.circleRound) {
+      path.addOval(hole);
+    } else {
+      path.addRect(hole);
+    }
+    canvas.drawPath(path, paint);
   }
 
   @override
@@ -401,3 +409,4 @@ class _InnerIconPainter extends CustomPainter {
   @override
   bool shouldRepaint(_InnerIconPainter old) => old.inner != inner || old.color != color;
 }
+

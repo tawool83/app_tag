@@ -96,12 +96,21 @@ class UserQrTemplate extends HiveObject {
   @HiveField(26)
   int? randomEyeSeed; // non-null → 랜덤 눈 모양
 
+  // 배경 이미지 위치 (alignX/Y -1.0~1.0, 기본 0.0)
+  @HiveField(27)
+  double backgroundAlignX;
+
+  @HiveField(28)
+  double backgroundAlignY;
+
   UserQrTemplate({
     required this.id,
     required this.name,
     required this.createdAt,
     this.backgroundImageBytes,
     this.backgroundScale = 1.0,
+    this.backgroundAlignX = 0.0,
+    this.backgroundAlignY = 0.0,
     this.qrColorValue = 0xFF000000,
     this.gradientJson,
     this.roundFactor = 0.0,

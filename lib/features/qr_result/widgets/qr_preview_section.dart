@@ -33,60 +33,76 @@ class QrPreviewSection extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // 왼쪽 영역 70%: QR 코드 (중앙 배치)
+            // LayoutBuilder로 가용 폭에 맞게 qrSize 계산:
+            //   bgSize = qrSize * kQrBgExpandFactor (배경 있을 때)
+            //   bgSize + 24 (패딩) = qrSize (배경 없을 때)
             Expanded(
               flex: 7,
-              child: Align(
-                alignment: Alignment.center,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // 캡처 영역 (소형 QR)
-                    RepaintBoundary(
-                      key: repaintKey,
-                      child: Container(
-                        color: Colors.white,
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            QrLayerStack(deepLink: deepLink, size: 160),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // 돋보기 버튼 (우하단)
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () =>
-                              _showQrZoomDialog(context, state, deepLink),
+              child: LayoutBuilder(
+                builder: (_, constraints) {
+                  final hasBg = state.background.hasImage;
+                  final double qrSize = hasBg
+                      ? (constraints.maxWidth / kQrBgExpandFactor)
+                          .floorToDouble()
+                          .clamp(80.0, 160.0)
+                      : 160.0;
+                  return Align(
+                    alignment: Alignment.center,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // 캡처 영역
+                        // 배경 이미지가 있으면 흰 여백 없이 이미지가 외곽까지 채움
+                        RepaintBoundary(
+                          key: repaintKey,
                           child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surface
-                                  .withValues(alpha: 0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
+                            color: hasBg ? null : Colors.white,
+                            padding: hasBg
+                                ? EdgeInsets.zero
+                                : const EdgeInsets.all(12),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                QrLayerStack(deepLink: deepLink, size: qrSize),
                               ],
                             ),
-                            child: const Icon(Icons.zoom_in, size: 20),
                           ),
                         ),
-                      ),
+                        // 돋보기 버튼 (우하단)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () =>
+                                  _showQrZoomDialog(context, state, deepLink),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surface
+                                      .withValues(alpha: 0.9),
+                                  shape: BoxShape.circle,
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(Icons.zoom_in, size: 20),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
             // 오른쪽 영역 30%: 인식률 배지 (가운데 정렬)
@@ -173,16 +189,28 @@ void _showQrZoomDialog(
     builder: (_) => Dialog(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            QrLayerStack(deepLink: deepLink, size: 300, isDialog: true),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('닫기'),
-            ),
-          ],
+        // LayoutBuilder: 다이얼로그 실제 가용 폭에 맞게 qrSize 결정
+        // bgSize = qrSize * kQrBgExpandFactor 이므로 bgSize <= maxWidth 보장
+        child: LayoutBuilder(
+          builder: (_, constraints) {
+            final hasBg = state.background.hasImage;
+            final double qrSize = hasBg
+                ? (constraints.maxWidth / kQrBgExpandFactor)
+                    .floorToDouble()
+                    .clamp(100.0, 300.0)
+                : constraints.maxWidth.clamp(100.0, 300.0);
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                QrLayerStack(deepLink: deepLink, size: qrSize, isDialog: true),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('닫기'),
+                ),
+              ],
+            );
+          },
         ),
       ),
     ),
@@ -211,12 +239,14 @@ Widget buildPrettyQr(
   final dotShape = buildDotShape(state.dotStyle, dotColor);
 
   // finder pattern 결정: 랜덤 시드 우선, 아니면 outer+inner 조합
+  // circleRound 외각 선택 시 hole도 원형으로 자동 파생
   final PrettyQrShape finderPattern = state.randomEyeSeed != null
       ? _RandomFinderPattern(color: dotColor, seed: state.randomEyeSeed!)
       : _ComboFinderPattern(
           color: dotColor,
           outer: _outerShapeFrom(state.eyeOuter),
           inner: _innerShapeFrom(state.eyeInner),
+          hole: _holeFromOuter(state.eyeOuter),
         );
   final qrShape = PrettyQrShape.custom(dotShape, finderPattern: finderPattern);
 
@@ -316,13 +346,15 @@ ImageProvider? centerImageProvider(QrResultState state) {
 
 enum _OuterShape { square, rounded, circle, smooth }
 enum _InnerShape  { square, circle, diamond, star }
+enum _HoleShape   { square, circle }
 
 _OuterShape _outerShapeFrom(QrEyeOuter v) {
   switch (v) {
-    case QrEyeOuter.square:  return _OuterShape.square;
-    case QrEyeOuter.rounded: return _OuterShape.rounded;
-    case QrEyeOuter.circle:  return _OuterShape.circle;
-    case QrEyeOuter.smooth:  return _OuterShape.smooth;
+    case QrEyeOuter.square:      return _OuterShape.square;
+    case QrEyeOuter.rounded:     return _OuterShape.rounded;
+    case QrEyeOuter.circle:      return _OuterShape.circle;
+    case QrEyeOuter.circleRound: return _OuterShape.circle;
+    case QrEyeOuter.smooth:      return _OuterShape.smooth;
   }
 }
 
@@ -335,33 +367,25 @@ _InnerShape _innerShapeFrom(QrEyeInner v) {
   }
 }
 
-/// 3개 finder pattern 모듈을 7m×7m 블록 단위로 분리해 각 bounding box 반환.
-/// context.matrix는 3개 코너 전체 모듈을 포함하므로 개별 분리가 필수.
+/// 외각 선택에서 여백(hole) 모양을 자동 파생.
+/// circleRound는 원형 여백, 나머지는 사각 여백.
+_HoleShape _holeFromOuter(QrEyeOuter v) {
+  return v == QrEyeOuter.circleRound ? _HoleShape.circle : _HoleShape.square;
+}
+
+/// 3개 finder pattern의 7m×7m bounding box를 반환.
+/// positionDetectionPatterns를 직접 사용해 모든 QR 버전에서 정확히 동작.
 List<Rect> _groupFinderBounds(PrettyQrPaintingContext context) {
-  final rects = <Rect>[];
-  for (final module in context.matrix) {
-    if (!module.isDark) continue;
-    rects.add(module.resolveRect(context));
-  }
-  if (rects.isEmpty) return [];
-
-  final m = rects.first.width;
-  var minX = rects.first.left;
-  var minY = rects.first.top;
-  for (final r in rects) {
-    if (r.left < minX) minX = r.left;
-    if (r.top  < minY) minY = r.top;
-  }
-
-  final blocks = <String, Rect>{};
-  for (final r in rects) {
-    final bx = ((r.left - minX) / (m * 7)).floor();
-    final by = ((r.top  - minY) / (m * 7)).floor();
-    final key = '$bx,$by';
-    final prev = blocks[key];
-    blocks[key] = prev == null ? r : prev.expandToInclude(r);
-  }
-  return blocks.values.toList();
+  final m = context.moduleDimension;
+  final offset = context.estimatedBounds.topLeft;
+  return context.matrix.positionDetectionPatterns.map((pdp) {
+    return Rect.fromLTWH(
+      offset.dx + pdp.left * m,
+      offset.dy + pdp.top * m,
+      (pdp.width + 1) * m,
+      (pdp.height + 1) * m,
+    );
+  }).toList();
 }
 
 /// 외곽 모양과 내부 채움 모양을 독립적으로 지정할 수 있는 커스텀 finder pattern.
@@ -376,11 +400,13 @@ class _ComboFinderPattern extends PrettyQrShape {
   final Color color;
   final _OuterShape outer;
   final _InnerShape inner;
+  final _HoleShape hole;
 
   const _ComboFinderPattern({
     required this.color,
     required this.outer,
     required this.inner,
+    this.hole = _HoleShape.square,
   });
 
   @override
@@ -399,7 +425,10 @@ class _ComboFinderPattern extends PrettyQrShape {
     // 외곽 링: evenOdd (외곽 도형 + 구멍 → 링 모양)
     final ringPath = Path()..fillType = PathFillType.evenOdd;
     _addShape(ringPath, bounds, outer, radius: m * 1.2);
-    ringPath.addRect(holeRect); // 구멍은 사각형 유지
+    switch (hole) {
+      case _HoleShape.square: ringPath.addRect(holeRect);
+      case _HoleShape.circle: ringPath.addOval(holeRect);
+    }
     canvas.drawPath(ringPath, paint);
 
     // 내부 채움
@@ -454,10 +483,11 @@ class _ComboFinderPattern extends PrettyQrShape {
       other is _ComboFinderPattern &&
       color == other.color &&
       outer == other.outer &&
-      inner == other.inner;
+      inner == other.inner &&
+      hole == other.hole;
 
   @override
-  int get hashCode => Object.hash(color, outer, inner);
+  int get hashCode => Object.hash(color, outer, inner, hole);
 }
 
 // ── 랜덤 Finder Pattern ─────────────────────────────────────────────────────
@@ -472,45 +502,55 @@ class _RandomFinderPattern extends PrettyQrShape {
 
   @override
   void paint(PrettyQrPaintingContext context) {
-    final rng = math.Random(seed);
+    final allBounds = _groupFinderBounds(context);
+    if (allBounds.isEmpty) return;
+
     final paint = Paint()..color = color..style = PaintingStyle.fill..isAntiAlias = true;
     final canvas = context.canvas;
 
-    for (final bounds in _groupFinderBounds(context)) {
-      final m = bounds.width / 7;
-      final maxR = m * 1.8;
+    final m = allBounds.first.width / 7;
+    final maxOuterR = m * 1.8;
+    final rng = math.Random(seed);
 
-      // 코너별 독립 곡률 (0 ~ 1.8 모듈)
-      final tl = Radius.circular(rng.nextDouble() * maxR);
-      final tr = Radius.circular(rng.nextDouble() * maxR);
-      final bl = Radius.circular(rng.nextDouble() * maxR);
-      final br = Radius.circular(rng.nextDouble() * maxR);
+    // ── 3개 눈 공통 파라미터: 루프 밖에서 한 번만 생성 ──
+    final outerTL = Radius.circular(rng.nextDouble() * maxOuterR);
+    final outerTR = Radius.circular(rng.nextDouble() * maxOuterR);
+    final outerBL = Radius.circular(rng.nextDouble() * maxOuterR);
+    final outerBR = Radius.circular(rng.nextDouble() * maxOuterR);
+    final innerType = _InnerShape.values[rng.nextInt(_InnerShape.values.length)];
+    // inner square 코너 비율도 미리 고정 (0.0~1.0)
+    final innerCorners = [
+      rng.nextDouble(), rng.nextDouble(),
+      rng.nextDouble(), rng.nextDouble(),
+    ];
 
-      // 내부 채움 모양: square / circle / diamond / star 중 랜덤
-      final innerType = _InnerShape.values[rng.nextInt(_InnerShape.values.length)];
+    for (final bounds in allBounds) {
+      final im = bounds.width / 7;
 
-      // 외곽 링 (evenOdd: 외곽 RRect - 사각형 구멍 → 링)
+      // 외곽 링 (evenOdd)
       final ringPath = Path()..fillType = PathFillType.evenOdd;
       ringPath.addRRect(RRect.fromRectAndCorners(
-        bounds, topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br,
+        bounds,
+        topLeft: outerTL, topRight: outerTR,
+        bottomLeft: outerBL, bottomRight: outerBR,
       ));
-      ringPath.addRect(bounds.deflate(m));
+      ringPath.addRect(bounds.deflate(im));
       canvas.drawPath(ringPath, paint);
 
-      // 내부 채움
-      canvas.drawPath(_innerPath(bounds.deflate(m * 2), innerType, rng), paint);
+      // 내부 채움 (동일 파라미터 적용)
+      canvas.drawPath(_innerPath(bounds.deflate(im * 2), innerType, innerCorners), paint);
     }
   }
 
-  Path _innerPath(Rect r, _InnerShape shape, math.Random rng) {
+  Path _innerPath(Rect r, _InnerShape shape, List<double> cornerRatios) {
     switch (shape) {
       case _InnerShape.square:
         final maxR = r.width * 0.4;
         return Path()..addRRect(RRect.fromRectAndCorners(r,
-          topLeft:     Radius.circular(rng.nextDouble() * maxR),
-          topRight:    Radius.circular(rng.nextDouble() * maxR),
-          bottomLeft:  Radius.circular(rng.nextDouble() * maxR),
-          bottomRight: Radius.circular(rng.nextDouble() * maxR),
+          topLeft:     Radius.circular(cornerRatios[0] * maxR),
+          topRight:    Radius.circular(cornerRatios[1] * maxR),
+          bottomLeft:  Radius.circular(cornerRatios[2] * maxR),
+          bottomRight: Radius.circular(cornerRatios[3] * maxR),
         ));
       case _InnerShape.circle:
         return Path()..addOval(r);

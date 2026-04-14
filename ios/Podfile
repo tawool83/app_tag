@@ -41,6 +41,22 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
   end
 
+  # image_cropper: fullScreen presentation 강제 적용 (하단 툴바 safe area 문제)
+  # iOS 13+에서 기본 modalPresentationStyle이 .pageSheet(카드형)이라
+  # TOCropViewController의 하단 편집 버튼이 홈 인디케이터 아래로 내려가는 문제 수정
+  cropper_plugin_file = File.expand_path(
+    '../.symlinks/plugins/image_cropper/ios/Classes/FLTImageCropperPlugin.m',
+    __FILE__
+  )
+  if File.exist?(cropper_plugin_file)
+    content = File.read(cropper_plugin_file)
+    patched = content.gsub(
+      '[topController presentViewController:cropViewController animated:YES completion:nil];',
+      "cropViewController.modalPresentationStyle = UIModalPresentationFullScreen;\n            [topController presentViewController:cropViewController animated:YES completion:nil];"
+    )
+    File.write(cropper_plugin_file, patched) if content != patched
+  end
+
   # flutter_contacts: iOS 13+ 씬 기반 앱에서 window가 nil이 되는 크래시 패치
   # UIApplication.shared.delegate!.window!!.rootViewController! → 안전한 옵셔널 체인
   plugin_file = File.expand_path(

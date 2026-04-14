@@ -20,6 +20,7 @@ import 'tabs/background_tab.dart';
 import 'tabs/qr_shape_tab.dart';
 import 'tabs/qr_color_tab.dart';
 import 'tabs/sticker_tab.dart';
+import 'tabs/text_tab.dart';
 import 'widgets/qr_preview_section.dart';
 
 // 태그 타입별 아이콘/색상
@@ -114,7 +115,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   void initState() {
     super.initState();
     // 탭: 템플릿 / 배경 / 모양 / 색상 / 로고
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
@@ -365,6 +366,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       // 배경 레이어
       backgroundImageBytes: state.background.imageBytes,
       backgroundScale: state.background.scale,
+      backgroundAlignX: state.background.alignX,
+      backgroundAlignY: state.background.alignY,
       // QR 레이어
       qrColorValue: state.qrColor.toARGB32(),
       gradientJson: state.customGradient != null
@@ -461,6 +464,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
               Tab(text: '모양'),
               Tab(text: '색상'),
               Tab(text: '로고'),
+              Tab(text: '텍스트'),
             ],
           ),
 
@@ -516,6 +520,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                 ),
                 // 4: 로고
                 StickerTab(onChanged: _recapture),
+                // 5: 텍스트
+                TextTab(onChanged: _recapture),
               ],
             ),
           ),

@@ -22,6 +22,8 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
       createdAt: fields[2] as DateTime,
       backgroundImageBytes: fields[3] as Uint8List?,
       backgroundScale: fields[4] as double,
+      backgroundAlignX: fields[27] as double,
+      backgroundAlignY: fields[28] as double,
       qrColorValue: fields[5] as int,
       gradientJson: fields[6] as String?,
       roundFactor: fields[7] as double,
@@ -41,8 +43,8 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
       syncedToCloud: fields[21] as bool,
       thumbnailBytes: fields[22] as Uint8List?,
       dotStyleIndex: fields[23] as int,
-      eyeOuterIndex: (fields[24] as int?) ?? 0,
-      eyeInnerIndex: (fields[25] as int?) ?? 0,
+      eyeOuterIndex: fields[24] as int,
+      eyeInnerIndex: fields[25] as int,
       randomEyeSeed: fields[26] as int?,
     );
   }
@@ -50,7 +52,7 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
   @override
   void write(BinaryWriter writer, UserQrTemplate obj) {
     writer
-      ..writeByte(27)
+      ..writeByte(29)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -104,7 +106,11 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
       ..writeByte(25)
       ..write(obj.eyeInnerIndex)
       ..writeByte(26)
-      ..write(obj.randomEyeSeed);
+      ..write(obj.randomEyeSeed)
+      ..writeByte(27)
+      ..write(obj.backgroundAlignX)
+      ..writeByte(28)
+      ..write(obj.backgroundAlignY);
   }
 
   @override

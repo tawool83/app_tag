@@ -52,7 +52,8 @@ const qrSafeColors = [
 ];
 
 /// QR finder pattern 외곽 링 모양
-enum QrEyeOuter { square, rounded, circle, smooth }
+/// circleRound: 원형 외각 + 원형 여백(도넛 링)
+enum QrEyeOuter { square, rounded, circle, circleRound, smooth }
 
 /// QR finder pattern 내부 채움 모양
 enum QrEyeInner { square, circle, diamond, star }
@@ -66,7 +67,7 @@ class QrResultState {
   final Color qrColor;
   final double printSizeCm;               // 인쇄 크기 (cm)
   final double roundFactor;               // 도트 둥글기 (0.0~1.0)
-  final QrEyeOuter eyeOuter;             // finder pattern 외곽 링 모양
+  final QrEyeOuter eyeOuter;             // finder pattern 외곽 링 모양 (circleRound = 원형+원형여백)
   final QrEyeInner eyeInner;             // finder pattern 내부 채움 모양
   final int? randomEyeSeed;              // non-null → 시드 기반 랜덤 눈 모양
   final QrGradient? customGradient;       // 꾸미기 탭에서 직접 선택한 그라디언트
@@ -299,6 +300,8 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       background: BackgroundConfig(
         imageBytes: t.backgroundImageBytes,
         scale: t.backgroundScale,
+        alignX: t.backgroundAlignX,
+        alignY: t.backgroundAlignY,
       ),
       qrColor: Color(t.qrColorValue),
       customGradient: gradient,
