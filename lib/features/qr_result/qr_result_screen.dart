@@ -16,7 +16,8 @@ import '../../shared/constants/app_config.dart' show validateQrData;
 import 'qr_result_provider.dart';
 import 'tabs/all_templates_tab.dart';
 import 'tabs/background_tab.dart';
-import 'tabs/qr_style_tab.dart';
+import 'tabs/qr_shape_tab.dart';
+import 'tabs/qr_color_tab.dart';
 import 'tabs/sticker_tab.dart';
 import 'widgets/qr_preview_section.dart';
 
@@ -111,8 +112,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   @override
   void initState() {
     super.initState();
-    // 탭: 템플릿 / 배경화면 / QR / 로고
-    _tabController = TabController(length: 4, vsync: this);
+    // 탭: 템플릿 / 배경화면 / 모양 / 색상 / 로고
+    _tabController = TabController(length: 5, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
@@ -401,7 +402,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             ),
           ),
 
-          // ② 탭 바: 템플릿 / 배경화면 / QR / 로고
+          // ② 탭 바: 템플릿 / 배경화면 / 모양 / 색상 / 로고
           TabBar(
             controller: _tabController,
             isScrollable: true,
@@ -409,7 +410,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             tabs: const [
               Tab(text: '템플릿'),
               Tab(text: '배경화면'),
-              Tab(text: 'QR'),
+              Tab(text: '모양'),
+              Tab(text: '색상'),
               Tab(text: '로고'),
             ],
           ),
@@ -430,16 +432,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                 ),
                 // 1: 배경화면
                 BackgroundTab(onChanged: _recapture),
-                // 2: QR 스타일
-                QrStyleTab(
-                  onColorSelected: (c) {
-                    ref.read(qrResultProvider.notifier).setQrColor(c);
-                    _recapture();
-                  },
-                  onGradientChanged: (g) {
-                    ref.read(qrResultProvider.notifier).setCustomGradient(g);
-                    _recapture();
-                  },
+                // 2: 모양 (도트 + 눈)
+                QrShapeTab(
                   onDotStyleChanged: (s) {
                     ref.read(qrResultProvider.notifier).setDotStyle(s);
                     _recapture();
@@ -449,7 +443,18 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                     _recapture();
                   },
                 ),
-                // 3: 로고
+                // 3: 색상 (단색 + 그라디언트 서브탭)
+                QrColorTab(
+                  onColorSelected: (c) {
+                    ref.read(qrResultProvider.notifier).setQrColor(c);
+                    _recapture();
+                  },
+                  onGradientChanged: (g) {
+                    ref.read(qrResultProvider.notifier).setCustomGradient(g);
+                    _recapture();
+                  },
+                ),
+                // 4: 로고
                 StickerTab(onChanged: _recapture),
               ],
             ),
