@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/qr_template.dart';
+import '../../../models/user_qr_template.dart';
+import '../../../repositories/user_template_repository.dart';
+import '../qr_result_provider.dart';
 import '../widgets/template_thumbnail.dart';
 
-/// [전체 템플릿] 탭: 카테고리별 그룹화된 전체 목록.
-class AllTemplatesTab extends StatelessWidget {
+/// [템플릿] 탭: 나의 템플릿(상단) + 카테고리별 전체 템플릿(하단).
+class AllTemplatesTab extends ConsumerStatefulWidget {
   final QrTemplateManifest manifest;
   final String? activeTemplateId;
   final void Function(QrTemplate) onTemplateSelected;
   final VoidCallback onTemplateClear;
+  final VoidCallback onChanged;
 
   const AllTemplatesTab({
     super.key,
@@ -15,44 +20,152 @@ class AllTemplatesTab extends StatelessWidget {
     required this.activeTemplateId,
     required this.onTemplateSelected,
     required this.onTemplateClear,
+    required this.onChanged,
   });
 
+  @override
+  ConsumerState<AllTemplatesTab> createState() => _AllTemplatesTabState();
+}
+
+class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
+  final _repo = UserTemplateRepository();
+  List<UserQrTemplate> _myTemplates = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMyTemplates();
+  }
+
+  void _loadMyTemplates() {
+    setState(() {
+      _myTemplates = _repo.getAll();
+    });
+  }
+
+  Future<void> _applyUserTemplate(UserQrTemplate t) async {
+    ref.read(qrResultProvider.notifier).applyUserTemplate(t);
+    widget.onChanged();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('「${t.name}」 템플릿이 적용되었습니다.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteUserTemplate(UserQrTemplate t) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('템플릿 삭제'),
+        content: Text('「${t.name}」을(를) 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('삭제', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await _repo.delete(t.id);
+      _loadMyTemplates();
+    }
+  }
+
   List<QrTemplate> _templatesForCategory(String categoryId) {
-    return manifest.templates
+    return widget.manifest.templates
         .where((t) => t.categoryId == categoryId)
         .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (manifest.templates.isEmpty) {
+    if (widget.manifest.templates.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
     return CustomScrollView(
       slivers: [
-        // "스타일 없음" 버튼
+        // ── 나의 템플릿 섹션 (저장된 템플릿이 있을 때만 표시) ────────────────
+        if (_myTemplates.isNotEmpty) ...[
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+              child: Row(
+                children: [
+                  const Text(
+                    '나의 템플릿',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${_myTemplates.length}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 140,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                scrollDirection: Axis.horizontal,
+                itemCount: _myTemplates.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, i) {
+                  final t = _myTemplates[i];
+                  return _MyTemplateCard(
+                    template: t,
+                    onApply: () => _applyUserTemplate(t),
+                    onDelete: () => _deleteUserTemplate(t),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12, 16, 12, 0),
+              child: Divider(height: 1),
+            ),
+          ),
+        ],
+
+        // ── "스타일 없음" 버튼 ─────────────────────────────────────────────
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
             child: OutlinedButton.icon(
-              onPressed: onTemplateClear,
+              onPressed: widget.onTemplateClear,
               icon: const Icon(Icons.block, size: 16),
               label: const Text('스타일 없음'),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
-                  color: activeTemplateId == null
+                  color: widget.activeTemplateId == null
                       ? Theme.of(context).colorScheme.primary
                       : Colors.grey.shade300,
-                  width: activeTemplateId == null ? 2 : 1,
+                  width: widget.activeTemplateId == null ? 2 : 1,
                 ),
               ),
             ),
           ),
         ),
 
-        // 카테고리별 섹션
-        for (final category in manifest.categories)
+        // ── 카테고리별 전체 템플릿 ─────────────────────────────────────────
+        for (final category in widget.manifest.categories)
           ..._buildCategorySliver(context, category),
 
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -71,10 +184,7 @@ class AllTemplatesTab extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
           child: Text(
             category.name,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
         ),
       ),
@@ -84,8 +194,8 @@ class AllTemplatesTab extends StatelessWidget {
           delegate: SliverChildBuilderDelegate(
             (_, i) => TemplateThumbnail(
               template: templates[i],
-              isSelected: templates[i].id == activeTemplateId,
-              onTap: () => onTemplateSelected(templates[i]),
+              isSelected: templates[i].id == widget.activeTemplateId,
+              onTap: () => widget.onTemplateSelected(templates[i]),
             ),
             childCount: templates.length,
           ),
@@ -98,5 +208,84 @@ class AllTemplatesTab extends StatelessWidget {
         ),
       ),
     ];
+  }
+}
+
+// ── 나의 템플릿 카드 (가로 스크롤용 compact 카드) ─────────────────────────────────
+
+class _MyTemplateCard extends StatelessWidget {
+  final UserQrTemplate template;
+  final VoidCallback onApply;
+  final VoidCallback onDelete;
+
+  const _MyTemplateCard({
+    required this.template,
+    required this.onApply,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 100,
+      child: Card(
+        elevation: 1,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: InkWell(
+          onTap: onApply,
+          onLongPress: onDelete,
+          borderRadius: BorderRadius.circular(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 썸네일
+              Expanded(
+                child: ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(10)),
+                  child: template.thumbnailBytes != null
+                      ? Image.memory(
+                          template.thumbnailBytes!,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          color: Colors.grey.shade100,
+                          child: const Center(
+                            child: Icon(Icons.qr_code,
+                                size: 36, color: Colors.grey),
+                          ),
+                        ),
+                ),
+              ),
+              // 이름 + 삭제
+              Padding(
+                padding: const EdgeInsets.fromLTRB(6, 4, 2, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        template.name,
+                        style: const TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: onDelete,
+                      child: const Padding(
+                        padding: EdgeInsets.all(2),
+                        child: Icon(Icons.delete_outline,
+                            size: 15, color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

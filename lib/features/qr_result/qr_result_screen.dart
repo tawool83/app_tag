@@ -18,7 +18,6 @@ import 'tabs/all_templates_tab.dart';
 import 'tabs/background_tab.dart';
 import 'tabs/qr_style_tab.dart';
 import 'tabs/sticker_tab.dart';
-import 'tabs/my_templates_tab.dart';
 import 'widgets/qr_preview_section.dart';
 
 // 태그 타입별 아이콘/색상
@@ -106,14 +105,14 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   QrTemplateManifest _templateManifest = QrTemplateManifest.empty;
   final _templateRepo = UserTemplateRepository();
 
-  // MyTemplatesTab 강제 갱신: 버전 카운터를 key로 사용
+  // 나의 템플릿 갱신용 key (AllTemplatesTab 강제 재빌드)
   int _myTemplatesVersion = 0;
 
   @override
   void initState() {
     super.initState();
-    // 탭: 전체 템플릿 / 배경화면 / QR / 로고 / 나의 템플릿
-    _tabController = TabController(length: 5, vsync: this);
+    // 탭: 템플릿 / 배경화면 / QR / 로고
+    _tabController = TabController(length: 4, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
@@ -353,9 +352,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           duration: const Duration(seconds: 2),
         ),
       );
-      // 나의 템플릿 탭으로 이동 (새 key로 강제 재빌드)
+      // 템플릿 탭으로 이동 (새 key로 AllTemplatesTab 강제 재빌드)
       setState(() => _myTemplatesVersion++);
-      _tabController.animateTo(4);
+      _tabController.animateTo(0);
     }
   }
 
@@ -402,17 +401,16 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             ),
           ),
 
-          // ② 탭 바: 전체 템플릿 / 배경화면 / QR / 로고 / 나의 템플릿
+          // ② 탭 바: 템플릿 / 배경화면 / QR / 로고
           TabBar(
             controller: _tabController,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             tabs: const [
-              Tab(text: '전체 템플릿'),
+              Tab(text: '템플릿'),
               Tab(text: '배경화면'),
               Tab(text: 'QR'),
               Tab(text: '로고'),
-              Tab(text: '나의 템플릿'),
             ],
           ),
 
@@ -421,12 +419,14 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                // 0: 전체 템플릿
+                // 0: 템플릿 (나의 템플릿 + 전체 템플릿 통합)
                 AllTemplatesTab(
+                  key: ValueKey(_myTemplatesVersion),
                   manifest: _templateManifest,
                   activeTemplateId: state.activeTemplateId,
                   onTemplateSelected: _onTemplateSelected,
                   onTemplateClear: _onTemplateClear,
+                  onChanged: _recapture,
                 ),
                 // 1: 배경화면
                 BackgroundTab(onChanged: _recapture),
@@ -451,11 +451,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                 ),
                 // 3: 로고
                 StickerTab(onChanged: _recapture),
-                // 4: 나의 템플릿
-                MyTemplatesTab(
-                  key: ValueKey(_myTemplatesVersion),
-                  onChanged: _recapture,
-                ),
               ],
             ),
           ),
