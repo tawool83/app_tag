@@ -9,3 +9,4 @@
 | home-tile-visibility | 2026-04-12 | 99% | [home-tile-visibility/](home-tile-visibility/) |
 | direct-output | 2026-04-12 | 100% | [direct-output/](direct-output/) |
 | location-map-picker | 2026-04-12 | 97% | [location-map-picker/](location-map-picker/) |
+| qr-layer-editor | 2026-04-14 | 96% | [qr-layer-editor/](qr-layer-editor/) |

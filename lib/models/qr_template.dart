@@ -9,6 +9,9 @@ Color _hexToColor(String? hex) {
   return Color(int.parse(argb, radix: 16));
 }
 
+String _colorToHex(Color c) =>
+    '#${c.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
+
 // ── QrGradient ────────────────────────────────────────────────────────────────
 
 class QrGradient {
@@ -34,6 +37,13 @@ class QrGradient {
             .toList(),
         angleDegrees: (json['angleDegrees'] as num?)?.toDouble() ?? 45,
       );
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'colors': colors.map(_colorToHex).toList(),
+        if (stops != null) 'stops': stops,
+        'angleDegrees': angleDegrees,
+      };
 
   @override
   bool operator ==(Object other) =>

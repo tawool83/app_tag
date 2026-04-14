@@ -2,10 +2,9 @@
   "version": "3.0",
   "lastUpdated": "2026-04-12T02:13:04.303Z",
   "activeFeatures": [
-    "home-tile-visibility",
     "imagegallerysaver"
   ],
-  "primaryFeature": "home-tile-visibility",
+  "primaryFeature": "imagegallerysaver",
   "features": {
     "AppTag-Flutter": {
       "phase": "archived",
@@ -75,6 +74,14 @@
       "startedAt": "2026-04-12T00:00:00.000Z",
       "archivedAt": "2026-04-12T00:00:00.000Z",
       "archivedTo": "docs/archive/2026-04/direct-output/"
+    },
+    "qr-layer-editor": {
+      "phase": "archived",
+      "matchRate": 96,
+      "iterationCount": 1,
+      "startedAt": "2026-04-13T00:00:00.000Z",
+      "archivedAt": "2026-04-14T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/qr-layer-editor/"
     }
   },
   "pipeline": {

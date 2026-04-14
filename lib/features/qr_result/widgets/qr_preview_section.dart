@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
+import '../../../models/qr_dot_style.dart';
 import '../../../models/qr_template.dart';
 import '../qr_result_provider.dart' show QrResultState, qrResultProvider, QrEyeStyle;
+import 'qr_layer_stack.dart';
 
 /// 소형(160px) QR 미리보기 + 돋보기 확대 버튼.
 /// RepaintBoundary를 포함하여 캡처 기준이 됩니다.
@@ -50,7 +52,7 @@ class QrPreviewSection extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                     ],
-                    buildPrettyQr(state, deepLink: deepLink, size: 160),
+                    QrLayerStack(deepLink: deepLink, size: 160),
                     if (label.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
@@ -118,7 +120,7 @@ class QrPreviewSection extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              buildPrettyQr(state, deepLink: deepLink, size: 300, isDialog: true),
+              QrLayerStack(deepLink: deepLink, size: 300, isDialog: true),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -140,7 +142,7 @@ Widget buildPrettyQr(
   required double size,
   bool isDialog = false,
 }) {
-  final centerImage = _centerImageProvider(state);
+  final centerImage = centerImageProvider(state);
   // 템플릿 그라디언트 우선, 없으면 사용자 커스텀 그라디언트
   final activeGradient = state.templateGradient ?? state.customGradient;
   final hasGradient = activeGradient != null;
@@ -148,10 +150,7 @@ Widget buildPrettyQr(
       centerImage != null ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
   final dotColor = hasGradient ? Colors.black : state.qrColor;
 
-  final dotShape = PrettyQrSmoothSymbol(
-    roundFactor: state.roundFactor,
-    color: dotColor,
-  );
+  final dotShape = buildDotShape(state.dotStyle, dotColor);
 
   // eyeStyle에 따라 완전히 다른 symbol 타입으로 finder pattern 렌더링
   final PrettyQrShape qrShape;
@@ -176,7 +175,7 @@ Widget buildPrettyQr(
   final qrKey = ValueKey(Object.hash(
     isDialog,
     deepLink,
-    state.roundFactor,
+    state.dotStyle,
     state.eyeStyle,
     state.qrColor,
     state.embedIcon,
@@ -212,7 +211,7 @@ Widget buildPrettyQr(
       height: size,
       child: ShaderMask(
         blendMode: BlendMode.srcIn,
-        shaderCallback: (bounds) => buildQrGradientShader(activeGradient!, bounds),
+        shaderCallback: (bounds) => buildQrGradientShader(activeGradient, bounds),
         child: qrWidget,
       ),
     );
@@ -236,7 +235,7 @@ Widget buildPrettyQr(
             ),
             padding: EdgeInsets.all(iconSize * 0.08),
             child: ClipOval(
-              child: Image(image: centerImage!, fit: BoxFit.contain),
+              child: Image(image: centerImage, fit: BoxFit.contain),
             ),
           ),
         ],
@@ -249,7 +248,7 @@ Widget buildPrettyQr(
   return SizedBox(width: size, height: size, child: qrWidget);
 }
 
-ImageProvider? _centerImageProvider(QrResultState state) {
+ImageProvider? centerImageProvider(QrResultState state) {
   if (!state.embedIcon) return null;
   if (state.templateCenterIconBytes != null) {
     return MemoryImage(state.templateCenterIconBytes!);

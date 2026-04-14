@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/background_config.dart';
+import '../../models/qr_dot_style.dart';
 import '../../models/qr_template.dart';
+import '../../models/sticker_config.dart';
+import '../../models/user_qr_template.dart';
 import '../../services/qr_service.dart';
 import '../../services/history_service.dart';
 
@@ -71,6 +76,12 @@ class QrResultState {
   final QrGradient? templateGradient;      // non-null이면 그라디언트 렌더링
   final Uint8List? templateCenterIconBytes; // 템플릿 URL 아이콘 로드 결과
 
+  // 레이어 에디터 신규 필드
+  final BackgroundConfig background;       // 배경 레이어 (최하단)
+  final StickerConfig sticker;             // 스티커 레이어 (최상단)
+  final Color quietZoneColor;              // QR 콰이어트 존 배경색
+  final QrDotStyle dotStyle;              // QR 도트 모양
+
   const QrResultState({
     this.capturedImage,
     this.saveStatus = QrActionStatus.idle,
@@ -92,6 +103,10 @@ class QrResultState {
     this.activeTemplateId,
     this.templateGradient,
     this.templateCenterIconBytes,
+    this.background = const BackgroundConfig(),
+    this.sticker = const StickerConfig(),
+    this.quietZoneColor = Colors.white,
+    this.dotStyle = QrDotStyle.square,
   });
 
   QrResultState copyWith({
@@ -115,6 +130,10 @@ class QrResultState {
     Object? activeTemplateId = _sentinel,
     Object? templateGradient = _sentinel,
     Object? templateCenterIconBytes = _sentinel,
+    BackgroundConfig? background,
+    StickerConfig? sticker,
+    Color? quietZoneColor,
+    QrDotStyle? dotStyle,
   }) =>
       QrResultState(
         capturedImage: capturedImage ?? this.capturedImage,
@@ -155,6 +174,10 @@ class QrResultState {
         templateCenterIconBytes: templateCenterIconBytes == _sentinel
             ? this.templateCenterIconBytes
             : templateCenterIconBytes as Uint8List?,
+        background: background ?? this.background,
+        sticker: sticker ?? this.sticker,
+        quietZoneColor: quietZoneColor ?? this.quietZoneColor,
+        dotStyle: dotStyle ?? this.dotStyle,
       );
 }
 
@@ -230,6 +253,65 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       templateCenterIconBytes: centerIconBytes,
       centerEmoji: null,
       emojiIconBytes: null,
+    );
+  }
+
+  // ── 레이어 에디터 setter ───────────────────────────────────────────────────
+
+  void setBackground(BackgroundConfig config) =>
+      state = state.copyWith(background: config);
+
+  void setQuietZoneColor(Color color) =>
+      state = state.copyWith(quietZoneColor: color);
+
+  void setSticker(StickerConfig config) =>
+      state = state.copyWith(sticker: config);
+
+  void setDotStyle(QrDotStyle style) =>
+      state = state.copyWith(dotStyle: style);
+
+  /// 나의 템플릿 일괄 적용 (모든 레이어 설정 복원)
+  void applyUserTemplate(UserQrTemplate t) {
+    QrGradient? gradient;
+    if (t.gradientJson != null) {
+      try {
+        gradient = QrGradient.fromJson(jsonDecode(t.gradientJson!));
+      } catch (_) {}
+    }
+    state = state.copyWith(
+      background: BackgroundConfig(
+        imageBytes: t.backgroundImageBytes,
+        scale: t.backgroundScale,
+      ),
+      qrColor: Color(t.qrColorValue),
+      customGradient: gradient,
+      roundFactor: t.roundFactor,
+      dotStyle: QrDotStyle.values[t.dotStyleIndex.clamp(0, QrDotStyle.values.length - 1)],
+      eyeStyle: QrEyeStyle.values[t.eyeStyleIndex],
+      quietZoneColor: Color(t.quietZoneColorValue),
+      sticker: StickerConfig(
+        logoPosition: LogoPosition.values[t.logoPositionIndex],
+        logoBackground: LogoBackground.values[t.logoBackgroundIndex],
+        topText: t.topTextContent != null
+            ? StickerText(
+                content: t.topTextContent!,
+                color: Color(t.topTextColorValue ?? 0xFF000000),
+                fontFamily: t.topTextFont ?? 'Roboto',
+                fontSize: t.topTextSize ?? 14,
+              )
+            : null,
+        bottomText: t.bottomTextContent != null
+            ? StickerText(
+                content: t.bottomTextContent!,
+                color: Color(t.bottomTextColorValue ?? 0xFF000000),
+                fontFamily: t.bottomTextFont ?? 'Roboto',
+                fontSize: t.bottomTextSize ?? 14,
+              )
+            : null,
+      ),
+      activeTemplateId: null,
+      templateGradient: null,
+      templateCenterIconBytes: null,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -6,15 +7,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/tag_history.dart';
 import '../../models/qr_template.dart';
+import '../../models/user_qr_template.dart';
 import '../../repositories/template_repository.dart';
+import '../../repositories/user_template_repository.dart';
 import '../../services/settings_service.dart';
-import '../../services/history_service.dart' show historyServiceProvider;
-import '../../services/qr_service.dart' show qrServiceProvider;
 import '../../shared/constants/app_config.dart' show validateQrData;
 import 'qr_result_provider.dart';
-import 'tabs/recommended_tab.dart';
-import 'tabs/customize_tab.dart';
 import 'tabs/all_templates_tab.dart';
+import 'tabs/background_tab.dart';
+import 'tabs/qr_style_tab.dart';
+import 'tabs/sticker_tab.dart';
+import 'tabs/my_templates_tab.dart';
 import 'widgets/qr_preview_section.dart';
 
 // 태그 타입별 아이콘/색상
@@ -86,6 +89,7 @@ Future<Uint8List> _renderEmoji(String emoji) async {
   return bytes!.buffer.asUint8List();
 }
 
+
 class QrResultScreen extends ConsumerStatefulWidget {
   const QrResultScreen({super.key});
 
@@ -97,25 +101,24 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     with SingleTickerProviderStateMixin {
   final _repaintKey = GlobalKey();
   bool _historySaved = false;
-  bool _emojiModeActive = false;
   late TabController _tabController;
-  late TextEditingController _labelController;
-  late TextEditingController _printTitleController;
   QrTemplateManifest _templateManifest = QrTemplateManifest.empty;
+  final _templateRepo = UserTemplateRepository();
+
+  // MyTemplatesTab 강제 갱신: 버전 카운터를 key로 사용
+  int _myTemplatesVersion = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _labelController = TextEditingController();
-    _printTitleController = TextEditingController();
+    // 탭: 전체 템플릿 / 배경화면 / QR / 로고 / 나의 템플릿
+    _tabController = TabController(length: 5, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
           ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
-      // 중앙 집중 deepLink 유효성 검사 — 모든 진입 경로 공통 처리.
-      // 각 입력 화면을 수정하지 않고도 150자 제한이 일괄 적용된다.
+      // 중앙 집중 deepLink 유효성 검사
       final deepLink = args['deepLink'] as String;
       final validationError = validateQrData(deepLink);
       if (validationError != null && mounted) {
@@ -130,13 +133,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
         return;
       }
 
-      _labelController.text = args['appName'] as String;
-      _printTitleController.text = args['appName'] as String;
-
       final tagType = args['tagType'] as String?;
       final notifier = ref.read(qrResultProvider.notifier);
 
-      // 마지막 사용 설정값 복원
       final lastSize = await SettingsService.getLastPrintSizeCm();
       final embedIcon = await SettingsService.getQrEmbedIcon();
       final savedEmoji = await SettingsService.getQrCenterEmoji();
@@ -145,7 +144,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       notifier.setEmbedIcon(embedIcon);
       notifier.setTagType(tagType);
 
-      // 기본 아이콘 렌더링
       final appIconBytes = args['appIconBytes'] as Uint8List?;
       if (appIconBytes != null) {
         notifier.setDefaultIconBytes(appIconBytes);
@@ -155,18 +153,13 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
         if (mounted) notifier.setDefaultIconBytes(rendered);
       }
 
-      // 저장된 이모지 복원
       if (savedEmoji != null && mounted) {
         final emojiBytes = await _renderEmoji(savedEmoji);
-        if (mounted) {
-          notifier.setCenterEmoji(savedEmoji, emojiBytes);
-          setState(() => _emojiModeActive = true);
-        }
+        if (mounted) notifier.setCenterEmoji(savedEmoji, emojiBytes);
       }
 
       _captureAndSaveHistory(args);
 
-      // 템플릿 로드 (로컬 우선, 백그라운드 Supabase 동기화)
       TemplateRepository.getTemplates(
         onRefresh: (updated) {
           if (mounted) setState(() => _templateManifest = updated);
@@ -180,8 +173,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _labelController.dispose();
-    _printTitleController.dispose();
     super.dispose();
   }
 
@@ -230,177 +221,130 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     await ref.read(historyServiceProvider).saveHistory(history);
   }
 
-  Future<void> _recapture() async {
+  Future<Uint8List?> _captureThumbnail() async {
     await Future.delayed(const Duration(milliseconds: 100));
     final boundary = _repaintKey.currentContext
         ?.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary != null) {
-      final bytes =
-          await ref.read(qrServiceProvider).captureQrImage(boundary);
-      if (bytes != null) {
-        ref.read(qrResultProvider.notifier).setCapturedImage(bytes);
-      }
+    if (boundary == null) return null;
+    return ref.read(qrServiceProvider).captureQrImage(boundary);
+  }
+
+  Future<void> _recapture() async {
+    final bytes = await _captureThumbnail();
+    if (bytes != null) {
+      ref.read(qrResultProvider.notifier).setCapturedImage(bytes);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final appName = args['appName'] as String;
-    final deepLink = args['deepLink'] as String;
-
-    final state = ref.watch(qrResultProvider);
-    final label = state.customLabel ?? appName;
-    final printTitle = state.printTitle ?? appName;
-
-    final centerOption = !state.embedIcon
-        ? QrCenterOption.none
-        : _emojiModeActive
-            ? QrCenterOption.emoji
-            : QrCenterOption.defaultIcon;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('QR 코드')),
-      body: Column(
-        children: [
-          // ① 소형 QR 미리보기 (항상 고정)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: QrPreviewSection(
-              repaintKey: _repaintKey,
-              deepLink: deepLink,
-              label: label,
-              printTitle: printTitle,
+  Future<void> _showSaveTemplateSheet() async {
+    final nameCtrl = TextEditingController();
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          24, 24, 24,
+          MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '템플릿 저장',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-          ),
-
-          // ② 탭 바
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: '추천'),
-              Tab(text: '꾸미기'),
-              Tab(text: '전체 템플릿'),
-            ],
-          ),
-
-          // ③ 탭 콘텐츠 (Expanded)
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+            const SizedBox(height: 16),
+            TextField(
+              controller: nameCtrl,
+              autofocus: true,
+              maxLength: 30,
+              decoration: InputDecoration(
+                labelText: '템플릿 이름',
+                hintText: '예: 파란 배경 QR',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // 추천 탭
-                RecommendedTab(
-                  manifest: _templateManifest,
-                  activeTemplateId: state.activeTemplateId,
-                  tagType: state.tagType,
-                  onTemplateSelected: _onTemplateSelected,
-                  onTemplateClear: _onTemplateClear,
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('취소'),
                 ),
-                // 꾸미기 탭
-                CustomizeTab(
-                  labelController: _labelController,
-                  printTitleController: _printTitleController,
-                  selectedColor: state.qrColor,
-                  customGradient: state.customGradient,
-                  printSizeCm: state.printSizeCm,
-                  roundFactor: state.roundFactor,
-                  eyeStyle: state.eyeStyle,
-                  centerOption: centerOption,
-                  centerEmoji: state.centerEmoji,
-                  hasDefaultIcon: state.defaultIconBytes != null,
-                  onLabelChanged: (v) {
-                    ref.read(qrResultProvider.notifier).setCustomLabel(v);
-                    _recapture();
-                  },
-                  onPrintTitleChanged: (v) {
-                    ref.read(qrResultProvider.notifier).setPrintTitle(v);
-                  },
-                  onColorSelected: (c) {
-                    ref.read(qrResultProvider.notifier).setQrColor(c);
-                    _recapture();
-                  },
-                  onGradientChanged: (g) {
-                    ref.read(qrResultProvider.notifier).setCustomGradient(g);
-                    _recapture();
-                  },
-                  onSizeChanged: (s) {
-                    ref.read(qrResultProvider.notifier).setPrintSizeCm(s);
-                  },
-                  onRoundFactorChanged: (f) {
-                    ref.read(qrResultProvider.notifier).setRoundFactor(f);
-                    _recapture();
-                  },
-                  onEyeStyleChanged: (s) {
-                    ref.read(qrResultProvider.notifier).setEyeStyle(s);
-                    _recapture();
-                  },
-                  onCenterOptionChanged: (option) {
-                    final notifier = ref.read(qrResultProvider.notifier);
-                    setState(() =>
-                        _emojiModeActive = option == QrCenterOption.emoji);
-                    switch (option) {
-                      case QrCenterOption.none:
-                        notifier.setEmbedIcon(false);
-                        SettingsService.saveQrEmbedIcon(false);
-                        break;
-                      case QrCenterOption.defaultIcon:
-                        notifier.setEmbedIcon(true);
-                        notifier.clearEmoji();
-                        SettingsService.saveQrEmbedIcon(true);
-                        SettingsService.saveQrCenterEmoji(null);
-                        break;
-                      case QrCenterOption.emoji:
-                        notifier.setEmbedIcon(true);
-                        SettingsService.saveQrEmbedIcon(true);
-                        break;
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    if (nameCtrl.text.trim().isNotEmpty) {
+                      Navigator.pop(ctx, true);
                     }
-                    _recapture();
                   },
-                  onEmojiSelected: (emoji) async {
-                    final bytes = await _renderEmoji(emoji);
-                    if (!mounted) return;
-                    ref
-                        .read(qrResultProvider.notifier)
-                        .setCenterEmoji(emoji, bytes);
-                    SettingsService.saveQrCenterEmoji(emoji);
-                    _recapture();
-                  },
-                ),
-                // 전체 템플릿 탭
-                AllTemplatesTab(
-                  manifest: _templateManifest,
-                  activeTemplateId: state.activeTemplateId,
-                  onTemplateSelected: _onTemplateSelected,
-                  onTemplateClear: _onTemplateClear,
+                  child: const Text('저장'),
                 ),
               ],
             ),
-          ),
-
-          // ④ 액션 버튼 (항상 하단 고정)
-          _ActionButtons(
-            state: state,
-            appName: label,
-            onSave: () =>
-                ref.read(qrResultProvider.notifier).saveToGallery(label),
-            onShare: () =>
-                ref.read(qrResultProvider.notifier).shareImage(label),
-            onPrint: () async {
-              await SettingsService.saveLastPrintSizeCm(state.printSizeCm);
-              ref.read(qrResultProvider.notifier).printQrCode(
-                    label,
-                    sizeCm: state.printSizeCm,
-                    printTitle: state.printTitle,
-                  );
-            },
-            onDone: () =>
-                Navigator.popUntil(context, (route) => route.isFirst),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+
+    if (confirmed != true || !mounted) return;
+
+    final name = nameCtrl.text.trim();
+    if (name.isEmpty) return;
+
+    final state = ref.read(qrResultProvider);
+    final thumbnail = await _captureThumbnail();
+
+    final template = UserQrTemplate(
+      id: const Uuid().v4(),
+      name: name,
+      createdAt: DateTime.now(),
+      // 배경 레이어
+      backgroundImageBytes: state.background.imageBytes,
+      backgroundScale: state.background.scale,
+      // QR 레이어
+      qrColorValue: state.qrColor.toARGB32(),
+      gradientJson: state.customGradient != null
+          ? jsonEncode(state.customGradient!.toJson())
+          : null,
+      roundFactor: state.roundFactor,
+      dotStyleIndex: state.dotStyle.index,
+      eyeStyleIndex: state.eyeStyle.index,
+      quietZoneColorValue: state.quietZoneColor.toARGB32(),
+      // 스티커 레이어
+      logoPositionIndex: state.sticker.logoPosition.index,
+      logoBackgroundIndex: state.sticker.logoBackground.index,
+      topTextContent: state.sticker.topText?.content,
+      topTextColorValue: state.sticker.topText?.color.toARGB32(),
+      topTextFont: state.sticker.topText?.fontFamily,
+      topTextSize: state.sticker.topText?.fontSize,
+      bottomTextContent: state.sticker.bottomText?.content,
+      bottomTextColorValue: state.sticker.bottomText?.color.toARGB32(),
+      bottomTextFont: state.sticker.bottomText?.fontFamily,
+      bottomTextSize: state.sticker.bottomText?.fontSize,
+      thumbnailBytes: thumbnail,
+    );
+
+    await _templateRepo.save(template);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('「$name」 템플릿이 저장되었습니다.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      // 나의 템플릿 탭으로 이동 (새 key로 강제 재빌드)
+      setState(() => _myTemplatesVersion++);
+      _tabController.animateTo(4);
+    }
   }
 
   Future<void> _onTemplateSelected(QrTemplate template) async {
@@ -423,25 +367,118 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     SettingsService.saveActiveTemplateId(null);
     _recapture();
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final appName = args['appName'] as String;
+    final deepLink = args['deepLink'] as String;
+
+    final state = ref.watch(qrResultProvider);
+    final label = state.customLabel ?? appName;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('QR 코드')),
+      body: Column(
+        children: [
+          // ① QR 미리보기
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: QrPreviewSection(
+              repaintKey: _repaintKey,
+              deepLink: deepLink,
+              label: label,
+              printTitle: '',
+            ),
+          ),
+
+          // ② 탭 바: 전체 템플릿 / 배경화면 / QR / 로고 / 나의 템플릿
+          TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            tabs: const [
+              Tab(text: '전체 템플릿'),
+              Tab(text: '배경화면'),
+              Tab(text: 'QR'),
+              Tab(text: '로고'),
+              Tab(text: '나의 템플릿'),
+            ],
+          ),
+
+          // ③ 탭 콘텐츠
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // 0: 전체 템플릿
+                AllTemplatesTab(
+                  manifest: _templateManifest,
+                  activeTemplateId: state.activeTemplateId,
+                  onTemplateSelected: _onTemplateSelected,
+                  onTemplateClear: _onTemplateClear,
+                ),
+                // 1: 배경화면
+                BackgroundTab(onChanged: _recapture),
+                // 2: QR 스타일
+                QrStyleTab(
+                  onColorSelected: (c) {
+                    ref.read(qrResultProvider.notifier).setQrColor(c);
+                    _recapture();
+                  },
+                  onGradientChanged: (g) {
+                    ref.read(qrResultProvider.notifier).setCustomGradient(g);
+                    _recapture();
+                  },
+                  onDotStyleChanged: (s) {
+                    ref.read(qrResultProvider.notifier).setDotStyle(s);
+                    _recapture();
+                  },
+                  onEyeStyleChanged: (s) {
+                    ref.read(qrResultProvider.notifier).setEyeStyle(s);
+                    _recapture();
+                  },
+                ),
+                // 3: 로고
+                StickerTab(onChanged: _recapture),
+                // 4: 나의 템플릿
+                MyTemplatesTab(
+                  key: ValueKey(_myTemplatesVersion),
+                  onChanged: _recapture,
+                ),
+              ],
+            ),
+          ),
+
+          // ④ 액션 버튼
+          _ActionButtons(
+            state: state,
+            onSaveGallery: () =>
+                ref.read(qrResultProvider.notifier).saveToGallery(label),
+            onSaveTemplate: _showSaveTemplateSheet,
+            onShare: () =>
+                ref.read(qrResultProvider.notifier).shareImage(label),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ── 액션 버튼 영역 ────────────────────────────────────────────────────────────
 
 class _ActionButtons extends StatelessWidget {
   final QrResultState state;
-  final String appName;
-  final VoidCallback onSave;
+  final VoidCallback onSaveGallery;
+  final VoidCallback onSaveTemplate;
   final VoidCallback onShare;
-  final VoidCallback onPrint;
-  final VoidCallback onDone;
 
   const _ActionButtons({
     required this.state,
-    required this.appName,
-    required this.onSave,
+    required this.onSaveGallery,
+    required this.onSaveTemplate,
     required this.onShare,
-    required this.onPrint,
-    required this.onDone,
   });
 
   @override
@@ -464,7 +501,16 @@ class _ActionButtons extends StatelessWidget {
                   icon: Icons.save_alt,
                   label: '갤러리 저장',
                   status: state.saveStatus,
-                  onTap: onSave,
+                  onTap: onSaveGallery,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.bookmark_add_outlined,
+                  label: '템플릿 저장',
+                  status: QrActionStatus.idle,
+                  onTap: onSaveTemplate,
                 ),
               ),
               const SizedBox(width: 8),
@@ -476,38 +522,15 @@ class _ActionButtons extends StatelessWidget {
                   onTap: onShare,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _ActionButton(
-                  icon: Icons.print,
-                  label: '인쇄',
-                  status: state.printStatus,
-                  onTap: onPrint,
-                ),
-              ),
             ],
           ),
           if (state.errorMessage != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               state.errorMessage!,
               style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ],
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onDone,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('완료'),
-            ),
-          ),
         ],
       ),
     );
