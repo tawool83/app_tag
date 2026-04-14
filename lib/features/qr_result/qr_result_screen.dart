@@ -405,8 +405,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           // ② 탭 바: 템플릿 / 배경화면 / 모양 / 색상 / 로고
           TabBar(
             controller: _tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
             tabs: const [
               Tab(text: '템플릿'),
               Tab(text: '배경화면'),
