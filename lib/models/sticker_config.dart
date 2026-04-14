@@ -10,13 +10,13 @@ enum LogoBackground { none, square, circle }
 class StickerText {
   final String content;
   final Color color;
-  final String fontFamily; // 'Roboto' | 'NotoSerifKR' | 'RobotoMono'
-  final double fontSize;   // 10 ~ 24
+  final String fontFamily; // 'sans-serif' | 'serif' | 'monospace'
+  final double fontSize;   // 10 ~ 64
 
   const StickerText({
     required this.content,
     this.color = Colors.black,
-    this.fontFamily = 'Roboto',
+    this.fontFamily = 'sans-serif',
     this.fontSize = 14,
   });
 

@@ -63,6 +63,9 @@ dependencies:
   shared_preferences: ^2.3.0
   flutter_contacts: ^1.1.9+1
 
+  # 색상 피커 (HSV 컬러 휠)
+  flutter_colorpicker: ^1.1.0
+
   # 이미지 선택/편집 (배경화면 탭)
   image_picker: ^1.1.2
   image_cropper: ^8.0.2

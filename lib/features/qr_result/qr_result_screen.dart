@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/tag_history.dart';
 import '../../models/qr_template.dart';
+import '../../models/sticker_config.dart' show StickerText;
 import '../../models/user_qr_template.dart';
 import '../../repositories/template_repository.dart';
 import '../../repositories/user_template_repository.dart';
@@ -134,6 +135,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       }
 
       final tagType = args['tagType'] as String?;
+      final appName = args['appName'] as String;
       final notifier = ref.read(qrResultProvider.notifier);
 
       final lastSize = await SettingsService.getLastPrintSizeCm();
@@ -143,6 +145,16 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       notifier.setPrintSizeCm(lastSize);
       notifier.setEmbedIcon(embedIcon);
       notifier.setTagType(tagType);
+
+      // 하단 텍스트 기본값: 앱 이름으로 pre-fill (아직 설정되지 않은 경우)
+      final currentState = ref.read(qrResultProvider);
+      if (currentState.sticker.bottomText == null) {
+        notifier.setSticker(
+          currentState.sticker.copyWith(
+            bottomText: StickerText(content: appName),
+          ),
+        );
+      }
 
       final appIconBytes = args['appIconBytes'] as Uint8List?;
       if (appIconBytes != null) {
@@ -208,7 +220,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       createdAt: DateTime.now(),
       packageName: packageName,
       appIconBytes: appIconBytes,
-      qrLabel: state.customLabel,
+      qrLabel: null,
       qrColor: state.qrColor.toARGB32(),
       printSizeCm: state.printSizeCm,
       tagType: tagType,
@@ -376,7 +388,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     final deepLink = args['deepLink'] as String;
 
     final state = ref.watch(qrResultProvider);
-    final label = state.customLabel ?? appName;
 
     return Scaffold(
       appBar: AppBar(title: const Text('QR 코드')),
@@ -388,8 +399,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             child: QrPreviewSection(
               repaintKey: _repaintKey,
               deepLink: deepLink,
-              label: label,
-              printTitle: '',
             ),
           ),
 
@@ -455,10 +464,10 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           _ActionButtons(
             state: state,
             onSaveGallery: () =>
-                ref.read(qrResultProvider.notifier).saveToGallery(label),
+                ref.read(qrResultProvider.notifier).saveToGallery(appName),
             onSaveTemplate: _showSaveTemplateSheet,
             onShare: () =>
-                ref.read(qrResultProvider.notifier).shareImage(label),
+                ref.read(qrResultProvider.notifier).shareImage(appName),
           ),
         ],
       ),

@@ -59,10 +59,8 @@ class QrResultState {
   final QrActionStatus shareStatus;
   final QrActionStatus printStatus;
   final String? errorMessage;
-  final String? customLabel;               // null = 앱 이름 사용, "" = 표시 안 함
   final Color qrColor;
   final double printSizeCm;               // 인쇄 크기 (cm)
-  final String? printTitle;               // null = 앱 이름 사용, "" = 표시 안 함
   final double roundFactor;               // 도트 둥글기 (0.0~1.0)
   final QrEyeStyle eyeStyle;              // 아이(finder pattern) 모양
   final QrGradient? customGradient;       // 꾸미기 탭에서 직접 선택한 그라디언트
@@ -88,10 +86,8 @@ class QrResultState {
     this.shareStatus = QrActionStatus.idle,
     this.printStatus = QrActionStatus.idle,
     this.errorMessage,
-    this.customLabel,
     this.qrColor = const Color(0xFF000000),
     this.printSizeCm = 5.0,
-    this.printTitle,
     this.roundFactor = 0.0,
     this.eyeStyle = QrEyeStyle.square,
     this.customGradient,
@@ -115,10 +111,8 @@ class QrResultState {
     QrActionStatus? shareStatus,
     QrActionStatus? printStatus,
     String? errorMessage,
-    Object? customLabel = _sentinel,
     Color? qrColor,
     double? printSizeCm,
-    Object? printTitle = _sentinel,
     double? roundFactor,
     QrEyeStyle? eyeStyle,
     Object? customGradient = _sentinel,
@@ -141,14 +135,8 @@ class QrResultState {
         shareStatus: shareStatus ?? this.shareStatus,
         printStatus: printStatus ?? this.printStatus,
         errorMessage: errorMessage ?? this.errorMessage,
-        customLabel: customLabel == _sentinel
-            ? this.customLabel
-            : customLabel as String?,
         qrColor: qrColor ?? this.qrColor,
         printSizeCm: printSizeCm ?? this.printSizeCm,
-        printTitle: printTitle == _sentinel
-            ? this.printTitle
-            : printTitle as String?,
         roundFactor: roundFactor ?? this.roundFactor,
         eyeStyle: eyeStyle ?? this.eyeStyle,
         customGradient: customGradient == _sentinel
@@ -193,20 +181,12 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
     state = state.copyWith(capturedImage: bytes);
   }
 
-  void setCustomLabel(String? label) {
-    state = state.copyWith(customLabel: label);
-  }
-
   void setQrColor(Color color) {
     state = state.copyWith(qrColor: color);
   }
 
   void setPrintSizeCm(double sizeCm) {
     state = state.copyWith(printSizeCm: sizeCm);
-  }
-
-  void setPrintTitle(String? title) {
-    state = state.copyWith(printTitle: title);
   }
 
   void setRoundFactor(double factor) {
@@ -296,7 +276,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
             ? StickerText(
                 content: t.topTextContent!,
                 color: Color(t.topTextColorValue ?? 0xFF000000),
-                fontFamily: t.topTextFont ?? 'Roboto',
+                fontFamily: t.topTextFont ?? 'sans-serif',
                 fontSize: t.topTextSize ?? 14,
               )
             : null,
@@ -304,7 +284,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
             ? StickerText(
                 content: t.bottomTextContent!,
                 color: Color(t.bottomTextColorValue ?? 0xFF000000),
-                fontFamily: t.bottomTextFont ?? 'Roboto',
+                fontFamily: t.bottomTextFont ?? 'sans-serif',
                 fontSize: t.bottomTextSize ?? 14,
               )
             : null,
@@ -353,8 +333,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
     }
   }
 
-  Future<void> printQrCode(String appName,
-      {double? sizeCm, String? printTitle}) async {
+  Future<void> printQrCode(String appName, {double? sizeCm}) async {
     if (state.capturedImage == null) return;
     state = state.copyWith(printStatus: QrActionStatus.loading);
     try {
@@ -362,7 +341,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
         imageBytes: state.capturedImage!,
         appName: appName,
         sizeCm: sizeCm ?? state.printSizeCm,
-        printTitle: printTitle ?? state.printTitle,
+        printTitle: null,
       );
       state = state.copyWith(printStatus: QrActionStatus.success);
     } catch (_) {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import '../../../models/qr_dot_style.dart';
 import '../../../models/qr_template.dart';
+import '../../../models/sticker_config.dart' show LogoPosition;
 import '../qr_result_provider.dart' show QrResultState, qrResultProvider, QrEyeStyle;
 import 'qr_layer_stack.dart';
 
@@ -11,15 +12,11 @@ import 'qr_layer_stack.dart';
 class QrPreviewSection extends ConsumerWidget {
   final GlobalKey repaintKey;
   final String deepLink;
-  final String label;
-  final String printTitle;
 
   const QrPreviewSection({
     super.key,
     required this.repaintKey,
     required this.deepLink,
-    required this.label,
-    required this.printTitle,
   });
 
   @override
@@ -40,30 +37,7 @@ class QrPreviewSection extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (printTitle.isNotEmpty) ...[
-                      Text(
-                        printTitle,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 6),
-                    ],
                     QrLayerStack(deepLink: deepLink, size: 160),
-                    if (label.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        label,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -143,11 +117,14 @@ Widget buildPrettyQr(
   bool isDialog = false,
 }) {
   final centerImage = centerImageProvider(state);
+  // 로고 위치가 center일 때만 QR 내부에 embed (bottomRight는 _LogoWidget이 담당)
+  final embedInQr = centerImage != null &&
+      state.sticker.logoPosition == LogoPosition.center;
   // 템플릿 그라디언트 우선, 없으면 사용자 커스텀 그라디언트
   final activeGradient = state.templateGradient ?? state.customGradient;
   final hasGradient = activeGradient != null;
   final ecLevel =
-      centerImage != null ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
+      embedInQr ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
   final dotColor = hasGradient ? Colors.black : state.qrColor;
 
   final dotShape = buildDotShape(state.dotStyle, dotColor);
@@ -187,7 +164,7 @@ Widget buildPrettyQr(
 
   // 그라디언트 활성 시 아이콘을 ShaderMask 바깥으로 분리해야 함.
   // BlendMode.srcIn이 PrettyQrView 내부 이미지까지 그라디언트로 물들이기 때문.
-  final useIconOverlay = hasGradient && centerImage != null;
+  final useIconOverlay = hasGradient && embedInQr;
 
   final qrWidget = PrettyQrView.data(
     key: qrKey,
@@ -195,10 +172,10 @@ Widget buildPrettyQr(
     errorCorrectLevel: ecLevel,
     decoration: PrettyQrDecoration(
       shape: qrShape,
-      // 그라디언트+아이콘 조합 시 아이콘을 Stack으로 따로 올리므로 여기선 제외
-      image: !useIconOverlay && centerImage != null
+      // center 위치 + 그라디언트 없을 때만 QR 내부에 embed
+      image: !useIconOverlay && embedInQr
           ? PrettyQrDecorationImage(
-              image: centerImage,
+              image: centerImage!,
               position: PrettyQrDecorationImagePosition.embedded,
             )
           : null,
@@ -218,6 +195,7 @@ Widget buildPrettyQr(
 
     if (useIconOverlay) {
       // 아이콘을 흰 원형 배지로 중앙에 오버레이 (그라디언트 영향 없음)
+      // embedInQr == true이면 centerImage != null 보장됨
       final iconSize = size * 0.22;
       gradientQr = Stack(
         alignment: Alignment.center,
@@ -235,7 +213,7 @@ Widget buildPrettyQr(
             ),
             padding: EdgeInsets.all(iconSize * 0.08),
             child: ClipOval(
-              child: Image(image: centerImage, fit: BoxFit.contain),
+              child: Image(image: centerImage!, fit: BoxFit.contain),
             ),
           ),
         ],

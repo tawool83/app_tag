@@ -33,13 +33,14 @@ class QrLayerStack extends ConsumerWidget {
     final quietPadding = (size * 0.05).clamp(8.0, 20.0);
     final qrSize = size - quietPadding * 2;
 
-    return SizedBox(
+    // QR 핵심 영역 (배경 + QR + 로고)
+    final qrCore = SizedBox(
       width: size,
       height: size,
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
-          // ── Layer 0: 배경 ──────────────────────────────────────────────
+          // ── Layer 0: 배경 ────────────────────────────────────────────
           Positioned.fill(
             child: bg.hasImage
                 ? Transform.scale(
@@ -54,7 +55,7 @@ class QrLayerStack extends ConsumerWidget {
                 : Container(color: Colors.white),
           ),
 
-          // ── Layer 1: QR (콰이어트 존 + buildPrettyQr) ──────────────────
+          // ── Layer 1: QR (콰이어트 존 + buildPrettyQr) ────────────────
           Positioned.fill(
             child: Container(
               color: state.quietZoneColor == Colors.transparent
@@ -70,35 +71,27 @@ class QrLayerStack extends ConsumerWidget {
             ),
           ),
 
-          // ── Layer 2: 스티커 ────────────────────────────────────────────
-          // 상단 텍스트
-          if (sticker.hasTopText)
-            Positioned(
-              top: 4,
-              left: 0,
-              right: 0,
-              child: _StickerTextWidget(text: sticker.topText!),
-            ),
-
-          // 로고
+          // ── Layer 2: 로고 ─────────────────────────────────────────────
           if (iconProvider != null)
             _LogoWidget(
               sticker: sticker,
               iconProvider: iconProvider,
               size: size,
-              hasBottomText: sticker.hasBottomText,
-            ),
-
-          // 하단 텍스트
-          if (sticker.hasBottomText)
-            Positioned(
-              bottom: 4,
-              left: 0,
-              right: 0,
-              child: _StickerTextWidget(text: sticker.bottomText!),
             ),
         ],
       ),
+    );
+
+    // 상단/하단 텍스트는 QR 영역 밖 Column으로 배치 (겹침 방지)
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (sticker.hasTopText)
+          _StickerTextWidget(text: sticker.topText!, width: size),
+        qrCore,
+        if (sticker.hasBottomText)
+          _StickerTextWidget(text: sticker.bottomText!, width: size),
+      ],
     );
   }
 }
@@ -107,25 +100,28 @@ class QrLayerStack extends ConsumerWidget {
 
 class _StickerTextWidget extends StatelessWidget {
   final StickerText text;
+  final double width;
 
-  const _StickerTextWidget({required this.text});
+  const _StickerTextWidget({required this.text, required this.width});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text.content,
-      textAlign: TextAlign.center,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: text.color,
-        fontFamily: text.fontFamily,
-        fontSize: text.fontSize,
-        fontWeight: FontWeight.w600,
-        shadows: const [
-          Shadow(color: Colors.white, blurRadius: 3),
-          Shadow(color: Colors.white, blurRadius: 6),
-        ],
+    return SizedBox(
+      width: width,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Text(
+          text.content,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: text.color,
+            fontFamily: text.fontFamily,
+            fontSize: text.fontSize,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
@@ -137,13 +133,11 @@ class _LogoWidget extends StatelessWidget {
   final StickerConfig sticker;
   final ImageProvider iconProvider;
   final double size;
-  final bool hasBottomText;
 
   const _LogoWidget({
     required this.sticker,
     required this.iconProvider,
     required this.size,
-    required this.hasBottomText,
   });
 
   @override
@@ -154,11 +148,10 @@ class _LogoWidget extends StatelessWidget {
     if (sticker.logoPosition == LogoPosition.center) {
       return Positioned.fill(child: Center(child: iconWidget));
     } else {
-      // bottomRight — 하단 텍스트가 있으면 위로 올림
-      final bottom = hasBottomText ? size * 0.12 : 8.0;
+      // bottomRight — 텍스트는 이제 Stack 밖이므로 고정 bottom 사용
       return Positioned(
         right: 8,
-        bottom: bottom,
+        bottom: 8,
         child: iconWidget,
       );
     }
