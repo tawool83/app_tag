@@ -10,7 +10,8 @@
       "Bash(git:*)",
       "Bash(flutter build:*)",
       "Bash(pod install:*)",
-      "Bash(flutter --version)"
+      "Bash(flutter --version)",
+      "mcp__claude_ai_Notion__notion-create-pages"
     ]
   }
 }
