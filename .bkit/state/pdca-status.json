@@ -2,11 +2,10 @@
   "version": "3.0",
   "lastUpdated": "2026-04-16T09:00:00.000Z",
   "activeFeatures": [
-    "qr-task-json-storage",
     "clean-architecture-refactor",
     "imagegallerysaver"
   ],
-  "primaryFeature": "qr-task-json-storage",
+  "primaryFeature": "clean-architecture-refactor",
   "features": {
     "AppTag-Flutter": {
       "phase": "archived",
@@ -86,21 +85,12 @@
       "archivedTo": "docs/archive/2026-04/qr-layer-editor/"
     },
     "qr-task-json-storage": {
-      "phase": "check",
-      "phaseNumber": 4,
+      "phase": "archived",
       "matchRate": 95,
       "iterationCount": 0,
-      "requirements": [],
-      "documents": {
-        "plan": "docs/01-plan/features/qr-task-json-storage.plan.md",
-        "design": "docs/02-design/features/qr-task-json-storage.design.md",
-        "analysis": "docs/03-analysis/qr-task-json-storage.analysis.md"
-      },
-      "timestamps": {
-        "started": "2026-04-15T00:00:00.000Z",
-        "lastUpdated": "2026-04-16T10:00:00.000Z"
-      },
-      "notes": "P0-P6 전체 완료 (95% match), Report 생성 가능"
+      "startedAt": "2026-04-15T00:00:00.000Z",
+      "archivedAt": "2026-04-16T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/qr-task-json-storage/"
     },
     "clean-architecture-refactor": {
       "phase": "design",

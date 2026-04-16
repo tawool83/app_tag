@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-04-12T06:19:49.575Z",
+  "timestamp": "2026-04-16T15:14:56.917Z",
   "reason": "compaction",
   "status": {
     "version": "3.0",
-    "lastUpdated": "2026-04-12T02:13:04.303Z",
+    "lastUpdated": "2026-04-16T09:00:00.000Z",
     "activeFeatures": [
-      "home-tile-visibility",
+      "clean-architecture-refactor",
       "imagegallerysaver"
     ],
-    "primaryFeature": "home-tile-visibility",
+    "primaryFeature": "clean-architecture-refactor",
     "features": {
       "AppTag-Flutter": {
         "phase": "archived",
@@ -78,6 +78,38 @@
         "startedAt": "2026-04-12T00:00:00.000Z",
         "archivedAt": "2026-04-12T00:00:00.000Z",
         "archivedTo": "docs/archive/2026-04/direct-output/"
+      },
+      "qr-layer-editor": {
+        "phase": "archived",
+        "matchRate": 96,
+        "iterationCount": 1,
+        "startedAt": "2026-04-13T00:00:00.000Z",
+        "archivedAt": "2026-04-14T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/qr-layer-editor/"
+      },
+      "qr-task-json-storage": {
+        "phase": "archived",
+        "matchRate": 95,
+        "iterationCount": 0,
+        "startedAt": "2026-04-15T00:00:00.000Z",
+        "archivedAt": "2026-04-16T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/qr-task-json-storage/"
+      },
+      "clean-architecture-refactor": {
+        "phase": "design",
+        "phaseNumber": 2,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {
+          "plan": "docs/01-plan/features/clean-architecture-refactor.plan.md",
+          "design": "docs/02-design/features/clean-architecture-refactor.design.md"
+        },
+        "timestamps": {
+          "started": "2026-04-15T00:00:00.000Z",
+          "lastUpdated": "2026-04-15T00:00:00.000Z"
+        },
+        "notes": "Plan+Design 완료, qr-task-json-storage 선행 후 DO 진행 예정"
       }
     },
     "pipeline": {
@@ -108,6 +140,18 @@
         "feature": "imagegallerysaver",
         "phase": "do",
         "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-16T09:00:00.000Z",
+        "feature": "qr-task-json-storage",
+        "phase": "do",
+        "action": "registered (P0-P2 완료, P3 진행 중)"
+      },
+      {
+        "timestamp": "2026-04-16T09:00:00.000Z",
+        "feature": "clean-architecture-refactor",
+        "phase": "design",
+        "action": "registered (Plan+Design 완료)"
       }
     ],
     "stateMachine": {

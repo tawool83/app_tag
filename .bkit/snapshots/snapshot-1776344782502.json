@@ -1,13 +1,15 @@
 {
-  "timestamp": "2026-04-12T01:52:51.286Z",
+  "timestamp": "2026-04-16T13:06:22.498Z",
   "reason": "compaction",
   "status": {
     "version": "3.0",
-    "lastUpdated": "2026-04-10T04:15:21.469Z",
+    "lastUpdated": "2026-04-16T09:00:00.000Z",
     "activeFeatures": [
-      "home-tile-visibility"
+      "qr-task-json-storage",
+      "clean-architecture-refactor",
+      "imagegallerysaver"
     ],
-    "primaryFeature": "home-tile-visibility",
+    "primaryFeature": "qr-task-json-storage",
     "features": {
       "AppTag-Flutter": {
         "phase": "archived",
@@ -66,9 +68,9 @@
         "documents": {},
         "timestamps": {
           "started": "2026-04-10T04:15:21.469Z",
-          "lastUpdated": "2026-04-10T04:15:21.469Z"
+          "lastUpdated": "2026-04-12T02:13:04.303Z"
         },
-        "lastFile": "C:\\Users\\chunjae\\AppData\\Local\\Pub\\Cache\\hosted\\pub.dev\\image_gallery_saver-2.0.3\\android\\src\\main\\kotlin\\com\\example\\imagegallerysaver\\ImageGallerySaverPlugin.kt"
+        "lastFile": "/Users/tawool/.pub-cache/hosted/pub.dev/image_gallery_saver-2.0.3/android/src/main/kotlin/com/example/imagegallerysaver/ImageGallerySaverPlugin.kt"
       },
       "direct-output": {
         "phase": "archived",
@@ -77,6 +79,47 @@
         "startedAt": "2026-04-12T00:00:00.000Z",
         "archivedAt": "2026-04-12T00:00:00.000Z",
         "archivedTo": "docs/archive/2026-04/direct-output/"
+      },
+      "qr-layer-editor": {
+        "phase": "archived",
+        "matchRate": 96,
+        "iterationCount": 1,
+        "startedAt": "2026-04-13T00:00:00.000Z",
+        "archivedAt": "2026-04-14T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/qr-layer-editor/"
+      },
+      "qr-task-json-storage": {
+        "phase": "check",
+        "phaseNumber": 4,
+        "matchRate": 95,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {
+          "plan": "docs/01-plan/features/qr-task-json-storage.plan.md",
+          "design": "docs/02-design/features/qr-task-json-storage.design.md",
+          "analysis": "docs/03-analysis/qr-task-json-storage.analysis.md"
+        },
+        "timestamps": {
+          "started": "2026-04-15T00:00:00.000Z",
+          "lastUpdated": "2026-04-16T10:00:00.000Z"
+        },
+        "notes": "P0-P6 전체 완료 (95% match), Report 생성 가능"
+      },
+      "clean-architecture-refactor": {
+        "phase": "design",
+        "phaseNumber": 2,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {
+          "plan": "docs/01-plan/features/clean-architecture-refactor.plan.md",
+          "design": "docs/02-design/features/clean-architecture-refactor.design.md"
+        },
+        "timestamps": {
+          "started": "2026-04-15T00:00:00.000Z",
+          "lastUpdated": "2026-04-15T00:00:00.000Z"
+        },
+        "notes": "Plan+Design 완료, qr-task-json-storage 선행 후 DO 진행 예정"
       }
     },
     "pipeline": {
@@ -87,7 +130,7 @@
     "session": {
       "startedAt": "2026-04-09T06:11:12.207Z",
       "onboardingCompleted": false,
-      "lastActivity": "2026-04-10T04:15:21.469Z"
+      "lastActivity": "2026-04-12T02:13:04.303Z"
     },
     "history": [
       {
@@ -101,6 +144,24 @@
         "feature": "imagegallerysaver",
         "phase": "do",
         "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-12T02:13:04.303Z",
+        "feature": "imagegallerysaver",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-16T09:00:00.000Z",
+        "feature": "qr-task-json-storage",
+        "phase": "do",
+        "action": "registered (P0-P2 완료, P3 진행 중)"
+      },
+      {
+        "timestamp": "2026-04-16T09:00:00.000Z",
+        "feature": "clean-architecture-refactor",
+        "phase": "design",
+        "action": "registered (Plan+Design 완료)"
       }
     ],
     "stateMachine": {
