@@ -2,10 +2,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import '../../../models/qr_dot_style.dart';
-import '../../../models/qr_template.dart';
-import '../../../models/sticker_config.dart' show LogoPosition;
-import '../../../services/qr_readability_service.dart';
+import '../domain/entities/qr_dot_style.dart';
+import '../domain/entities/qr_template.dart';
+import '../domain/entities/sticker_config.dart' show LogoPosition;
+import '../data/services/qr_readability_service.dart';
 import '../qr_result_provider.dart' show QrResultState, qrResultProvider, QrEyeOuter, QrEyeInner;
 import 'qr_layer_stack.dart';
 

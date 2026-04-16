@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../../../models/qr_dot_style.dart';
-import '../../../models/qr_template.dart';
-import '../../../models/sticker_config.dart';
+import '../domain/entities/qr_dot_style.dart';
+import '../domain/entities/qr_template.dart';
+import '../domain/entities/sticker_config.dart';
 import '../../qr_task/domain/entities/qr_customization.dart';
 import '../../qr_task/domain/entities/qr_gradient_data.dart';
 import '../../qr_task/domain/entities/sticker_spec.dart';

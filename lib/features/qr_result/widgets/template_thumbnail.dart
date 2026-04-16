@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import '../../../models/qr_template.dart';
+import '../domain/entities/qr_template.dart';
 import 'qr_preview_section.dart' show buildQrGradientShader;
 
 /// 템플릿 선택 그리드에서 사용하는 썸네일 카드.

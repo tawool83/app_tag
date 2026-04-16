@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/sticker_config.dart';
+import '../domain/entities/sticker_config.dart';
 import '../qr_result_provider.dart' show qrResultProvider;
 
 // 플랫폼 제네릭 폰트: assets 추가 없이 Android/iOS 모두 동작

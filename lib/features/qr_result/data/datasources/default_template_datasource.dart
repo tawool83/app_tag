@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../../../models/qr_template.dart';
+import '../../domain/entities/qr_template.dart';
 
 abstract class DefaultTemplateDataSource {
   Future<QrTemplateManifest> getLocal();

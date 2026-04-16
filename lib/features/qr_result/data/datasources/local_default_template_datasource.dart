@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_config.dart';
-import '../../../../models/qr_template.dart';
-import '../../../../services/supabase_service.dart';
+import '../../domain/entities/qr_template.dart';
+import '../../../../core/services/supabase_service.dart';
 import 'default_template_datasource.dart';
 
 class LocalDefaultTemplateDataSource implements DefaultTemplateDataSource {

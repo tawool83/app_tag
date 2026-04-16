@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
 import '../../../../core/error/result.dart';
-import '../../../../models/qr_template.dart';
+import '../../domain/entities/qr_template.dart';
 import '../../data/datasources/hive_user_template_datasource.dart';
 import '../../data/datasources/local_default_template_datasource.dart';
 import '../../data/models/user_qr_template_model.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/qr_template.dart' show QrGradient;
+import '../domain/entities/qr_template.dart' show QrGradient;
 import '../qr_result_provider.dart' show qrResultProvider, qrSafeColors, kQrPresetGradients;
 
 /// [색상] 탭: 단색 / 그라디언트 서브탭.

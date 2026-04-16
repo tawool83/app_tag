@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/error/result.dart';
-import '../../../models/qr_template.dart';
+import '../domain/entities/qr_template.dart';
 import '../domain/entities/user_qr_template.dart';
 import '../presentation/providers/qr_result_providers.dart';
 import '../qr_result_provider.dart';

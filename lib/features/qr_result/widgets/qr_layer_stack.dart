@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/sticker_config.dart';
+import '../domain/entities/sticker_config.dart';
 import '../qr_result_provider.dart';
 import 'qr_preview_section.dart' show buildPrettyQr, centerImageProvider;
 

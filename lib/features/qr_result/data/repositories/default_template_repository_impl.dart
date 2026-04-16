@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import '../../../../core/error/failure.dart';
 import '../../../../core/error/result.dart';
-import '../../../../models/qr_template.dart';
+import '../../domain/entities/qr_template.dart';
 import '../../domain/repositories/default_template_repository.dart';
 import '../datasources/default_template_datasource.dart';
 

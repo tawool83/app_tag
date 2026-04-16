@@ -1,5 +1,5 @@
 import '../../../../core/error/result.dart';
-import '../../../../models/qr_template.dart';
+import '../entities/qr_template.dart';
 import '../repositories/default_template_repository.dart';
 
 class GetDefaultTemplatesUseCase {

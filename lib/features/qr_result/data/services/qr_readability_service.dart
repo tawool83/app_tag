@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../models/qr_dot_style.dart';
-import '../models/sticker_config.dart' show LogoPosition;
-import '../features/qr_result/qr_result_provider.dart' show QrResultState;
+import '../../domain/entities/qr_dot_style.dart';
+import '../../domain/entities/sticker_config.dart' show LogoPosition;
+import '../../qr_result_provider.dart' show QrResultState;
 
 /// QR 스캔 인식률 추정 점수.
 class ReadabilityScore {

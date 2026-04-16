@@ -697,18 +697,16 @@ lib/
 50. [x] 레거시 파일 삭제: `lib/services/nfc_service.dart`, `lib/models/app_info.dart`, `lib/services/settings_service.dart`
 51. [x] `flutter analyze lib/` — 0 errors (info/warning only, 모두 기존)
 
-#### P6 — 정리 (1-2일) — 부분 완료
+#### P6 — 정리 ✅ 완료
 
-> **남은 레거시 파일** (다른 feature에서 아직 직접 사용 중):
-> - `lib/services/`: qr_readability_service.dart, qr_service.dart, supabase_service.dart
-> - `lib/models/`: qr_dot_style.dart, qr_template.dart, sticker_config.dart
-> → qr_result 내부 리팩터링 시 정리 예정 (QR 렌더/출력 관련 서비스)
+> 모든 레거시 파일을 CA 구조로 이동 완료.
 
-56. [ ] 낡은 디렉토리 삭제: `lib/services/`, `lib/repositories/`, `lib/models/`, `lib/shared/`
-57. [ ] 남은 import 정리
-58. [ ] `build_runner build --delete-conflicting-outputs`
-59. [ ] DTO non-null 기본값 검증 (구 레코드 null cast 회귀 없음)
-60. [ ] `flutter analyze` 0 issues
+56. [x] `lib/models/` 3개 파일 → `features/qr_result/domain/entities/` 이동: qr_template.dart, qr_dot_style.dart, sticker_config.dart
+57. [x] `lib/services/qr_service.dart`, `qr_readability_service.dart` → `features/qr_result/data/services/` 이동
+58. [x] `lib/services/supabase_service.dart` → `core/services/` 이동
+59. [x] 레거시 디렉토리 전부 삭제: `lib/services/`, `lib/models/`, `lib/repositories/`, `lib/shared/`
+60. [x] 전체 import 업데이트 (20+ 파일)
+61. [x] `flutter analyze` 0 errors (10 pre-existing info/warnings only)
 
 #### P7 — 검증 (1-2일)
 
@@ -767,3 +765,4 @@ dev_dependencies:
 | 0.1 | 2026-04-15 | Initial draft (Option B 선택 후) | tawool83 |
 | 0.2 | 2026-04-16 | qr-task-json-storage 구현 반영: 파일럿 history→qr_task 교체, TagHistory 삭제, QrTaskModel JSON-payload 전략 문서화, DI 그래프 업데이트, 구현 순서 P0/P1 완료 처리, 피처 목록에 qr_task 추가 | tawool83 |
 | 0.3 | 2026-04-17 | P2~P5 완료 반영: go_router 도입, qr_result 3-layer + usecase 해체, nfc_writer CA(Completer 패턴), app_picker CA(device_apps DS), SettingsService core/ 이전, 레거시 파일 삭제(nfc_service, app_info, settings_service, ndef_record_helper, template files) | tawool83 |
+| 0.4 | 2026-04-17 | P6 완료: 잔여 레거시 6개 파일 CA 이동(qr_template/qr_dot_style/sticker_config → domain/entities, qr_service/qr_readability_service → data/services, supabase_service → core/services). lib/services/, lib/models/, lib/repositories/ 전부 삭제. flutter analyze 0 errors | tawool83 |

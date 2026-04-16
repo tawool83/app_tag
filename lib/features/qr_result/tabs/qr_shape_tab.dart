@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/qr_dot_style.dart';
+import '../domain/entities/qr_dot_style.dart';
 import '../qr_result_provider.dart' show QrEyeOuter, QrEyeInner, qrResultProvider;
 
 /// [모양] 탭: 도트 모양 + 눈 외곽/내부 독립 선택 + 랜덤 눈 생성.
