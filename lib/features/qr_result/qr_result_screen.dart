@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../../models/tag_history.dart';
+import '../../core/error/result.dart';
+import '../qr_task/domain/entities/qr_task_kind.dart';
+import '../qr_task/domain/entities/qr_task_meta.dart';
+import '../qr_task/presentation/providers/qr_task_providers.dart';
 import '../../models/qr_template.dart';
 import '../../models/sticker_config.dart' show StickerText;
 import '../../models/user_qr_template.dart';
@@ -13,10 +16,9 @@ import '../../repositories/template_repository.dart';
 import '../../repositories/user_template_repository.dart';
 import '../../services/qr_readability_service.dart';
 import '../../services/settings_service.dart';
-import '../../shared/constants/app_config.dart' show validateQrData;
+import '../../core/constants/app_config.dart' show validateQrData;
 import 'qr_result_provider.dart';
 import 'tabs/all_templates_tab.dart';
-import 'tabs/background_tab.dart';
 import 'tabs/qr_shape_tab.dart';
 import 'tabs/qr_color_tab.dart';
 import 'tabs/sticker_tab.dart';
@@ -103,7 +105,6 @@ class QrResultScreen extends ConsumerStatefulWidget {
 class _QrResultScreenState extends ConsumerState<QrResultScreen>
     with SingleTickerProviderStateMixin {
   final _repaintKey = GlobalKey();
-  bool _historySaved = false;
   late TabController _tabController;
   QrTemplateManifest _templateManifest = QrTemplateManifest.empty;
   final _templateRepo = UserTemplateRepository();
@@ -114,8 +115,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   @override
   void initState() {
     super.initState();
-    // 탭: 템플릿 / 배경 / 모양 / 색상 / 로고
-    _tabController = TabController(length: 6, vsync: this);
+    // 탭: 템플릿 / 모양 / 색상 / 로고 / 텍스트
+    _tabController = TabController(length: 5, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
@@ -140,24 +141,67 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       final appName = args['appName'] as String;
       final notifier = ref.read(qrResultProvider.notifier);
 
-      final lastSize = await SettingsService.getLastPrintSizeCm();
-      final embedIcon = await SettingsService.getQrEmbedIcon();
-      final savedEmoji = await SettingsService.getQrCenterEmoji();
+      // editTaskId 가 있으면 기존 QrTask 복원, 없으면 신규 발급.
+      final editTaskId = args['editTaskId'] as String?;
+      final isEditMode = editTaskId != null;
 
-      notifier.setPrintSizeCm(lastSize);
-      notifier.setEmbedIcon(embedIcon);
-      notifier.setTagType(tagType);
-
-      // 하단 텍스트 기본값: 앱 이름으로 pre-fill (아직 설정되지 않은 경우)
-      final currentState = ref.read(qrResultProvider);
-      if (currentState.sticker.bottomText == null) {
-        notifier.setSticker(
-          currentState.sticker.copyWith(
-            bottomText: StickerText(content: appName),
+      if (isEditMode) {
+        final result =
+            await ref.read(getQrTaskByIdUseCaseProvider)(editTaskId);
+        if (!mounted) return;
+        final task = result.valueOrNull;
+        if (task != null) {
+          notifier.loadFromCustomization(task.customization);
+          notifier.setCurrentTaskId(task.id);
+          notifier.setTagType(task.meta.tagType);
+        }
+      } else {
+        final platform = args['platform'] as String;
+        final packageName = args['packageName'] as String?;
+        final deepLinkArg = args['deepLink'] as String;
+        final createResult =
+            await ref.read(createQrTaskUseCaseProvider)(
+          kind: QrTaskKind.qr,
+          meta: QrTaskMeta(
+            appName: appName,
+            deepLink: deepLinkArg,
+            platform: platform,
+            packageName: packageName,
+            tagType: tagType,
           ),
         );
+        if (!mounted) return;
+        final task = createResult.valueOrNull;
+        if (task != null) notifier.setCurrentTaskId(task.id);
       }
 
+      // 신규 발급일 때만 디폴트 설정 적용 (편집 복원에서는 JSON 값 우선)
+      if (!isEditMode) {
+        final lastSize = await SettingsService.getLastPrintSizeCm();
+        final embedIcon = await SettingsService.getQrEmbedIcon();
+        final savedEmoji = await SettingsService.getQrCenterEmoji();
+
+        notifier.setPrintSizeCm(lastSize);
+        notifier.setEmbedIcon(embedIcon);
+        notifier.setTagType(tagType);
+
+        // 하단 텍스트 기본값: 앱 이름으로 pre-fill (아직 설정되지 않은 경우)
+        final currentState = ref.read(qrResultProvider);
+        if (currentState.sticker.bottomText == null) {
+          notifier.setSticker(
+            currentState.sticker.copyWith(
+              bottomText: StickerText(content: appName),
+            ),
+          );
+        }
+
+        if (savedEmoji != null && mounted) {
+          final emojiBytes = await _renderEmoji(savedEmoji);
+          if (mounted) notifier.setCenterEmoji(savedEmoji, emojiBytes);
+        }
+      }
+
+      // defaultIconBytes 는 editMode 여부와 무관하게 항상 재생성 (캐시 안 함)
       final appIconBytes = args['appIconBytes'] as Uint8List?;
       if (appIconBytes != null) {
         notifier.setDefaultIconBytes(appIconBytes);
@@ -167,12 +211,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
         if (mounted) notifier.setDefaultIconBytes(rendered);
       }
 
-      if (savedEmoji != null && mounted) {
-        final emojiBytes = await _renderEmoji(savedEmoji);
-        if (mounted) notifier.setCenterEmoji(savedEmoji, emojiBytes);
-      }
-
-      _captureAndSaveHistory(args);
+      // 이미지 캡처 (UI 미리보기용) — JSON 저장과 별개
+      _captureThumbnailToState();
 
       TemplateRepository.getTemplates(
         onRefresh: (updated) {
@@ -190,49 +230,19 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     super.dispose();
   }
 
-  Future<void> _captureAndSaveHistory(Map<String, dynamic> args) async {
-    if (_historySaved) return;
-    _historySaved = true;
-
-    final appName = args['appName'] as String;
-    final deepLink = args['deepLink'] as String;
-    final packageName = args['packageName'] as String?;
-    final platform = args['platform'] as String;
-    final appIconBytes = args['appIconBytes'] as Uint8List?;
-    final tagType = args['tagType'] as String?;
-    final state = ref.read(qrResultProvider);
-
+  /// QR 위젯이 렌더링된 후 미리보기 이미지 캡처 (UI 보조).
+  /// 실제 데이터 영속은 QrResultNotifier 의 debounced JSON 저장 책임.
+  Future<void> _captureThumbnailToState() async {
     await Future.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+
     final boundary = _repaintKey.currentContext
         ?.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary != null) {
-      final bytes =
-          await ref.read(qrServiceProvider).captureQrImage(boundary);
-      if (bytes != null) {
-        ref.read(qrResultProvider.notifier).setCapturedImage(bytes);
-      }
+    if (boundary == null) return;
+    final bytes = await ref.read(qrServiceProvider).captureQrImage(boundary);
+    if (bytes != null && mounted) {
+      ref.read(qrResultProvider.notifier).setCapturedImage(bytes);
     }
-
-    final history = TagHistory(
-      id: const Uuid().v4(),
-      appName: appName,
-      deepLink: deepLink,
-      platform: platform,
-      outputType: 'qr',
-      createdAt: DateTime.now(),
-      packageName: packageName,
-      appIconBytes: appIconBytes,
-      qrLabel: null,
-      qrColor: state.qrColor.toARGB32(),
-      printSizeCm: state.printSizeCm,
-      tagType: tagType,
-      qrEyeShape: null,
-      qrDataModuleShape: null,
-      qrEmbedIcon: state.embedIcon,
-      qrCenterEmoji: state.centerEmoji,
-      qrRoundFactor: state.roundFactor,
-    );
-    await ref.read(historyServiceProvider).saveHistory(history);
   }
 
   Future<Uint8List?> _captureThumbnail() async {
@@ -363,11 +373,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       id: const Uuid().v4(),
       name: name,
       createdAt: DateTime.now(),
-      // 배경 레이어
-      backgroundImageBytes: state.background.imageBytes,
-      backgroundScale: state.background.scale,
-      backgroundAlignX: state.background.alignX,
-      backgroundAlignY: state.background.alignY,
+      // 배경 레이어 — 배경 이미지 기능 제거됨, Hive 스키마 호환을 위해 기본값만 저장
       // QR 레이어
       qrColorValue: state.qrColor.toARGB32(),
       gradientJson: state.customGradient != null
@@ -453,14 +459,13 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             ),
           ),
 
-          // ② 탭 바: 템플릿 / 배경 / 모양 / 색상 / 로고
+          // ② 탭 바: 템플릿 / 모양 / 색상 / 로고 / 텍스트
           TabBar(
             controller: _tabController,
             isScrollable: true,
             tabAlignment: TabAlignment.center,
             tabs: const [
               Tab(text: '템플릿'),
-              Tab(text: '배경'),
               Tab(text: '모양'),
               Tab(text: '색상'),
               Tab(text: '로고'),
@@ -482,9 +487,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                   onTemplateClear: _onTemplateClear,
                   onChanged: _recapture,
                 ),
-                // 1: 배경
-                BackgroundTab(onChanged: _recapture),
-                // 2: 모양 (도트 + 눈)
+                // 1: 모양 (도트 + 눈)
                 QrShapeTab(
                   onDotStyleChanged: (s) {
                     ref.read(qrResultProvider.notifier).setDotStyle(s);

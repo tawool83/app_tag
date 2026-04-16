@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
-import 'repositories/user_template_repository.dart';
-import 'services/history_service.dart';
-import 'services/supabase_service.dart';
+import 'core/di/app_providers.dart';
+import 'core/di/hive_config.dart';
+import 'core/di/supabase_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await HistoryService.init();
-  await UserTemplateRepository.init();
-  await SupabaseService.initialize();
-  runApp(const ProviderScope(child: AppTagApp()));
+  await initHive();
+  await initSupabase();
+  runApp(
+    ProviderScope(
+      overrides: buildAppOverrides(),
+      child: const AppTagApp(),
+    ),
+  );
 }

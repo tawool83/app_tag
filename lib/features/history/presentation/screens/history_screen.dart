@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/tag_history.dart';
-import 'history_provider.dart';
+
+import '../../../qr_task/domain/entities/qr_task.dart';
+import '../../../qr_task/domain/entities/qr_task_kind.dart';
+import '../../../qr_task/presentation/providers/qr_task_list_notifier.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final histories = ref.watch(historyNotifierProvider);
+    final tasks = ref.watch(qrTaskListNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('생성 이력'),
         actions: [
-          if (histories.isNotEmpty)
+          if (tasks.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep),
               tooltip: '전체 삭제',
@@ -22,7 +24,7 @@ class HistoryScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: histories.isEmpty
+      body: tasks.isEmpty
           ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -35,11 +37,10 @@ class HistoryScreen extends ConsumerWidget {
               ),
             )
           : ListView.separated(
-              itemCount: histories.length,
+              itemCount: tasks.length,
               separatorBuilder: (_, i) => const Divider(height: 1),
               itemBuilder: (context, index) {
-                final item = histories[index];
-                return _HistoryTile(item: item);
+                return _QrTaskTile(task: tasks[index]);
               },
             ),
     );
@@ -63,36 +64,30 @@ class HistoryScreen extends ConsumerWidget {
       ),
     );
     if (confirmed == true) {
-      await ref.read(historyNotifierProvider.notifier).clearAll();
+      await ref.read(qrTaskListNotifierProvider.notifier).clearAll();
     }
   }
 }
 
-class _HistoryTile extends ConsumerWidget {
-  final TagHistory item;
-  const _HistoryTile({required this.item});
+class _QrTaskTile extends ConsumerWidget {
+  final QrTask task;
+  const _QrTaskTile({required this.task});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isQr = item.outputType == 'qr';
-    final isAndroid = item.platform == 'android';
-    final iconBytes = item.appIconBytes;
+    final isQr = task.kind == QrTaskKind.qr;
+    final isAndroid = task.meta.platform == 'android';
 
     return ListTile(
-      leading: iconBytes != null
-          ? CircleAvatar(
-              backgroundImage: MemoryImage(iconBytes),
-              backgroundColor: Colors.transparent,
-            )
-          : CircleAvatar(
-              backgroundColor:
-                  isQr ? Colors.blue.shade100 : Colors.purple.shade100,
-              child: Icon(
-                isQr ? Icons.qr_code_2 : Icons.nfc,
-                color: isQr ? Colors.blue : Colors.purple,
-              ),
-            ),
-      title: Text(item.appName),
+      leading: CircleAvatar(
+        backgroundColor:
+            isQr ? Colors.blue.shade100 : Colors.purple.shade100,
+        child: Icon(
+          isQr ? Icons.qr_code_2 : Icons.nfc,
+          color: isQr ? Colors.blue : Colors.purple,
+        ),
+      ),
+      title: Text(task.meta.appName),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -101,7 +96,7 @@ class _HistoryTile extends ConsumerWidget {
             style: const TextStyle(fontSize: 12),
           ),
           Text(
-            _formatDate(item.createdAt),
+            _formatDate(task.updatedAt),
             style: const TextStyle(fontSize: 11, color: Colors.grey),
           ),
         ],
@@ -110,17 +105,22 @@ class _HistoryTile extends ConsumerWidget {
         icon: const Icon(Icons.delete_outline, color: Colors.grey),
         onPressed: () => _confirmDelete(context, ref),
       ),
-      onTap: () => Navigator.pushNamed(
-        context,
-        '/output-selector',
-        arguments: {
-          'appName': item.appName,
-          'deepLink': item.deepLink,
-          'packageName': item.packageName,
-          'platform': item.platform,
-          'appIconBytes': item.appIconBytes,
-        },
-      ),
+      // 탭 시 QR 결과 화면으로 이동, 같은 taskId 로 이어서 편집.
+      // QR 작업만 편집 복원 (NFC 는 P4 미구현).
+      onTap: isQr
+          ? () => Navigator.pushNamed(
+                context,
+                '/qr-result',
+                arguments: {
+                  'editTaskId': task.id,
+                  'appName': task.meta.appName,
+                  'deepLink': task.meta.deepLink,
+                  'platform': task.meta.platform,
+                  'packageName': task.meta.packageName,
+                  'tagType': task.meta.tagType,
+                },
+              )
+          : null,
     );
   }
 
@@ -134,7 +134,7 @@ class _HistoryTile extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('이력 삭제'),
-        content: Text('"${item.appName}" 이력을 삭제하시겠습니까?'),
+        content: Text('"${task.meta.appName}" 이력을 삭제하시겠습니까?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -147,7 +147,9 @@ class _HistoryTile extends ConsumerWidget {
       ),
     );
     if (confirmed == true) {
-      await ref.read(historyNotifierProvider.notifier).delete(item.id);
+      await ref
+          .read(qrTaskListNotifierProvider.notifier)
+          .delete(task.id);
     }
   }
 }

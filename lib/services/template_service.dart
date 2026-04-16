@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/qr_template.dart';
-import '../shared/constants/app_config.dart';
+import '../core/constants/app_config.dart';
 
 class TemplateService {
   static const String _boxName = 'qr_templates_cache';

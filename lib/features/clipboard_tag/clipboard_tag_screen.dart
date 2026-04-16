@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../shared/utils/tag_payload_encoder.dart';
-import '../../shared/widgets/output_action_buttons.dart';
+import '../../core/utils/tag_payload_encoder.dart';
+import '../../core/widgets/output_action_buttons.dart';
 
 class ClipboardTagScreen extends StatefulWidget {
   const ClipboardTagScreen({super.key});

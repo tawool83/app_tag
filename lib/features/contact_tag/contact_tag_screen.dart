@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../shared/utils/tag_payload_encoder.dart';
+import '../../core/utils/tag_payload_encoder.dart';
 
 class ContactTagScreen extends StatefulWidget {
   const ContactTagScreen({super.key});

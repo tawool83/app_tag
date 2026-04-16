@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/app_info.dart';
-import '../../shared/constants/deep_link_constants.dart';
-import '../../shared/widgets/output_action_buttons.dart';
+import '../../core/constants/deep_link_constants.dart';
+import '../../core/widgets/output_action_buttons.dart';
 import 'app_picker_provider.dart';
 
 class AppPickerScreen extends ConsumerStatefulWidget {

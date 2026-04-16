@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../shared/constants/deep_link_constants.dart';
-import '../../shared/widgets/output_action_buttons.dart';
+import '../../core/constants/deep_link_constants.dart';
+import '../../core/widgets/output_action_buttons.dart';
 
 class IosInputScreen extends StatefulWidget {
   const IosInputScreen({super.key});

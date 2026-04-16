@@ -5,7 +5,7 @@ import '../features/ios_input/ios_input_screen.dart';
 import '../features/output_selector/output_selector_screen.dart';
 import '../features/qr_result/qr_result_screen.dart';
 import '../features/nfc_writer/nfc_writer_screen.dart';
-import '../features/history/history_screen.dart';
+import '../features/history/presentation/screens/history_screen.dart';
 import '../features/help/help_screen.dart';
 import '../features/clipboard_tag/clipboard_tag_screen.dart';
 import '../features/website_tag/website_tag_screen.dart';

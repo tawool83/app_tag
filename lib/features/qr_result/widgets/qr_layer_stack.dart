@@ -4,15 +4,10 @@ import '../../../models/sticker_config.dart';
 import '../qr_result_provider.dart';
 import 'qr_preview_section.dart' show buildPrettyQr, centerImageProvider;
 
-/// 배경 이미지가 있을 때 QR 크기 대비 확장 배율.
-/// 1.5 = QR 사방에 25%씩 배경이 더 보임.
-/// 레이아웃 계산이 필요한 외부 위젯(미리보기, 다이얼로그)에서도 참조.
-const kQrBgExpandFactor = 1.5;
-
 /// QR 결과 화면의 레이어 렌더링 위젯.
 ///
 /// 렌더링 순서 (아래 → 위):
-///   Layer 0: BackgroundLayer  — 갤러리 이미지(_bgExpandFactor 배 크기) or 흰 배경
+///   Layer 0: 흰 배경 (qr 배경 이미지 기능은 제거됨)
 ///   Layer 1: QrLayer          — 콰이어트 존 + buildPrettyQr() (size×size, 중앙)
 ///   Layer 2: StickerLayer     — 로고 + 상/하단 텍스트
 class QrLayerStack extends ConsumerWidget {
@@ -30,14 +25,8 @@ class QrLayerStack extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(qrResultProvider);
-    final bg = state.background;
     final sticker = state.sticker;
     final iconProvider = centerImageProvider(state);
-
-    // 배경 이미지가 있으면 QR보다 1.5배 큰 캔버스, 없으면 QR 크기와 동일
-    final bool hasBg = bg.hasImage;
-    final double bgSize = hasBg ? size * kQrBgExpandFactor : size;
-    final double qrOffset = hasBg ? (bgSize - size) / 2 : 0.0;
 
     // 콰이어트 존 패딩: QR 크기의 5% (최소 8px, 최대 20px)
     final quietPadding = (size * 0.05).clamp(8.0, 20.0);
@@ -74,49 +63,15 @@ class QrLayerStack extends ConsumerWidget {
       ),
     );
 
-    // ── 전체 캔버스 (bgSize×bgSize) ───────────────────────────────────
-    final Widget qrCore = SizedBox(
-      width: bgSize,
-      height: bgSize,
-      child: Stack(
-        clipBehavior: Clip.hardEdge,
-        children: [
-          // ── Layer 0: 배경 ──────────────────────────────────────────
-          Positioned.fill(
-            child: hasBg
-                ? Transform.scale(
-                    scale: bg.scale,
-                    alignment: Alignment(bg.alignX, bg.alignY),
-                    transformHitTests: false,
-                    child: Image.memory(
-                      bg.imageBytes!,
-                      fit: BoxFit.cover,
-                      width: bgSize,
-                      height: bgSize,
-                    ),
-                  )
-                : Container(color: Colors.white),
-          ),
-
-          // ── Layer 1+2: QR + 로고 (중앙 배치) ──────────────────────
-          Positioned(
-            left: qrOffset,
-            top: qrOffset,
-            child: qrAndLogo,
-          ),
-        ],
-      ),
-    );
-
     // 상단/하단 텍스트는 캔버스 밖 Column으로 배치
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (sticker.hasTopText)
-          _StickerTextWidget(text: sticker.topText!, width: bgSize),
-        qrCore,
+          _StickerTextWidget(text: sticker.topText!, width: size),
+        qrAndLogo,
         if (sticker.hasBottomText)
-          _StickerTextWidget(text: sticker.bottomText!, width: bgSize),
+          _StickerTextWidget(text: sticker.bottomText!, width: size),
       ],
     );
   }

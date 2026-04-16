@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../shared/utils/tag_payload_encoder.dart';
-import '../../shared/widgets/output_action_buttons.dart';
+import '../../core/utils/tag_payload_encoder.dart';
+import '../../core/widgets/output_action_buttons.dart';
 
 class SmsTagScreen extends StatefulWidget {
   const SmsTagScreen({super.key});

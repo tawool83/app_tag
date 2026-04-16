@@ -73,9 +73,6 @@ class QrReadabilityService {
   // ── 색상 대비 점수 (0~40) ─────────────────────────────────────────────────
 
   static int _contrastScore(QrResultState state) {
-    // 배경 이미지가 있으면 대비 추정 불가 → 고정 24점
-    if (state.background.hasImage) return 24;
-
     final bgColor = state.quietZoneColor;
     final activeGradient = state.templateGradient ?? state.customGradient;
 

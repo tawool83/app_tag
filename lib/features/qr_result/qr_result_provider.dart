@@ -1,19 +1,19 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/background_config.dart';
 import '../../models/qr_dot_style.dart';
 import '../../models/qr_template.dart';
 import '../../models/sticker_config.dart';
 import '../../models/user_qr_template.dart';
 import '../../services/qr_service.dart';
-import '../../services/history_service.dart';
+import '../qr_task/domain/entities/qr_customization.dart';
+import '../qr_task/presentation/providers/qr_task_providers.dart';
+import 'utils/customization_mapper.dart';
 
 final qrServiceProvider = Provider<QrService>((ref) => QrService());
-final historyServiceProvider =
-    Provider<HistoryService>((ref) => HistoryService());
 
 enum QrActionStatus { idle, loading, success, error }
 
@@ -82,7 +82,6 @@ class QrResultState {
   final Uint8List? templateCenterIconBytes; // 템플릿 URL 아이콘 로드 결과
 
   // 레이어 에디터 신규 필드
-  final BackgroundConfig background;       // 배경 레이어 (최하단)
   final StickerConfig sticker;             // 스티커 레이어 (최상단)
   final Color quietZoneColor;              // QR 콰이어트 존 배경색
   final QrDotStyle dotStyle;              // QR 도트 모양
@@ -108,7 +107,6 @@ class QrResultState {
     this.activeTemplateId,
     this.templateGradient,
     this.templateCenterIconBytes,
-    this.background = const BackgroundConfig(),
     this.sticker = const StickerConfig(),
     this.quietZoneColor = Colors.white,
     this.dotStyle = QrDotStyle.square,
@@ -135,7 +133,6 @@ class QrResultState {
     Object? activeTemplateId = _sentinel,
     Object? templateGradient = _sentinel,
     Object? templateCenterIconBytes = _sentinel,
-    BackgroundConfig? background,
     StickerConfig? sticker,
     Color? quietZoneColor,
     QrDotStyle? dotStyle,
@@ -177,7 +174,6 @@ class QrResultState {
         templateCenterIconBytes: templateCenterIconBytes == _sentinel
             ? this.templateCenterIconBytes
             : templateCenterIconBytes as Uint8List?,
-        background: background ?? this.background,
         sticker: sticker ?? this.sticker,
         quietZoneColor: quietZoneColor ?? this.quietZoneColor,
         dotStyle: dotStyle ?? this.dotStyle,
@@ -189,8 +185,83 @@ const _sentinel = Object();
 
 class QrResultNotifier extends StateNotifier<QrResultState> {
   final QrService _qrService;
+  final Ref _ref;
 
-  QrResultNotifier(this._qrService) : super(const QrResultState());
+  /// 현재 편집 중인 QrTask 의 id. null 이면 아직 발급 전 (저장 안 함).
+  String? _currentTaskId;
+  Timer? _debounceTimer;
+
+  /// `loadFromCustomization` 등 일괄 복원 시 setter 가 debounced save 를
+  /// 트리거하지 않도록 막는 플래그.
+  bool _suppressPush = false;
+
+  QrResultNotifier(this._qrService, this._ref) : super(const QrResultState());
+
+  String? get currentTaskId => _currentTaskId;
+
+  /// QR 화면 진입 시 1회 호출 — 이후 setter 들이 이 task 로 저장.
+  void setCurrentTaskId(String id) {
+    _currentTaskId = id;
+  }
+
+  /// 히스토리에서 진입 시 사용. 모든 customization 필드를 일괄 복원하며
+  /// 복원 중에는 자동저장을 막는다.
+  void loadFromCustomization(QrCustomization c) {
+    _suppressPush = true;
+    try {
+      state = state.copyWith(
+        qrColor: CustomizationMapper.colorFromArgb(c.qrColorArgb),
+        customGradient: CustomizationMapper.gradientFromData(c.gradient),
+        roundFactor: c.roundFactor,
+        eyeOuter: CustomizationMapper.eyeOuterFromName(c.eyeOuter),
+        eyeInner: CustomizationMapper.eyeInnerFromName(c.eyeInner),
+        randomEyeSeed: c.randomEyeSeed,
+        quietZoneColor: CustomizationMapper.colorFromArgb(c.quietZoneColorArgb),
+        dotStyle: CustomizationMapper.dotStyleFromName(c.dotStyle),
+        embedIcon: c.embedIcon,
+        centerEmoji: c.centerEmoji,
+        emojiIconBytes: CustomizationMapper.bytesFromBase64(c.centerIconBase64),
+        printSizeCm: c.printSizeCm,
+        sticker: CustomizationMapper.stickerFromSpec(c.sticker),
+        activeTemplateId: c.activeTemplateId,
+        templateGradient: null,
+        templateCenterIconBytes: null,
+      );
+    } finally {
+      _suppressPush = false;
+    }
+  }
+
+  /// 500ms debounce 후 현재 state 를 JSON payload 로 저장.
+  /// taskId 가 없거나 복원 중이면 no-op.
+  void _schedulePush() {
+    if (_suppressPush) return;
+    if (_currentTaskId == null) return;
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), _pushNow);
+  }
+
+  Future<void> _pushNow() async {
+    final id = _currentTaskId;
+    if (id == null) return;
+    try {
+      final c = CustomizationMapper.fromState(state);
+      await _ref.read(updateQrTaskCustomizationUseCaseProvider)(id, c);
+    } catch (_) {
+      // best-effort: 다음 변경 시 재시도됨
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_debounceTimer?.isActive == true) {
+      _debounceTimer?.cancel();
+      // 마지막 변경분 best-effort flush (ref 가 유효할 때만 동작)
+      // ignore: discarded_futures
+      _pushNow();
+    }
+    super.dispose();
+  }
 
   void setCapturedImage(Uint8List bytes) {
     state = state.copyWith(capturedImage: bytes);
@@ -203,26 +274,38 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       templateGradient: null,
       activeTemplateId: null,
     );
+    _schedulePush();
   }
 
   void setPrintSizeCm(double sizeCm) {
     state = state.copyWith(printSizeCm: sizeCm);
+    _schedulePush();
   }
 
   void setRoundFactor(double factor) {
     state = state.copyWith(roundFactor: factor);
+    _schedulePush();
   }
 
-  void setEyeOuter(QrEyeOuter outer) =>
-      state = state.copyWith(eyeOuter: outer, randomEyeSeed: null);
+  void setEyeOuter(QrEyeOuter outer) {
+    state = state.copyWith(eyeOuter: outer, randomEyeSeed: null);
+    _schedulePush();
+  }
 
-  void setEyeInner(QrEyeInner inner) =>
-      state = state.copyWith(eyeInner: inner, randomEyeSeed: null);
+  void setEyeInner(QrEyeInner inner) {
+    state = state.copyWith(eyeInner: inner, randomEyeSeed: null);
+    _schedulePush();
+  }
 
-  void regenerateEyeSeed() =>
-      state = state.copyWith(randomEyeSeed: math.Random().nextInt(0xFFFFFF) + 1);
+  void regenerateEyeSeed() {
+    state = state.copyWith(randomEyeSeed: math.Random().nextInt(0xFFFFFF) + 1);
+    _schedulePush();
+  }
 
-  void clearRandomEye() => state = state.copyWith(randomEyeSeed: null);
+  void clearRandomEye() {
+    state = state.copyWith(randomEyeSeed: null);
+    _schedulePush();
+  }
 
   void setCustomGradient(QrGradient? gradient) {
     if (gradient != null) {
@@ -235,6 +318,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
     } else {
       state = state.copyWith(customGradient: null);
     }
+    _schedulePush();
   }
 
   void setTagType(String? tagType) {
@@ -243,18 +327,23 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
 
   void setEmbedIcon(bool embed) {
     state = state.copyWith(embedIcon: embed);
+    _schedulePush();
   }
 
   void setDefaultIconBytes(Uint8List bytes) {
+    // defaultIconBytes 는 재생성 가능 (tagType 기반 머티리얼 아이콘)
+    // → JSON 저장 대상 아님, _schedulePush 호출 안 함
     state = state.copyWith(defaultIconBytes: bytes);
   }
 
   void setCenterEmoji(String emoji, Uint8List rendered) {
     state = state.copyWith(centerEmoji: emoji, emojiIconBytes: rendered);
+    _schedulePush();
   }
 
   void clearEmoji() {
     state = state.copyWith(centerEmoji: null, emojiIconBytes: null);
+    _schedulePush();
   }
 
   /// 템플릿 적용: 스타일 필드 일괄 갱신
@@ -272,21 +361,25 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       centerEmoji: null,
       emojiIconBytes: null,
     );
+    _schedulePush();
   }
 
   // ── 레이어 에디터 setter ───────────────────────────────────────────────────
 
-  void setBackground(BackgroundConfig config) =>
-      state = state.copyWith(background: config);
+  void setQuietZoneColor(Color color) {
+    state = state.copyWith(quietZoneColor: color);
+    _schedulePush();
+  }
 
-  void setQuietZoneColor(Color color) =>
-      state = state.copyWith(quietZoneColor: color);
+  void setSticker(StickerConfig config) {
+    state = state.copyWith(sticker: config);
+    _schedulePush();
+  }
 
-  void setSticker(StickerConfig config) =>
-      state = state.copyWith(sticker: config);
-
-  void setDotStyle(QrDotStyle style) =>
-      state = state.copyWith(dotStyle: style);
+  void setDotStyle(QrDotStyle style) {
+    state = state.copyWith(dotStyle: style);
+    _schedulePush();
+  }
 
   /// 나의 템플릿 일괄 적용 (모든 레이어 설정 복원)
   void applyUserTemplate(UserQrTemplate t) {
@@ -297,12 +390,6 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       } catch (_) {}
     }
     state = state.copyWith(
-      background: BackgroundConfig(
-        imageBytes: t.backgroundImageBytes,
-        scale: t.backgroundScale,
-        alignX: t.backgroundAlignX,
-        alignY: t.backgroundAlignY,
-      ),
       qrColor: Color(t.qrColorValue),
       customGradient: gradient,
       roundFactor: t.roundFactor,
@@ -335,6 +422,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       templateGradient: null,
       templateCenterIconBytes: null,
     );
+    _schedulePush();
   }
 
   /// 템플릿 해제 (커스텀 설정 모드로 복귀)
@@ -344,6 +432,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
       templateGradient: null,
       templateCenterIconBytes: null,
     );
+    _schedulePush();
   }
 
   Future<void> saveToGallery(String appName) async {
@@ -397,5 +486,5 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
 
 final qrResultProvider =
     StateNotifierProvider.autoDispose<QrResultNotifier, QrResultState>(
-  (ref) => QrResultNotifier(ref.read(qrServiceProvider)),
+  (ref) => QrResultNotifier(ref.read(qrServiceProvider), ref),
 );

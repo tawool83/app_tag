@@ -33,76 +33,60 @@ class QrPreviewSection extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // 왼쪽 영역 70%: QR 코드 (중앙 배치)
-            // LayoutBuilder로 가용 폭에 맞게 qrSize 계산:
-            //   bgSize = qrSize * kQrBgExpandFactor (배경 있을 때)
-            //   bgSize + 24 (패딩) = qrSize (배경 없을 때)
             Expanded(
               flex: 7,
-              child: LayoutBuilder(
-                builder: (_, constraints) {
-                  final hasBg = state.background.hasImage;
-                  final double qrSize = hasBg
-                      ? (constraints.maxWidth / kQrBgExpandFactor)
-                          .floorToDouble()
-                          .clamp(80.0, 160.0)
-                      : 160.0;
-                  return Align(
-                    alignment: Alignment.center,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // 캡처 영역
-                        // 배경 이미지가 있으면 흰 여백 없이 이미지가 외곽까지 채움
-                        RepaintBoundary(
-                          key: repaintKey,
+              child: Align(
+                alignment: Alignment.center,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // 캡처 영역
+                    RepaintBoundary(
+                      key: repaintKey,
+                      child: Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            QrLayerStack(deepLink: deepLink, size: 160),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // 돋보기 버튼 (우하단)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () =>
+                              _showQrZoomDialog(context, state, deepLink),
                           child: Container(
-                            color: hasBg ? null : Colors.white,
-                            padding: hasBg
-                                ? EdgeInsets.zero
-                                : const EdgeInsets.all(12),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                QrLayerStack(deepLink: deepLink, size: qrSize),
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surface
+                                  .withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
                               ],
                             ),
+                            child: const Icon(Icons.zoom_in, size: 20),
                           ),
                         ),
-                        // 돋보기 버튼 (우하단)
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(20),
-                              onTap: () =>
-                                  _showQrZoomDialog(context, state, deepLink),
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .surface
-                                      .withValues(alpha: 0.9),
-                                  shape: BoxShape.circle,
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(Icons.zoom_in, size: 20),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  );
-                },
+                  ],
+                ),
               ),
             ),
             // 오른쪽 영역 30%: 인식률 배지 (가운데 정렬)
@@ -189,16 +173,10 @@ void _showQrZoomDialog(
     builder: (_) => Dialog(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        // LayoutBuilder: 다이얼로그 실제 가용 폭에 맞게 qrSize 결정
-        // bgSize = qrSize * kQrBgExpandFactor 이므로 bgSize <= maxWidth 보장
         child: LayoutBuilder(
           builder: (_, constraints) {
-            final hasBg = state.background.hasImage;
-            final double qrSize = hasBg
-                ? (constraints.maxWidth / kQrBgExpandFactor)
-                    .floorToDouble()
-                    .clamp(100.0, 300.0)
-                : constraints.maxWidth.clamp(100.0, 300.0);
+            final double qrSize =
+                constraints.maxWidth.clamp(100.0, 300.0);
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [

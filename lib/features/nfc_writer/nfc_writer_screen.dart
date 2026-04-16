@@ -1,10 +1,9 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
-import '../../models/tag_history.dart';
-import '../qr_result/qr_result_provider.dart';
+import '../qr_task/domain/entities/qr_task_kind.dart';
+import '../qr_task/domain/entities/qr_task_meta.dart';
+import '../qr_task/presentation/providers/qr_task_providers.dart';
 import 'nfc_writer_provider.dart';
 
 class NfcWriterScreen extends ConsumerStatefulWidget {
@@ -54,18 +53,16 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
   Future<void> _saveHistory(Map<String, dynamic> args) async {
     if (_historySaved) return;
     _historySaved = true;
-    final history = TagHistory(
-      id: const Uuid().v4(),
-      appName: args['appName'],
-      deepLink: args['deepLink'],
-      platform: args['platform'],
-      outputType: 'nfc',
-      createdAt: DateTime.now(),
-      packageName: args['packageName'],
-      appIconBytes: args['appIconBytes'] as Uint8List?,
-      tagType: args['tagType'] as String?,
+    await ref.read(createQrTaskUseCaseProvider)(
+      kind: QrTaskKind.nfc,
+      meta: QrTaskMeta(
+        appName: args['appName'] as String,
+        deepLink: args['deepLink'] as String,
+        platform: args['platform'] as String,
+        packageName: args['packageName'] as String?,
+        tagType: args['tagType'] as String?,
+      ),
     );
-    await ref.read(historyServiceProvider).saveHistory(history);
   }
 
   @override
