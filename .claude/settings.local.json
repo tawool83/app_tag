@@ -9,7 +9,14 @@
       "Bash(git -C /c/repository/app_tag diff HEAD)",
       "Bash(git:*)",
       "Bash(flutter build:*)",
-      "Bash(pod install:*)"
+      "Bash(pod install:*)",
+      "Skill(pdca)",
+      "Bash(dart analyze:*)",
+      "Bash(dart run *)",
+      "Bash(flutter test *)",
+      "mcp__plugin_bkit_bkit-pdca__bkit_feature_list",
+      "mcp__plugin_bkit_bkit-pdca__bkit_pdca_status",
+      "Bash(find lib/features/history -type d -empty -delete)"
     ]
   }
 }

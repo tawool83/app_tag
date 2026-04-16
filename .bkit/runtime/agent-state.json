@@ -2,12 +2,12 @@
   "version": "1.0",
   "enabled": false,
   "teamName": "",
-  "feature": "home-tile-visibility",
-  "pdcaPhase": "archived",
+  "feature": "qr-task-json-storage",
+  "pdcaPhase": "do",
   "orchestrationPattern": "leader",
   "ctoAgent": "opus",
-  "startedAt": "2026-04-13T07:27:44.415Z",
-  "lastUpdated": "2026-04-13T07:30:17.244Z",
+  "startedAt": "2026-04-16T08:23:51.471Z",
+  "lastUpdated": "2026-04-16T08:35:00.479Z",
   "teammates": [],
   "progress": {
     "totalTasks": 0,
@@ -17,5 +17,5 @@
     "pendingTasks": 0
   },
   "recentMessages": [],
-  "sessionId": "51913921-3577-45f8-b013-8bb7f8e63bfc"
+  "sessionId": "f800b4b0-5104-4b97-ae29-32e67771bb9e"
 }
