@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
 
@@ -100,14 +101,14 @@ class _EventTagScreenState extends State<EventTagScreen> {
     if (!_formKey.currentState!.validate()) return;
     final args = _buildArgs();
     if (args == null) return;
-    Navigator.pushNamed(context, '/qr-result', arguments: args);
+    context.push('/qr-result', extra: args);
   }
 
   void _onNfc() {
     if (!_formKey.currentState!.validate()) return;
     final args = _buildArgs();
     if (args == null) return;
-    Navigator.pushNamed(context, '/nfc-writer', arguments: args);
+    context.push('/nfc-writer', extra: args);
   }
 
   String _fmtDate(DateTime d) => '${d.year}.${d.month.toString().padLeft(2,'0')}.${d.day.toString().padLeft(2,'0')}';

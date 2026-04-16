@@ -10,3 +10,5 @@
 | direct-output | 2026-04-12 | 100% | [direct-output/](direct-output/) |
 | location-map-picker | 2026-04-12 | 97% | [location-map-picker/](location-map-picker/) |
 | qr-layer-editor | 2026-04-14 | 96% | [qr-layer-editor/](qr-layer-editor/) |
+| text-tab-separation | 2026-04-16 | 100% | [text-tab-separation/](text-tab-separation/) |
+| qr-task-json-storage | 2026-04-16 | 95% | [qr-task-json-storage/](qr-task-json-storage/) |

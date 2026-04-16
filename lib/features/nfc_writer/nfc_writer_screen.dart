@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../qr_task/domain/entities/qr_task_kind.dart';
 import '../qr_task/domain/entities/qr_task_meta.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
@@ -23,7 +24,7 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args =
-          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          GoRouterState.of(context).extra as Map<String, dynamic>;
       _startWrite(args);
     });
   }
@@ -68,7 +69,7 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
   @override
   Widget build(BuildContext context) {
     final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+        GoRouterState.of(context).extra as Map<String, dynamic>;
     final appName = args['appName'] as String;
     final isAndroid = Platform.isAndroid;
 

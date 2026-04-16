@@ -1,29 +1,29 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user_qr_template.dart';
+part of 'user_qr_template_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
+class UserQrTemplateModelAdapter extends TypeAdapter<UserQrTemplateModel> {
   @override
   final int typeId = 1;
 
   @override
-  UserQrTemplate read(BinaryReader reader) {
+  UserQrTemplateModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return UserQrTemplate(
+    return UserQrTemplateModel(
       id: fields[0] as String,
       name: fields[1] as String,
       createdAt: fields[2] as DateTime,
       backgroundImageBytes: fields[3] as Uint8List?,
       backgroundScale: fields[4] as double,
-      backgroundAlignX: (fields[27] as double?) ?? 0.0,
-      backgroundAlignY: (fields[28] as double?) ?? 0.0,
+      backgroundAlignX: fields[27] as double,
+      backgroundAlignY: fields[28] as double,
       qrColorValue: fields[5] as int,
       gradientJson: fields[6] as String?,
       roundFactor: fields[7] as double,
@@ -42,15 +42,15 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
       remoteId: fields[20] as String?,
       syncedToCloud: fields[21] as bool,
       thumbnailBytes: fields[22] as Uint8List?,
-      dotStyleIndex: (fields[23] as int?) ?? 0,
-      eyeOuterIndex: (fields[24] as int?) ?? 0,
-      eyeInnerIndex: (fields[25] as int?) ?? 0,
+      dotStyleIndex: fields[23] as int,
+      eyeOuterIndex: fields[24] as int,
+      eyeInnerIndex: fields[25] as int,
       randomEyeSeed: fields[26] as int?,
     );
   }
 
   @override
-  void write(BinaryWriter writer, UserQrTemplate obj) {
+  void write(BinaryWriter writer, UserQrTemplateModel obj) {
     writer
       ..writeByte(29)
       ..writeByte(0)
@@ -119,7 +119,7 @@ class UserQrTemplateAdapter extends TypeAdapter<UserQrTemplate> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is UserQrTemplateAdapter &&
+      other is UserQrTemplateModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

@@ -2,7 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../app_picker/app_picker_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../app_picker/presentation/providers/app_picker_providers.dart';
 
 bool get _isIOSSimulator =>
     Platform.isIOS &&
@@ -14,7 +15,7 @@ class OutputSelectorScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+        GoRouterState.of(context).extra as Map<String, dynamic>;
     final appName = args['appName'] as String;
     final deepLink = args['deepLink'] as String;
     final packageName = args['packageName'] as String?;
@@ -50,18 +51,14 @@ class OutputSelectorScreen extends ConsumerWidget {
                     icon: Icons.qr_code_2,
                     label: 'QR 코드',
                     description: '카메라로 스캔하여 앱 실행',
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      '/qr-result',
-                      arguments: {
-                        'appName': appName,
-                        'deepLink': deepLink,
-                        'packageName': packageName,
-                        'platform': platform,
-                        'outputType': 'qr',
-                        'appIconBytes': appIconBytes,
-                      },
-                    ),
+                    onTap: () => context.push('/qr-result', extra: {
+                      'appName': appName,
+                      'deepLink': deepLink,
+                      'packageName': packageName,
+                      'platform': platform,
+                      'outputType': 'qr',
+                      'appIconBytes': appIconBytes,
+                    }),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -108,18 +105,14 @@ class OutputSelectorScreen extends ConsumerWidget {
                                 icon: Icons.nfc,
                                 label: 'NFC 태그',
                                 description: '태그에 가져다 대어 앱 실행',
-                                onTap: () => Navigator.pushNamed(
-                                  context,
-                                  '/nfc-writer',
-                                  arguments: {
-                                    'appName': appName,
-                                    'deepLink': deepLink,
-                                    'packageName': packageName,
-                                    'platform': platform,
-                                    'outputType': 'nfc',
-                                    'appIconBytes': appIconBytes,
-                                  },
-                                ),
+                                onTap: () => context.push('/nfc-writer', extra: {
+                                  'appName': appName,
+                                  'deepLink': deepLink,
+                                  'packageName': packageName,
+                                  'platform': platform,
+                                  'outputType': 'nfc',
+                                  'appIconBytes': appIconBytes,
+                                }),
                               )
                             : const _OutputCard(
                                 icon: Icons.nfc,

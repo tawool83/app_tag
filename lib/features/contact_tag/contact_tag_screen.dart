@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 
@@ -73,21 +74,17 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
     final email =
         contact.emails.isNotEmpty ? contact.emails.first.address : '';
 
-    Navigator.pushNamed(
-      context,
-      '/qr-result',
-      arguments: {
-        'appName': '연락처',
-        'deepLink': TagPayloadEncoder.contact(
-          name: name,
-          phone: phone,
-          email: email,
-        ),
-        'platform': 'universal',
-        'appIconBytes': null,
-        'tagType': 'contact',
-      },
-    );
+    context.push('/qr-result', extra: {
+      'appName': '연락처',
+      'deepLink': TagPayloadEncoder.contact(
+        name: name,
+        phone: phone,
+        email: email,
+      ),
+      'platform': 'universal',
+      'appIconBytes': null,
+      'tagType': 'contact',
+    });
   }
 
   @override
@@ -114,7 +111,7 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
             style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: const Text('이름, 전화번호, 이메일을 직접 입력합니다'),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () => Navigator.pushNamed(context, '/contact-manual'),
+        onTap: () => context.push('/contact-manual'),
       ),
     );
   }

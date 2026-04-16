@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/sticker_config.dart';
-import '../../../services/settings_service.dart';
+import '../../../core/services/settings_service.dart';
 import '../qr_result_provider.dart' show qrResultProvider;
 
 /// [로고] 탭: 아이콘 표시 토글 + 위치/배경 + 상단/하단 텍스트 편집.

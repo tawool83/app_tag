@@ -35,6 +35,9 @@ dependencies:
   # 상태 관리
   flutter_riverpod: ^2.5.0
 
+  # 라우팅
+  go_router: ^14.0.0
+
   # NFC
   nfc_manager: ^3.3.0
 

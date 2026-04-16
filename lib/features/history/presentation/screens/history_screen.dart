@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../qr_task/domain/entities/qr_task.dart';
 import '../../../qr_task/domain/entities/qr_task_kind.dart';
@@ -108,18 +109,14 @@ class _QrTaskTile extends ConsumerWidget {
       // 탭 시 QR 결과 화면으로 이동, 같은 taskId 로 이어서 편집.
       // QR 작업만 편집 복원 (NFC 는 P4 미구현).
       onTap: isQr
-          ? () => Navigator.pushNamed(
-                context,
-                '/qr-result',
-                arguments: {
-                  'editTaskId': task.id,
-                  'appName': task.meta.appName,
-                  'deepLink': task.meta.deepLink,
-                  'platform': task.meta.platform,
-                  'packageName': task.meta.packageName,
-                  'tagType': task.meta.tagType,
-                },
-              )
+          ? () => context.push('/qr-result', extra: {
+                'editTaskId': task.id,
+                'appName': task.meta.appName,
+                'deepLink': task.meta.deepLink,
+                'platform': task.meta.platform,
+                'packageName': task.meta.packageName,
+                'tagType': task.meta.tagType,
+              })
           : null,
     );
   }

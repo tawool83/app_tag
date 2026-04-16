@@ -2,6 +2,41 @@
 
 모든 주요 변경사항을 기록합니다.
 
+## [2026-04-16] - QR 결과 화면 텍스트 탭 분리 완료
+
+### Added
+- **텍스트 탭 생성**: QR 결과 화면에 전용 "텍스트" 탭 추가
+  - 상단/하단 텍스트 독립 편집
+  - 색상 선택 (ColorPicker 다이얼로그)
+  - 폰트 선택 (Sans/Serif/Mono)
+  - 크기 제어 (10~64sp, ±1 스텝)
+  - 텍스트 입력란 (40자 제한, 초기화 버튼)
+
+- **TextTab 위젯** (`lib/features/qr_result/tabs/text_tab.dart`)
+  - ConsumerWidget 기반 Riverpod 통합
+  - _TextEditor StatefulWidget (드래프트 패턴)
+  - _StepButton 재사용 컴포넌트
+  - 플랫폼 제네릭 폰트 (asset 불필요)
+
+### Changed
+- **StickerTab (로고 탭)**: 상단/하단 텍스트 편집 UI 제거
+  - 아이콘 표시 토글 + 로고 위치 + 로고 배경만 유지
+  - 스크롤 감소, 단일 책임 원칙 적용
+
+- **QrResultScreen**: TabController(length: 5)로 업데이트
+  - 탭 순서: QR 모양 → QR 색상 → 로고 → 텍스트 → 모든 템플릿
+  - TabBar에 "텍스트" 탭 추가
+
+### Design Improvements
+- **관심사 분리**: 로고 vs 텍스트 탭 책임 분명화
+- **UX 향상**: 각 탭이 단일 기능에 집중 → 직관적 탐색
+- **유지보수성**: 향후 탭 추가 시 확장성 개선 (TabController 기반)
+
+### Match Rate
+- Design vs Implementation: **100%** (gaps: 0)
+
+---
+
 ## [2026-04-11] - 홈 화면 타일 메뉴 재설계 완료
 
 ### Added

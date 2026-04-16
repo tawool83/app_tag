@@ -4,13 +4,15 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/error/result.dart';
 import '../../models/qr_dot_style.dart';
 import '../../models/qr_template.dart';
 import '../../models/sticker_config.dart';
-import '../../models/user_qr_template.dart';
 import '../../services/qr_service.dart';
 import '../qr_task/domain/entities/qr_customization.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
+import 'domain/entities/user_qr_template.dart';
+import 'presentation/providers/qr_result_providers.dart';
 import 'utils/customization_mapper.dart';
 
 final qrServiceProvider = Provider<QrService>((ref) => QrService());
@@ -184,7 +186,6 @@ class QrResultState {
 const _sentinel = Object();
 
 class QrResultNotifier extends StateNotifier<QrResultState> {
-  final QrService _qrService;
   final Ref _ref;
 
   /// 현재 편집 중인 QrTask 의 id. null 이면 아직 발급 전 (저장 안 함).
@@ -195,7 +196,7 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
   /// 트리거하지 않도록 막는 플래그.
   bool _suppressPush = false;
 
-  QrResultNotifier(this._qrService, this._ref) : super(const QrResultState());
+  QrResultNotifier(this._ref) : super(const QrResultState());
 
   String? get currentTaskId => _currentTaskId;
 
@@ -438,53 +439,50 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
   Future<void> saveToGallery(String appName) async {
     if (state.capturedImage == null) return;
     state = state.copyWith(saveStatus: QrActionStatus.loading);
-    try {
-      final success =
-          await _qrService.saveToGallery(state.capturedImage!, appName);
-      state = state.copyWith(
+    final result = await _ref
+        .read(saveQrToGalleryUseCaseProvider)(state.capturedImage!, appName);
+    result.fold(
+      (success) => state = state.copyWith(
         saveStatus: success ? QrActionStatus.success : QrActionStatus.error,
         errorMessage: success ? null : '이미지 저장에 실패했습니다.',
-      );
-    } catch (_) {
-      state = state.copyWith(
+      ),
+      (_) => state = state.copyWith(
         saveStatus: QrActionStatus.error,
         errorMessage: '이미지 저장에 실패했습니다.',
-      );
-    }
+      ),
+    );
   }
 
   Future<void> shareImage(String appName) async {
     if (state.capturedImage == null) return;
     state = state.copyWith(shareStatus: QrActionStatus.loading);
-    try {
-      await _qrService.shareImage(state.capturedImage!, appName);
-      state = state.copyWith(shareStatus: QrActionStatus.success);
-    } catch (_) {
-      state = state.copyWith(shareStatus: QrActionStatus.error);
-    }
+    final result = await _ref
+        .read(shareQrImageUseCaseProvider)(state.capturedImage!, appName);
+    result.fold(
+      (_) => state = state.copyWith(shareStatus: QrActionStatus.success),
+      (_) => state = state.copyWith(shareStatus: QrActionStatus.error),
+    );
   }
 
   Future<void> printQrCode(String appName, {double? sizeCm}) async {
     if (state.capturedImage == null) return;
     state = state.copyWith(printStatus: QrActionStatus.loading);
-    try {
-      await _qrService.printQrCode(
-        imageBytes: state.capturedImage!,
-        appName: appName,
-        sizeCm: sizeCm ?? state.printSizeCm,
-        printTitle: null,
-      );
-      state = state.copyWith(printStatus: QrActionStatus.success);
-    } catch (_) {
-      state = state.copyWith(
+    final result = await _ref.read(printQrCodeUseCaseProvider)(
+      imageBytes: state.capturedImage!,
+      appName: appName,
+      sizeCm: sizeCm ?? state.printSizeCm,
+    );
+    result.fold(
+      (_) => state = state.copyWith(printStatus: QrActionStatus.success),
+      (_) => state = state.copyWith(
         printStatus: QrActionStatus.error,
         errorMessage: '인쇄에 실패했습니다. 프린터 연결을 확인해주세요.',
-      );
-    }
+      ),
+    );
   }
 }
 
 final qrResultProvider =
     StateNotifierProvider.autoDispose<QrResultNotifier, QrResultState>(
-  (ref) => QrResultNotifier(ref.read(qrServiceProvider), ref),
+  (ref) => QrResultNotifier(ref),
 );

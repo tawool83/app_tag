@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/user_qr_template.dart';
-import '../../../repositories/user_template_repository.dart';
+import '../../../core/error/result.dart';
+import '../domain/entities/user_qr_template.dart';
+import '../presentation/providers/qr_result_providers.dart';
 import '../qr_result_provider.dart';
 
 /// [나의 템플릿] 탭: 저장된 QR 템플릿 그리드 표시 + 적용/삭제.
@@ -15,7 +16,6 @@ class MyTemplatesTab extends ConsumerStatefulWidget {
 }
 
 class _MyTemplatesTabState extends ConsumerState<MyTemplatesTab> {
-  final _repo = UserTemplateRepository();
   List<UserQrTemplate> _templates = [];
 
   @override
@@ -24,10 +24,13 @@ class _MyTemplatesTabState extends ConsumerState<MyTemplatesTab> {
     _load();
   }
 
-  void _load() {
-    setState(() {
-      _templates = _repo.getAll();
-    });
+  Future<void> _load() async {
+    final result = await ref.read(getUserTemplatesUseCaseProvider)();
+    if (mounted) {
+      setState(() {
+        _templates = result.valueOrNull ?? [];
+      });
+    }
   }
 
   Future<void> _apply(UserQrTemplate t) async {
@@ -62,7 +65,7 @@ class _MyTemplatesTabState extends ConsumerState<MyTemplatesTab> {
       ),
     );
     if (confirmed == true) {
-      await _repo.delete(t.id);
+      await ref.read(deleteUserTemplateUseCaseProvider)(t.id);
       _load();
     }
   }

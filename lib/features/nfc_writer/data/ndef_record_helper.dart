@@ -1,20 +1,25 @@
 import 'package:nfc_manager/nfc_manager.dart';
 
+/// NDEF record classification and merge utility.
+/// NDEF 레코드 분류 및 병합 유틸리티.
 class NdefRecordHelper {
-  /// Android URI 레코드 여부 (Play Store 링크)
+  /// Whether this is an Android URI record (Play Store link).
+  /// Android URI 레코드 여부 (Play Store 링크).
   static bool isAndroidRecord(NdefRecord record) {
     final uri = _extractUri(record);
     return uri != null &&
         uri.contains('play.google.com/store/apps/details');
   }
 
-  /// iOS URI 레코드 여부 (shortcuts:// 스킴)
+  /// Whether this is an iOS URI record (shortcuts:// scheme).
+  /// iOS URI 레코드 여부 (shortcuts:// 스킴).
   static bool isIosRecord(NdefRecord record) {
     final uri = _extractUri(record);
     return uri != null && uri.startsWith('shortcuts://');
   }
 
-  /// 기존 레코드 목록에서 현재 플랫폼 레코드만 교체, 나머지 보존
+  /// Replace only the current platform record, preserve others.
+  /// 현재 플랫폼 레코드만 교체, 나머지 보존.
   static List<NdefRecord> merge({
     required List<NdefRecord> existing,
     required NdefRecord newRecord,
@@ -26,11 +31,10 @@ class NdefRecordHelper {
     return [...preserved, newRecord];
   }
 
-  /// URI Well-Known 레코드에서 URI 문자열 추출
   static String? _extractUri(NdefRecord record) {
     try {
       if (record.typeNameFormat != NdefTypeNameFormat.nfcWellknown) return null;
-      if (record.type.length != 1 || record.type[0] != 0x55) return null; // 'U'
+      if (record.type.length != 1 || record.type[0] != 0x55) return null;
       if (record.payload.isEmpty) return null;
       final prefixCode = record.payload[0];
       final prefix = _uriPrefix(prefixCode);
@@ -41,7 +45,6 @@ class NdefRecordHelper {
     }
   }
 
-  /// NFC Forum URI prefix table (RFC 3987)
   static String _uriPrefix(int code) {
     const prefixes = {
       0x00: '',

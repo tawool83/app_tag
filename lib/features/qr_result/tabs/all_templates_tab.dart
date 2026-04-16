@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/error/result.dart';
 import '../../../models/qr_template.dart';
-import '../../../models/user_qr_template.dart';
-import '../../../repositories/user_template_repository.dart';
+import '../domain/entities/user_qr_template.dart';
+import '../presentation/providers/qr_result_providers.dart';
 import '../qr_result_provider.dart';
 import '../widgets/template_thumbnail.dart';
 
@@ -28,7 +29,6 @@ class AllTemplatesTab extends ConsumerStatefulWidget {
 }
 
 class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
-  final _repo = UserTemplateRepository();
   List<UserQrTemplate> _myTemplates = [];
 
   @override
@@ -37,10 +37,14 @@ class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
     _loadMyTemplates();
   }
 
-  void _loadMyTemplates() {
-    setState(() {
-      _myTemplates = _repo.getAll();
-    });
+  Future<void> _loadMyTemplates() async {
+    final result =
+        await ref.read(getUserTemplatesUseCaseProvider)();
+    if (mounted) {
+      setState(() {
+        _myTemplates = result.valueOrNull ?? [];
+      });
+    }
   }
 
   Future<void> _applyUserTemplate(UserQrTemplate t) async {
@@ -75,7 +79,7 @@ class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
       ),
     );
     if (confirmed == true) {
-      await _repo.delete(t.id);
+      await ref.read(deleteUserTemplateUseCaseProvider)(t.id);
       _loadMyTemplates();
     }
   }

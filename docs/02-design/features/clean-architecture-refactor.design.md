@@ -87,37 +87,44 @@ version_app: 1.0.0+1
                    └──────┴──────┴──────┴────────┘
 ```
 
-### 2.2 Data Flow (history feature 예시)
+### 2.2 Data Flow (qr_task feature — 레퍼런스 구현)
+
+> **Note (2026-04-16 업데이트)**: 파일럿 feature 를 `history` → `qr_task` 로 변경.
+> `qr-task-json-storage` 구현에서 `qr_task` 가 Clean Architecture 첫 완성 피처가 됨.
 
 ```
-UI (HistoryScreen)
-  └─ ref.watch(historyListProvider)
-       └─ historyListNotifierProvider
-            └─ GetTagHistoryUseCase.call()
-                 └─ TagHistoryRepository.getAll()      [abstract]
-                      └─ TagHistoryRepositoryImpl.getAll()  [data]
-                           └─ HiveTagHistoryDataSource.readAll()
-                                └─ Hive.box<TagHistoryModel>
-                                     (읽기 후 .toEntity() 변환)
-                                     ↩ List<TagHistoryModel>
-                                ↩ List<TagHistory> (entity)
-                           ↩ Result<Success<List<TagHistory>>>
+UI (QrResultScreen / HistoryScreen)
+  └─ ref.watch(qrTaskListNotifierProvider)
+       └─ QrTaskListNotifier
+            └─ ListQrTasksUseCase.call()
+                 └─ QrTaskRepository.listAll()           [abstract]
+                      └─ QrTaskRepositoryImpl.listAll()  [data]
+                           └─ HiveQrTaskDataSource.readAll()
+                                └─ Hive.box<QrTaskModel>('qr_tasks')
+                                     (.toEntity() → QrTask.fromPayloadMap())
+                                     ↩ List<QrTaskModel>
+                                ↩ List<QrTask> (entity)
+                           ↩ Result<Success<List<QrTask>>>
                       ↩ Result<...>
                  ↩ Result<...>
-            ↩ AsyncValue<List<TagHistory>>
-       ↩ build(TagHistory items)
+            ↩ AsyncValue<List<QrTask>>
 ```
 
-### 2.3 Dependencies (DI Graph)
+### 2.3 Dependencies (DI Graph — qr_task 레퍼런스 구현)
+
+> **Note (2026-04-16 업데이트)**: 실제 구현된 DI 그래프 (`qr_task_providers.dart`) 기준.
 
 | Provider | Type | Provides | Depends On |
 |---|---|---|---|
-| `hiveProvider` | `Provider<HiveInterface>` | Hive 인스턴스 | — |
-| `supabaseClientProvider` | `Provider<SupabaseClient>` | Supabase | — |
-| `tagHistoryLocalDataSourceProvider` | `Provider<TagHistoryLocalDataSource>` | Local DS | hiveProvider |
-| `tagHistoryRepositoryProvider` | `Provider<TagHistoryRepository>` | RepoImpl (abstract 타입으로 노출) | tagHistoryLocalDataSourceProvider |
-| `getTagHistoryUseCaseProvider` | `Provider<GetTagHistoryUseCase>` | UseCase | tagHistoryRepositoryProvider |
-| `historyListNotifierProvider` | `StateNotifierProvider<HistoryListNotifier, AsyncValue<...>>` | UI state | getTagHistoryUseCaseProvider, deleteTagHistoryUseCaseProvider, clearTagHistoryUseCaseProvider |
+| `qrTaskBoxProvider` | `Provider<Box<QrTaskModel>>` | Hive Box | `hive_config.dart` 에서 박스 오픈 |
+| `qrTaskLocalDataSourceProvider` | `Provider<QrTaskLocalDataSource>` | HiveQrTaskDataSource | `qrTaskBoxProvider` |
+| `qrTaskRepositoryProvider` | `Provider<QrTaskRepository>` | QrTaskRepositoryImpl (abstract 타입으로 노출) | `qrTaskLocalDataSourceProvider` |
+| `createQrTaskUseCaseProvider` | `Provider<CreateQrTaskUseCase>` | UseCase | `qrTaskRepositoryProvider` |
+| `listQrTasksUseCaseProvider` | `Provider<ListQrTasksUseCase>` | UseCase | `qrTaskRepositoryProvider` |
+| `updateQrTaskCustomizationUseCaseProvider` | `Provider<UpdateQrTaskCustomizationUseCase>` | UseCase | `qrTaskRepositoryProvider` |
+| `deleteQrTaskUseCaseProvider` | `Provider<DeleteQrTaskUseCase>` | UseCase | `qrTaskRepositoryProvider` |
+| `clearQrTasksUseCaseProvider` | `Provider<ClearQrTasksUseCase>` | UseCase | `qrTaskRepositoryProvider` |
+| `qrTaskListNotifierProvider` | `AsyncNotifierProvider<QrTaskListNotifier, List<QrTask>>` | UI state | `listQrTasksUseCaseProvider`, `deleteQrTaskUseCaseProvider`, `clearQrTasksUseCaseProvider` |
 
 **main.dart** 에서 `ProviderScope(overrides: [...])` 로 테스트 시 Repository 대체 가능.
 
@@ -127,122 +134,129 @@ UI (HistoryScreen)
 
 ### 3.1 Entity Definition (domain, pure Dart)
 
-```dart
-// lib/features/history/domain/entities/tag_history.dart
-import 'dart:typed_data';
+> **Note (2026-04-16 업데이트)**: `TagHistory` 는 삭제됨. 레퍼런스 엔티티는 `QrTask` 로 교체.
+> 구현 파일: `lib/features/qr_task/domain/entities/`
 
-/// 도메인 엔티티. Hive/JSON 무관. 비즈니스 의미만 보유.
-class TagHistory {
+```dart
+// lib/features/qr_task/domain/entities/qr_task.dart
+/// QR/NFC 1건 작업 기록. 도메인 순수 표현.
+class QrTask {
+  static const int currentSchemaVersion = 1;
   final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final QrTaskKind kind;     // enum: qr | nfc
+  final QrTaskMeta meta;     // 앱/링크 메타
+  final QrCustomization customization;  // QR 꾸미기 전체
+}
+
+// lib/features/qr_task/domain/entities/qr_task_meta.dart
+class QrTaskMeta {
   final String appName;
   final String deepLink;
-  final TagPlatform platform;    // enum
-  final TagOutputType outputType; // enum
-  final DateTime createdAt;
+  final String platform;      // 'android' | 'ios' | 'universal'
   final String? packageName;
-  final Uint8List? appIconBytes;
-  final QrCustomization? qr;     // 값 객체로 묶음
-  final double? printSizeCm;
-  final TagType? tagType;        // enum
-
-  const TagHistory({
-    required this.id,
-    required this.appName,
-    required this.deepLink,
-    required this.platform,
-    required this.outputType,
-    required this.createdAt,
-    this.packageName,
-    this.appIconBytes,
-    this.qr,
-    this.printSizeCm,
-    this.tagType,
-  });
+  final String? appIconBase64; // PNG → Base64
+  final String? tagType;       // 'app' | 'clipboard' | ... | 'sms'
 }
 
-enum TagPlatform { android, ios }
-enum TagOutputType { qr, nfc }
-enum TagType { app, clipboard, website, contact, wifi, location, event, email, sms }
-
+// lib/features/qr_task/domain/entities/qr_customization.dart
+/// QR 꾸미기 상태. 모든 색상은 ARGB int. enum은 String name.
 class QrCustomization {
-  final String? label;
-  final int? color;
-  final String? eyeShape;
-  final String? dataModuleShape;
-  final bool? embedIcon;
+  final int qrColorArgb;           // 0xFF000000
+  final QrGradientData? gradient;
+  final double roundFactor;        // 0.0~1.0
+  final String eyeOuter;           // 'square'|'rounded'|'circle'|'circleRound'|'smooth'
+  final String eyeInner;           // 'square'|'circle'|'diamond'|'star'
+  final int? randomEyeSeed;
+  final int quietZoneColorArgb;    // 0xFFFFFFFF
+  final String dotStyle;           // 'square'|'rounded'|'dots'|'classy'|...
+  final bool embedIcon;
   final String? centerEmoji;
-  final double? roundFactor;
-  const QrCustomization({...});
+  final String? centerIconBase64;
+  final double printSizeCm;        // 기본 5.0
+  final StickerSpec sticker;
+  final String? activeTemplateId;
+
+  // toJson() / fromJson() 포함 (dart:core only — 도메인 순수 유지)
 }
 ```
 
-### 3.2 DTO (data/models, Hive)
+**핵심 설계 원칙** (qr_task 실구현 기준):
+- 색상: Flutter `Color` 대신 ARGB int 직접 저장 → 도메인 Flutter 의존 0
+- enum: `String name` 저장 → JSON 직렬화 시 외부 패키지 불필요
+- `dart:convert` (jsonEncode/Decode) 는 Dart SDK 표준이므로 domain 사용 허용
+
+### 3.2 DTO (data/models, Hive) — JSON-Payload 전략
+
+> **Note (2026-04-16 업데이트)**: `TagHistoryModel` 은 삭제됨. 레퍼런스 DTO는 `QrTaskModel`.
+> 구현 파일: `lib/features/qr_task/data/models/qr_task_model.dart`
+
+#### 핵심 설계 결정: 4-필드 Hive + JSON Payload
+
+기존 설계(flat HiveFields)와 달리, 실제 구현은 **JSON payload 전략**을 채택했습니다.
 
 ```dart
-// lib/features/history/data/models/tag_history_model.dart
-import 'package:hive/hive.dart';
-import '../../domain/entities/tag_history.dart';
-
-part 'tag_history_model.g.dart';
-
-@HiveType(typeId: 0)  // ⚠ 기존 typeId 유지
-class TagHistoryModel extends HiveObject {
+// lib/features/qr_task/data/models/qr_task_model.dart
+@HiveType(typeId: 2)
+class QrTaskModel extends HiveObject {
   @HiveField(0) final String id;
-  @HiveField(1) final String appName;
-  @HiveField(2) final String deepLink;
-  @HiveField(3) final String platform;
-  @HiveField(4) final String outputType;
-  @HiveField(5) final DateTime createdAt;
-  @HiveField(6) final String? packageName;
-  @HiveField(7) final Uint8List? appIconBytes;
-  @HiveField(8) final String? qrLabel;
-  @HiveField(9) final int? qrColor;
-  @HiveField(10) final double? printSizeCm;
-  @HiveField(11) final String? tagType;
-  @HiveField(12) final String? qrEyeShape;
-  @HiveField(13) final String? qrDataModuleShape;
-  @HiveField(14) final bool? qrEmbedIcon;
-  @HiveField(15) final String? qrCenterEmoji;
-  @HiveField(16) final double? qrRoundFactor;
+  @HiveField(1) final DateTime createdAt;
+  @HiveField(2) final String kind;        // QrTaskKind.name: 'qr' | 'nfc'
+  @HiveField(3) final String payloadJson; // 전체 payload JSON 문자열
 
-  TagHistoryModel({...});
+  // Hive 필드는 4개 고정. 꾸미기 상세는 payloadJson 안에 JSON으로 저장.
+  // 향후 새 꾸미기 필드 추가 시 .g.dart 재생성 불필요 → null-cast 위험 0.
 
-  // Entity 변환
-  TagHistory toEntity() => TagHistory(
-    id: id,
-    appName: appName,
-    deepLink: deepLink,
-    platform: TagPlatform.values.byName(platform),
-    outputType: TagOutputType.values.byName(outputType),
-    createdAt: createdAt,
-    packageName: packageName,
-    appIconBytes: appIconBytes,
-    qr: _hasQrCustomization ? QrCustomization(...) : null,
-    printSizeCm: printSizeCm,
-    tagType: tagType == null ? null : TagType.values.byName(tagType!),
+  QrTask toEntity() {
+    final map = jsonDecode(payloadJson) as Map<String, dynamic>;
+    return QrTask.fromPayloadMap(id: id, createdAt: createdAt,
+        kind: QrTaskKind.fromName(kind), map: map);
+  }
+
+  factory QrTaskModel.fromEntity(QrTask t) => QrTaskModel(
+    id: t.id, createdAt: t.createdAt,
+    kind: t.kind.name, payloadJson: t.toPayloadJson(),
   );
-
-  factory TagHistoryModel.fromEntity(TagHistory e) => TagHistoryModel(...);
 }
 ```
+
+**payloadJson 내부 구조** (`schemaVersion: 1`):
+```json
+{
+  "schemaVersion": 1,
+  "taskId": "<UUID>",
+  "createdAt": "ISO8601",
+  "updatedAt": "ISO8601",
+  "kind": "qr",
+  "meta": { "appName": "...", "deepLink": "...", "platform": "android", ... },
+  "customization": { "qrColorArgb": 4278190080, "eyeOuter": "square", ... }
+}
+```
+
+**이 전략의 장점**:
+- Hive 스키마 불변 (필드 4개 고정) → `.g.dart` 재생성 시 기존 레코드 null-cast 위험 0
+- 새 꾸미기 필드 추가 = JSON 스키마만 확장, Hive 수정 없음
+- `schemaVersion` 으로 마이그레이션 판단 가능 (미래 클라우드 동기화 대비)
 
 **핵심 규칙**:
 - DTO는 도메인 Entity의 Hive 직렬화 대응 페어.
 - `@HiveType(typeId)`, `@HiveField(N)` 숫자는 기존 값 그대로.
-- DTO는 **non-null 기본값을 생성자에 직접 명시** (생성 어댑터가 재생성되어도 null-cast 안 터지도록).
+- DTO는 **non-null 기본값을 생성자에 직접 명시**.
 - 변환 메서드: `toEntity()`, `fromEntity()`.
 
 ### 3.3 전체 Entity–DTO 매핑 표
 
-| Entity | DTO | Hive typeId | Box name |
-|---|---|:-:|---|
-| `TagHistory` | `TagHistoryModel` | 0 | `tag_history` |
-| `UserQrTemplate` | `UserQrTemplateModel` | 1 | `user_qr_templates` |
-| `QrTemplate` (default) | `QrTemplateModel` | (none, JSON asset) | assets/default_templates.json |
-| `AppInfo` | `AppInfoModel` | (none, runtime) | — |
-| `StickerConfig` | `StickerConfigModel` | (none, 값 객체) | — |
-| `BackgroundConfig` | `BackgroundConfigModel` | (none, 값 객체) | — |
-| `QrDotStyle` | (enum, domain 에 직접) | — | — |
+> **Note (2026-04-16 업데이트)**: TagHistory 삭제됨. QrTask 추가.
+
+| Entity | DTO | Hive typeId | Box name | 상태 |
+|---|---|:-:|---|---|
+| ~~`TagHistory`~~ | ~~`TagHistoryModel`~~ | ~~0~~ | ~~`tag_history`~~ | **삭제됨** (hive_config에서 box 제거) |
+| `UserQrTemplate` | (미이전, `lib/models/`) | 1 | `user_qr_templates` | 레거시, P3 마이그레이션 예정 |
+| **`QrTask`** | **`QrTaskModel`** | **2** | **`qr_tasks`** | **완료 (qr-task-json-storage)** |
+| `QrTemplate` (default) | (JSON asset) | (none) | assets/default_templates.json | 레거시, P3 에서 domain 이전 예정 |
+| `StickerConfig` | (미이전, `lib/models/`) | (none, 값 객체) | — | 레거시, P3 에서 `StickerSpec` 으로 교체됨 |
+| `QrDotStyle` | (enum, domain 에 직접) | — | — | 유지 |
 
 ---
 
@@ -429,14 +443,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 **강제 수단**: 리뷰 체크리스트 + Optional: `dart_code_metrics` 의 `avoid-non-null-assertion`, `no-boolean-literal-compare` 외 custom rule.
 
-### 7.4 Feature Assignment (15 features)
+### 7.4 Feature Assignment (16 features)
+
+> **Note (2026-04-16 업데이트)**: `qr_task` 추가 (완료). `history` 상태 변경.
 
 모두 동일 3-layer 구조:
 
 ```
 lib/features/
-├── history/           (파일럿)
-├── qr_result/
+├── qr_task/           ✅ 완료 (qr-task-json-storage) — Clean Architecture 레퍼런스
+├── history/           ⚠ presentation만 존재, domain/data 없음 (HistoryScreen이 qr_task에 cross-feature 의존)
+├── qr_result/         🔄 P3 (qr_task 통합 후 재구성 예정)
 ├── nfc_writer/
 ├── app_picker/
 ├── home/
@@ -452,6 +469,10 @@ lib/features/
 ├── website_tag/
 └── wifi_tag/
 ```
+
+**⚠ history feature 아키텍처 결정 필요**:
+현재 `history_screen.dart` 는 `qr_task/domain/entities/` 와 `qr_task/presentation/providers/` 를 직접 import (cross-feature 의존). 설계 규칙(7.3) 위반.
+옵션: (a) history 를 `qr_task/presentation/screens/` 로 병합, (b) 독립 도메인 유지하되 `core/` 로 공통 엔티티 이전
 
 각 feature 내부:
 
@@ -598,88 +619,90 @@ lib/
 
 ### 9.2 Implementation Order (Phase 단위)
 
-#### P0 — 기반 (2-3일)
+#### P0 — 기반 ✅ 완료
 
-1. [ ] `lib/core/error/failure.dart` — Failure sealed class
-2. [ ] `lib/core/error/result.dart` — Result<T> sealed class + fold extension
-3. [ ] `lib/core/di/app_providers.dart` — 공통 Provider root
-4. [ ] `lib/core/di/hive_config.dart` — `initHive()` (Hive.initFlutter + adapter 등록)
-5. [ ] `lib/core/di/supabase_config.dart` — SupabaseClient Provider
-6. [ ] `lib/shared/*` → `lib/core/{constants,utils,widgets}/` 이전 (import 경로 업데이트)
-7. [ ] `main.dart` 리팩토링 — ProviderScope overrides 패턴 적용 (Hive/Supabase init 을 core/di 로 이동)
-8. [ ] `flutter analyze` 통과
-9. [ ] 기기 스모크 테스트
+1. [x] `lib/core/error/failure.dart` — Failure sealed class
+2. [x] `lib/core/error/result.dart` — Result<T> sealed class + fold/map/flatMap extension
+3. [x] `lib/core/di/app_providers.dart` — 공통 Provider root
+4. [x] `lib/core/di/hive_config.dart` — `initHive()` (Hive.initFlutter + adapter 등록)
+5. [x] `lib/core/di/supabase_config.dart` — SupabaseClient Provider
+6. [x] `lib/shared/*` → `lib/core/{constants,utils,widgets}/` 이전
+7. [x] `main.dart` 리팩토링 — ProviderScope overrides 패턴 적용
+8. [x] `flutter analyze` 통과
+9. [x] 기기 스모크 테스트
 
-#### P1 — 파일럿 history (2-3일)
+#### P1 — 파일럿 qr_task ✅ 완료 (qr-task-json-storage 로 구현됨)
 
-10. [ ] `features/history/domain/entities/tag_history.dart` — pure Dart Entity + enums
-11. [ ] `features/history/domain/repositories/tag_history_repository.dart` — abstract
-12. [ ] `features/history/domain/usecases/` 4개: Get/Save/Delete/Clear
-13. [ ] `features/history/data/datasources/tag_history_local_datasource.dart` — abstract
-14. [ ] `features/history/data/datasources/hive_tag_history_datasource.dart` — Hive impl
-15. [ ] `features/history/data/models/tag_history_model.dart` — @HiveType(0), toEntity/fromEntity
-16. [ ] `build_runner build` → `tag_history_model.g.dart` 생성
-17. [ ] `features/history/data/repositories/tag_history_repository_impl.dart`
-18. [ ] `features/history/presentation/providers/history_providers.dart` — DI graph
-19. [ ] `features/history/presentation/providers/history_list_notifier.dart`
-20. [ ] `features/history/presentation/screens/history_screen.dart` (기존에서 이전)
-21. [ ] `lib/services/history_service.dart` 삭제, 호출부 교체
-22. [ ] `lib/models/tag_history.dart` 삭제 (DTO 로 이관 완료)
-23. [ ] 단위 테스트 작성 (`test/features/history/`)
-24. [ ] 실기기: 기존 데이터 정상 로드 + 삭제/클리어 동작 확인
+> **Note**: 파일럿 feature 가 `history` → `qr_task` 로 변경됨 (2026-04-16).
+> `history` 는 presentation-only 레이어로 남겨두고 `qr_task` 엔티티를 재사용.
 
-#### P2 — go_router (1-2일)
+10. [x] `features/qr_task/domain/entities/` — QrTask, QrTaskMeta, QrCustomization, QrGradientData, StickerSpec, QrTaskKind
+11. [x] `features/qr_task/domain/repositories/qr_task_repository.dart` — abstract (6개 메서드)
+12. [x] `features/qr_task/domain/usecases/` — Create/GetById/List/UpdateCustomization/Delete/Clear (6개)
+13. [x] `features/qr_task/data/datasources/qr_task_local_datasource.dart` — abstract
+14. [x] `features/qr_task/data/datasources/hive_qr_task_datasource.dart` — Hive impl
+15. [x] `features/qr_task/data/models/qr_task_model.dart` — @HiveType(2), JSON payload 전략
+16. [x] `build_runner build` → `qr_task_model.g.dart` 생성
+17. [x] `features/qr_task/data/repositories/qr_task_repository_impl.dart`
+18. [x] `features/qr_task/presentation/providers/qr_task_providers.dart` — DI graph
+19. [x] `features/qr_task/presentation/providers/qr_task_list_notifier.dart`
+20. [x] `features/qr_result/qr_result_provider.dart` — debounced autosave 통합
+21. [x] `lib/features/qr_result/utils/customization_mapper.dart` — QrResultState ↔ QrCustomization
+22. [x] 실기기: QrTask 저장/복원 동작 확인
 
-25. [ ] `go_router` 의존성 추가
-26. [ ] `lib/core/di/router.dart` — GoRouter 정의 (15 route)
-27. [ ] `main.dart`: `MaterialApp.router(routerConfig: ref.watch(appRouterProvider))`
-28. [ ] 모든 `Navigator.push` → `context.push()` / `context.go()` 치환
-29. [ ] deep link redirect 로직 통합
-30. [ ] `lib/app/router.dart` 삭제
+#### P2 — go_router ✅ 완료
 
-#### P3 — qr_result (3-5일)
+25. [x] `go_router` 의존성 추가 (pubspec.yaml)
+26. [x] `lib/core/di/router.dart` — GoRouter 정의 (16 route, qr_task 포함)
+27. [x] `main.dart`: `MaterialApp.router(routerConfig: ref.watch(appRouterProvider))`
+28. [x] 모든 `Navigator.push` → `context.push()` / `context.go()` 치환
+29. [x] deep link redirect 로직 통합
+30. [x] `lib/app/router.dart` 삭제
 
-31. [ ] Entity 추출: `UserQrTemplate`, `QrTemplate`, `StickerConfig`, `BackgroundConfig`, `QrDotStyle`
-32. [ ] DTO: `UserQrTemplateModel` (**@HiveType(1) 유지**)
-33. [ ] Repository 인터페이스 + Impl (user template, default template)
-34. [ ] UseCase 해체:
+#### P3 — qr_result ✅ 완료
+
+31. [x] Entity 추출: `UserQrTemplate` (domain/entities)
+32. [x] DTO: `UserQrTemplateModel` (**@HiveType(1) 유지**, data/models)
+33. [x] Repository 인터페이스 + Impl: `UserTemplateRepository`, `DefaultTemplateRepository`, `QrOutputRepository`
+34. [x] UseCase 해체:
   - `GetUserTemplatesUseCase`, `SaveUserTemplateUseCase`, `DeleteUserTemplateUseCase`
-  - `GetDefaultTemplatesUseCase`
-  - `CaptureQrImageUseCase` (QrService 에서 분리)
-  - `SaveQrToGalleryUseCase`
-  - `ShareQrImageUseCase`
-  - `PrintQrCodeUseCase`
-  - `AnalyzeQrReadabilityUseCase` (qr_readability_service 에서)
-35. [ ] presentation: 5개 탭 (shape/color/background/sticker/text) 정리
-36. [ ] 기존 `qr_service.dart`, `template_service.dart`, `user_template_repository.dart`, `qr_template.dart`, `user_qr_template.dart` 삭제
-37. [ ] 실기기: 템플릿 저장/로드, 기존 데이터 마이그레이션, QR 저장/공유/프린트 검증
+  - `GetDefaultTemplatesUseCase`, `LoadTemplateImageUseCase`
+  - `SaveQrToGalleryUseCase`, `ShareQrImageUseCase`, `PrintQrCodeUseCase`
+35. [x] presentation/providers: 6 data + 9 usecase + 1 FutureProvider
+36. [x] 기존 `template_service.dart`, `user_template_repository.dart`, `template_repository.dart`, `user_qr_template.dart`, `user_qr_template.g.dart` 삭제
+37. [x] `qr_result_provider.dart`, `qr_result_screen.dart`, `all_templates_tab.dart`, `my_templates_tab.dart` — usecase 기반으로 전환
 
-#### P4 — nfc_writer (2일)
+#### P4 — nfc_writer ✅ 완료
 
-38. [ ] Entity: `NfcTag` (if needed)
-39. [ ] DataSource: `NfcPlatformDataSource` (nfc_manager 래핑)
-40. [ ] UseCase: `WriteNfcTagUseCase`, `CheckNfcAvailabilityUseCase`
-41. [ ] 기존 `nfc_service.dart`, `ndef_record_helper.dart` 제거
-42. [ ] 기기: NFC 쓰기 검증
+38. [x] Entity: `NfcWriteResult` (domain/entities)
+39. [x] DataSource: `NfcDataSource` (abstract) + `NfcManagerDataSource` (nfc_manager 래핑)
+40. [x] Repository: `NfcRepository` (abstract) + `NfcRepositoryImpl` (Completer 패턴으로 callback→async 변환)
+41. [x] UseCase: `WriteNfcTagUseCase`, `CheckNfcAvailabilityUseCase`
+42. [x] `ndef_record_helper.dart` → `nfc_writer/data/` 로 이동
+43. [x] `nfc_writer_provider.dart` — Ref 기반 usecase 호출로 전환
+44. [x] presentation/providers: 5 providers (dataSource, repository, 2 usecases)
 
-#### P5 — 나머지 12 features (7-10일)
+#### P5 — 나머지 features ✅ 완료
 
-각 feature 1 PR:
-43. [ ] `app_picker/` (device_apps 플랫폼 DS)
-44. [ ] `home/`
-45. [ ] `clipboard_tag/`
-46. [ ] `contact_tag/` (flutter_contacts 플랫폼 DS)
-47. [ ] `email_tag/`
-48. [ ] `event_tag/`
-49. [ ] `help/`
-50. [ ] `ios_input/`
-51. [ ] `location_tag/` (flutter_map, geolocator 플랫폼 DS)
-52. [ ] `output_selector/`
-53. [ ] `sms_tag/`
-54. [ ] `website_tag/`
-55. [ ] `wifi_tag/`
+> **실 대상**: app_picker, home, output_selector (3개 실질 리팩터링).
+> 나머지 9개 form screens (clipboard, contact, email, event, help, ios_input, location, sms, website, wifi)는
+> 이미 레거시 서비스/모델 의존 없이 깔끔한 상태 — 변경 불필요.
+> `history`는 qr_task CA 레이어를 직접 import하여 이미 정리됨.
 
-#### P6 — 정리 (1-2일)
+45. [x] `app_picker/` — Full CA: domain/entities/app_info.dart, domain/repositories/, domain/usecases/get_installed_apps_usecase.dart, data/datasources/app_list_datasource.dart (device_apps 래핑), data/repositories/app_picker_repository_impl.dart, presentation/providers/app_picker_providers.dart
+46. [x] `app_picker/` — NFC availability providers: nfc_writer CA 레이어 재사용 (`nfcAvailableProvider`, `nfcWriteSupportedProvider`)
+47. [x] `home/` — `SettingsService` 를 `core/services/settings_service.dart` 로 이동
+48. [x] `output_selector/` — import를 app_picker 새 CA providers로 변경
+49. [x] `qr_result/qr_result_screen.dart`, `tabs/sticker_tab.dart` — SettingsService import 업데이트
+50. [x] 레거시 파일 삭제: `lib/services/nfc_service.dart`, `lib/models/app_info.dart`, `lib/services/settings_service.dart`
+51. [x] `flutter analyze lib/` — 0 errors (info/warning only, 모두 기존)
+
+#### P6 — 정리 (1-2일) — 부분 완료
+
+> **남은 레거시 파일** (다른 feature에서 아직 직접 사용 중):
+> - `lib/services/`: qr_readability_service.dart, qr_service.dart, supabase_service.dart
+> - `lib/models/`: qr_dot_style.dart, qr_template.dart, sticker_config.dart
+> → qr_result 내부 리팩터링 시 정리 예정 (QR 렌더/출력 관련 서비스)
 
 56. [ ] 낡은 디렉토리 삭제: `lib/services/`, `lib/repositories/`, `lib/models/`, `lib/shared/`
 57. [ ] 남은 import 정리
@@ -742,3 +765,5 @@ dev_dependencies:
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 0.1 | 2026-04-15 | Initial draft (Option B 선택 후) | tawool83 |
+| 0.2 | 2026-04-16 | qr-task-json-storage 구현 반영: 파일럿 history→qr_task 교체, TagHistory 삭제, QrTaskModel JSON-payload 전략 문서화, DI 그래프 업데이트, 구현 순서 P0/P1 완료 처리, 피처 목록에 qr_task 추가 | tawool83 |
+| 0.3 | 2026-04-17 | P2~P5 완료 반영: go_router 도입, qr_result 3-layer + usecase 해체, nfc_writer CA(Completer 패턴), app_picker CA(device_apps DS), SettingsService core/ 이전, 레거시 파일 삭제(nfc_service, app_info, settings_service, ndef_record_helper, template files) | tawool83 |

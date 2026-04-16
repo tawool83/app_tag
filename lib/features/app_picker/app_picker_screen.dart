@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/app_info.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/constants/deep_link_constants.dart';
 import '../../core/widgets/output_action_buttons.dart';
-import 'app_picker_provider.dart';
+import 'domain/entities/app_info.dart';
+import 'presentation/providers/app_picker_providers.dart';
 
 class AppPickerScreen extends ConsumerStatefulWidget {
   const AppPickerScreen({super.key});
@@ -30,7 +31,7 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
       );
       return;
     }
-    Navigator.pushNamed(context, '/qr-result', arguments: _buildArgs());
+    context.push('/qr-result', extra: _buildArgs());
   }
 
   void _onNfc() {
@@ -40,7 +41,7 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
       );
       return;
     }
-    Navigator.pushNamed(context, '/nfc-writer', arguments: _buildArgs());
+    context.push('/nfc-writer', extra: _buildArgs());
   }
 
   @override

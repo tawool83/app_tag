@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/error/result.dart';
 import '../qr_task/domain/entities/qr_task_kind.dart';
@@ -11,11 +12,10 @@ import '../qr_task/domain/entities/qr_task_meta.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
 import '../../models/qr_template.dart';
 import '../../models/sticker_config.dart' show StickerText;
-import '../../models/user_qr_template.dart';
-import '../../repositories/template_repository.dart';
-import '../../repositories/user_template_repository.dart';
 import '../../services/qr_readability_service.dart';
-import '../../services/settings_service.dart';
+import 'domain/entities/user_qr_template.dart';
+import 'presentation/providers/qr_result_providers.dart';
+import '../../core/services/settings_service.dart';
 import '../../core/constants/app_config.dart' show validateQrData;
 import 'qr_result_provider.dart';
 import 'tabs/all_templates_tab.dart';
@@ -107,7 +107,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   final _repaintKey = GlobalKey();
   late TabController _tabController;
   QrTemplateManifest _templateManifest = QrTemplateManifest.empty;
-  final _templateRepo = UserTemplateRepository();
 
   // 나의 템플릿 갱신용 key (AllTemplatesTab 강제 재빌드)
   int _myTemplatesVersion = 0;
@@ -120,7 +119,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
-          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          GoRouterState.of(context).extra as Map<String, dynamic>;
 
       // 중앙 집중 deepLink 유효성 검사
       final deepLink = args['deepLink'] as String;
@@ -214,12 +213,11 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       // 이미지 캡처 (UI 미리보기용) — JSON 저장과 별개
       _captureThumbnailToState();
 
-      TemplateRepository.getTemplates(
-        onRefresh: (updated) {
-          if (mounted) setState(() => _templateManifest = updated);
-        },
-      ).then((manifest) {
-        if (mounted) setState(() => _templateManifest = manifest);
+      ref.read(getDefaultTemplatesUseCaseProvider)().then((result) {
+        final manifest = result.valueOrNull;
+        if (manifest != null && mounted) {
+          setState(() => _templateManifest = manifest);
+        }
       });
     });
   }
@@ -399,7 +397,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       thumbnailBytes: thumbnail,
     );
 
-    await _templateRepo.save(template);
+    await ref.read(saveUserTemplateUseCaseProvider)(template);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -418,8 +416,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     Uint8List? iconBytes;
     if (template.style.centerIcon.type == 'url' &&
         template.style.centerIcon.url != null) {
-      iconBytes = await TemplateRepository.loadImageBytes(
-          template.style.centerIcon.url!);
+      final result = await ref
+          .read(loadTemplateImageUseCaseProvider)(template.style.centerIcon.url!);
+      iconBytes = result.valueOrNull;
     }
     if (!mounted) return;
     ref
@@ -438,7 +437,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   @override
   Widget build(BuildContext context) {
     final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+        GoRouterState.of(context).extra as Map<String, dynamic>;
     final appName = args['appName'] as String;
     final deepLink = args['deepLink'] as String;
 

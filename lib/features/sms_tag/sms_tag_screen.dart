@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
 
@@ -34,12 +35,12 @@ class _SmsTagScreenState extends State<SmsTagScreen> {
 
   void _onQr() {
     if (!_formKey.currentState!.validate()) return;
-    Navigator.pushNamed(context, '/qr-result', arguments: _buildArgs());
+    context.push('/qr-result', extra: _buildArgs());
   }
 
   void _onNfc() {
     if (!_formKey.currentState!.validate()) return;
-    Navigator.pushNamed(context, '/nfc-writer', arguments: _buildArgs());
+    context.push('/nfc-writer', extra: _buildArgs());
   }
 
   @override

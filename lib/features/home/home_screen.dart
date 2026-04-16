@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../services/settings_service.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/services/settings_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -59,8 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Platform.isAndroid ? Icons.apps : CupertinoIcons.square_stack_3d_up,
         label: Platform.isAndroid ? '앱 실행' : '단축어',
         iconColor: Colors.indigo,
-        onTap: () => Navigator.pushNamed(
-          context,
+        onTap: () => context.push(
           Platform.isAndroid ? '/app-picker' : '/ios-input',
         ),
       ),
@@ -69,56 +69,56 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.content_paste,
         label: '클립보드',
         iconColor: Colors.blueGrey,
-        onTap: () => Navigator.pushNamed(context, '/clipboard-tag'),
+        onTap: () => context.push('/clipboard-tag'),
       ),
       _TileItem(
         key: 'website',
         icon: Icons.language,
         label: '웹 사이트',
         iconColor: Colors.blue,
-        onTap: () => Navigator.pushNamed(context, '/website-tag'),
+        onTap: () => context.push('/website-tag'),
       ),
       _TileItem(
         key: 'contact',
         icon: Icons.contact_phone,
         label: '연락처',
         iconColor: Colors.green,
-        onTap: () => Navigator.pushNamed(context, '/contact-tag'),
+        onTap: () => context.push('/contact-tag'),
       ),
       _TileItem(
         key: 'wifi',
         icon: Icons.wifi,
         label: 'WiFi',
         iconColor: Colors.teal,
-        onTap: () => Navigator.pushNamed(context, '/wifi-tag'),
+        onTap: () => context.push('/wifi-tag'),
       ),
       _TileItem(
         key: 'location',
         icon: Icons.location_on,
         label: '위치',
         iconColor: Colors.red,
-        onTap: () => Navigator.pushNamed(context, '/location-tag'),
+        onTap: () => context.push('/location-tag'),
       ),
       _TileItem(
         key: 'event',
         icon: Icons.event,
         label: '이벤트/일정',
         iconColor: Colors.orange,
-        onTap: () => Navigator.pushNamed(context, '/event-tag'),
+        onTap: () => context.push('/event-tag'),
       ),
       _TileItem(
         key: 'email',
         icon: Icons.email,
         label: '이메일',
         iconColor: Colors.deepPurple,
-        onTap: () => Navigator.pushNamed(context, '/email-tag'),
+        onTap: () => context.push('/email-tag'),
       ),
       _TileItem(
         key: 'sms',
         icon: Icons.sms,
         label: 'SMS',
         iconColor: Colors.pink,
-        onTap: () => Navigator.pushNamed(context, '/sms-tag'),
+        onTap: () => context.push('/sms-tag'),
       ),
     ];
   }
@@ -161,12 +161,12 @@ class _HomeScreenState extends State<HomeScreen> {
         IconButton(
           icon: const Icon(Icons.help_outline),
           tooltip: '사용 안내',
-          onPressed: () => Navigator.pushNamed(context, '/help'),
+          onPressed: () => context.push('/help'),
         ),
         IconButton(
           icon: const Icon(Icons.history),
           tooltip: '생성 이력',
-          onPressed: () => Navigator.pushNamed(context, '/history'),
+          onPressed: () => context.push('/history'),
         ),
       ],
     );
