@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
+import '../../l10n/app_localizations.dart';
 
 class WifiTagScreen extends StatefulWidget {
   const WifiTagScreen({super.key});
@@ -17,12 +18,15 @@ class _WifiTagScreenState extends State<WifiTagScreen> {
   String _securityType = 'WPA2';
   bool _obscurePassword = true;
 
-  static const _securityOptions = [
-    ('WPA2', 'WPA2 (권장)'),
-    ('WPA', 'WPA'),
-    ('WEP', 'WEP'),
-    ('nopass', '없음'),
-  ];
+  List<(String, String)> _securityOptions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      ('WPA2', l10n.optionWpa2),
+      ('WPA', 'WPA'),
+      ('WEP', 'WEP'),
+      ('nopass', l10n.optionNoSecurity),
+    ];
+  }
 
   @override
   void dispose() {
@@ -56,7 +60,7 @@ class _WifiTagScreenState extends State<WifiTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('WiFi 태그')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenWifiTitle)),
       body: Column(
         children: [
           Expanded(
@@ -67,42 +71,42 @@ class _WifiTagScreenState extends State<WifiTagScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('네트워크 이름 (SSID) *',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelWifiSsid,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _ssidController,
                       decoration: InputDecoration(
-                        hintText: 'MyWiFi',
+                        hintText: AppLocalizations.of(context)!.hintWifiSsid,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'SSID를 입력해주세요.' : null,
+                          (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.msgSsidRequired : null,
                     ),
                     const SizedBox(height: 16),
-                    const Text('보안 방식',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelWifiSecurity,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: _securityType,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      items: _securityOptions
+                      items: _securityOptions(context)
                           .map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2)))
                           .toList(),
                       onChanged: (v) => setState(() => _securityType = v!),
                     ),
                     if (_securityType != 'nopass') ...[
                       const SizedBox(height: 16),
-                      const Text('비밀번호',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(AppLocalizations.of(context)!.labelWifiPassword,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: '비밀번호',
+                          hintText: AppLocalizations.of(context)!.hintWifiPassword,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           suffixIcon: IconButton(
                             icon: Icon(_obscurePassword

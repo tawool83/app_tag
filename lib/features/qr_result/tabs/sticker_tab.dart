@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/entities/sticker_config.dart';
 import '../../../core/services/settings_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../qr_result_provider.dart' show qrResultProvider;
 
 /// [로고] 탭: 아이콘 표시 토글 + 위치/배경 + 상단/하단 텍스트 편집.
@@ -30,6 +31,8 @@ class StickerTab extends ConsumerWidget {
       onChanged();
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -39,7 +42,7 @@ class StickerTab extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const _SectionLabel('아이콘 표시'),
+              _SectionLabel(l10n.labelShowIcon),
               Switch(
                 value: embedIcon,
                 onChanged: hasIconSource ? toggleEmbedIcon : null,
@@ -50,7 +53,7 @@ class StickerTab extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                '앱 아이콘 또는 이모지가 설정된 경우에만 표시됩니다.',
+                l10n.msgIconUnavailable,
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
               ),
             ),
@@ -64,13 +67,13 @@ class StickerTab extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _SectionLabel('로고 위치'),
+                    _SectionLabel(l10n.labelLogoPosition),
                     const SizedBox(height: 8),
                     _SegmentRow<LogoPosition>(
                       selected: sticker.logoPosition,
-                      options: const [
-                        (LogoPosition.center, '중앙'),
-                        (LogoPosition.bottomRight, '우하단'),
+                      options: [
+                        (LogoPosition.center, l10n.optionCenter),
+                        (LogoPosition.bottomRight, l10n.optionBottomRight),
                       ],
                       onChanged: (v) => update(sticker.copyWith(logoPosition: v)),
                     ),
@@ -82,14 +85,14 @@ class StickerTab extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _SectionLabel('로고 배경'),
+                    _SectionLabel(l10n.labelLogoBackground),
                     const SizedBox(height: 8),
                     _SegmentRow<LogoBackground>(
                       selected: sticker.logoBackground,
-                      options: const [
-                        (LogoBackground.none, '없음'),
-                        (LogoBackground.square, '사각'),
-                        (LogoBackground.circle, '원형'),
+                      options: [
+                        (LogoBackground.none, l10n.optionNone),
+                        (LogoBackground.square, l10n.optionSquare),
+                        (LogoBackground.circle, l10n.optionCircle),
                       ],
                       onChanged: (v) => update(sticker.copyWith(logoBackground: v)),
                     ),

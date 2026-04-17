@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/entities/qr_template.dart' show QrGradient;
+import '../../../l10n/app_localizations.dart';
 import '../qr_result_provider.dart' show qrResultProvider, qrSafeColors, kQrPresetGradients;
 
 /// [색상] 탭: 단색 / 그라디언트 서브탭.
@@ -48,9 +49,9 @@ class _QrColorTabState extends ConsumerState<QrColorTab>
           controller: _innerTabController,
           labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           unselectedLabelStyle: const TextStyle(fontSize: 13),
-          tabs: const [
-            Tab(text: '단색'),
-            Tab(text: '그라디언트'),
+          tabs: [
+            Tab(text: AppLocalizations.of(context)!.tabColorSolid),
+            Tab(text: AppLocalizations.of(context)!.tabColorGradient),
           ],
         ),
         Expanded(
@@ -88,11 +89,12 @@ class _SolidColorPanel extends StatelessWidget {
   const _SolidColorPanel({required this.selected, required this.onSelected});
 
   Future<void> _openColorWheel(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     Color temp = selected;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('색상 선택'),
+        title: Text(l10n.dialogColorPickerTitle),
         content: SingleChildScrollView(
           child: ColorPicker(
             pickerColor: temp,
@@ -104,11 +106,11 @@ class _SolidColorPanel extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
+            child: Text(l10n.actionCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('확인'),
+            child: Text(l10n.actionConfirm),
           ),
         ],
       ),
@@ -147,8 +149,8 @@ class _SolidColorPanel extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Text('직접 선택',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                  Text(AppLocalizations.of(context)!.actionPickColor,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                   const SizedBox(width: 4),
                   Icon(Icons.colorize_outlined,
                       size: 16, color: Colors.grey.shade600),
@@ -158,8 +160,8 @@ class _SolidColorPanel extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          const Text('추천 색상',
-              style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(AppLocalizations.of(context)!.labelRecommendedColors,
+              style: const TextStyle(fontSize: 12, color: Colors.grey)),
           const SizedBox(height: 10),
 
           // 팔레트 (WCAG 안전 색상)
@@ -212,8 +214,8 @@ class _GradientPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('그라디언트 프리셋',
-              style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(AppLocalizations.of(context)!.labelGradientPresets,
+              style: const TextStyle(fontSize: 12, color: Colors.grey)),
           const SizedBox(height: 10),
           Wrap(
             spacing: 12,

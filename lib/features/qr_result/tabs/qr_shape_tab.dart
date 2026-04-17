@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/entities/qr_dot_style.dart';
+import '../../../l10n/app_localizations.dart';
 import '../qr_result_provider.dart' show QrEyeOuter, QrEyeInner, qrResultProvider;
 
 /// [모양] 탭: 도트 모양 + 눈 외곽/내부 독립 선택 + 랜덤 눈 생성.
@@ -32,7 +33,7 @@ class QrShapeTab extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ① 도트 모양
-          _sectionLabel('도트 모양'),
+          _sectionLabel(AppLocalizations.of(context)!.labelDotShape),
           const SizedBox(height: 10),
           _DotStyleGrid(selected: state.dotStyle, onSelected: onDotStyleChanged),
           const SizedBox(height: 20),
@@ -41,7 +42,7 @@ class QrShapeTab extends ConsumerWidget {
           const SizedBox(height: 16),
 
           // ② 눈 모양 — 외곽
-          _sectionLabel('눈 모양 — 외곽'),
+          _sectionLabel(AppLocalizations.of(context)!.labelEyeOuter),
           const SizedBox(height: 10),
           _OuterShapeRow(
             selected: isRandom ? null : state.eyeOuter,
@@ -50,7 +51,7 @@ class QrShapeTab extends ConsumerWidget {
           const SizedBox(height: 14),
 
           // ③ 눈 모양 — 내부
-          _sectionLabel('눈 모양 — 내부'),
+          _sectionLabel(AppLocalizations.of(context)!.labelEyeInner),
           const SizedBox(height: 10),
           _InnerShapeRow(
             selected: isRandom ? null : state.eyeInner,
@@ -138,12 +139,12 @@ class _DotStyleGrid extends StatelessWidget {
 
 // ── 눈 외곽 모양 행 ──────────────────────────────────────────────────────────
 
-const _kOuterLabels = {
-  QrEyeOuter.square:      '사각',
-  QrEyeOuter.rounded:     '둥글기',
-  QrEyeOuter.circle:      '원형',
-  QrEyeOuter.circleRound: '원형도넛',
-  QrEyeOuter.smooth:      '부드럽게',
+Map<QrEyeOuter, String> _outerLabels(AppLocalizations l10n) => {
+  QrEyeOuter.square:      l10n.shapeSquare,
+  QrEyeOuter.rounded:     l10n.shapeRounded,
+  QrEyeOuter.circle:      l10n.shapeCircle,
+  QrEyeOuter.circleRound: l10n.shapeCircleRound,
+  QrEyeOuter.smooth:      l10n.shapeSmooth,
 };
 
 class _OuterShapeRow extends StatelessWidget {
@@ -154,6 +155,7 @@ class _OuterShapeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labels = _outerLabels(AppLocalizations.of(context)!);
     return Wrap(
       spacing: 10,
       runSpacing: 10,
@@ -163,7 +165,7 @@ class _OuterShapeRow extends StatelessWidget {
           isSelected: isSelected,
           dimmed: selected == null,
           onTap: () => onSelected(outer),
-          tooltip: _kOuterLabels[outer] ?? '',
+          tooltip: labels[outer] ?? '',
           child: CustomPaint(
             size: const Size(26, 26),
             painter: _OuterIconPainter(outer, isSelected
@@ -178,11 +180,11 @@ class _OuterShapeRow extends StatelessWidget {
 
 // ── 눈 내부 모양 행 ──────────────────────────────────────────────────────────
 
-const _kInnerLabels = {
-  QrEyeInner.square:  '사각',
-  QrEyeInner.circle:  '원형',
-  QrEyeInner.diamond: '다이아',
-  QrEyeInner.star:    '별',
+Map<QrEyeInner, String> _innerLabels(AppLocalizations l10n) => {
+  QrEyeInner.square:  l10n.shapeSquare,
+  QrEyeInner.circle:  l10n.shapeCircle,
+  QrEyeInner.diamond: l10n.shapeDiamond,
+  QrEyeInner.star:    l10n.shapeStar,
 };
 
 class _InnerShapeRow extends StatelessWidget {
@@ -193,6 +195,7 @@ class _InnerShapeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labels = _innerLabels(AppLocalizations.of(context)!);
     return Wrap(
       spacing: 10,
       runSpacing: 10,
@@ -202,7 +205,7 @@ class _InnerShapeRow extends StatelessWidget {
           isSelected: isSelected,
           dimmed: selected == null,
           onTap: () => onSelected(inner),
-          tooltip: _kInnerLabels[inner] ?? '',
+          tooltip: labels[inner] ?? '',
           child: CustomPaint(
             size: const Size(26, 26),
             painter: _InnerIconPainter(inner, isSelected
@@ -280,13 +283,14 @@ class _RandomEyeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: FilledButton.icon(
             onPressed: onGenerate,
             icon: const Icon(Icons.casino_outlined, size: 18),
-            label: Text(isActive ? '랜덤 재생성' : '랜덤 눈 모양'),
+            label: Text(isActive ? l10n.actionRandomRegenerate : l10n.actionRandomEye),
             style: FilledButton.styleFrom(
               backgroundColor: isActive
                   ? Theme.of(context).colorScheme.tertiary
@@ -302,7 +306,7 @@ class _RandomEyeButton extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             ),
-            child: const Text('해제'),
+            child: Text(l10n.actionClear),
           ),
         ],
       ],

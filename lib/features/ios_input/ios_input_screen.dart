@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/deep_link_constants.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/widgets/output_action_buttons.dart';
 
 class IosInputScreen extends StatefulWidget {
@@ -44,8 +45,9 @@ class _IosInputScreenState extends State<IosInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('iOS 앱 실행 설정')),
+      appBar: AppBar(title: Text(l10n.screenIosInputTitle)),
       body: Column(
         children: [
           Expanded(
@@ -56,22 +58,22 @@ class _IosInputScreenState extends State<IosInputScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '실행할 앱의 단축어 이름',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    Text(
+                      l10n.labelShortcutName,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _controller,
                       decoration: InputDecoration(
-                        hintText: '예: 내냉장고',
+                        hintText: l10n.hintShortcutName,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return '앱 이름을 입력해주세요.';
+                          return l10n.msgAppNameRequired;
                         }
                         return null;
                       },
@@ -92,7 +94,7 @@ class _IosInputScreenState extends State<IosInputScreen> {
                               Icon(Icons.info_outline, color: Colors.blue.shade700),
                               const SizedBox(width: 8),
                               Text(
-                                '단축어 설정 안내',
+                                l10n.screenIosInputGuideTitle,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.blue.shade700,
@@ -101,12 +103,9 @@ class _IosInputScreenState extends State<IosInputScreen> {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            '1. iPhone의 단축어(Shortcuts) 앱을 열기\n'
-                            '2. 실행하려는 앱을 여는 단축어 만들기\n'
-                            '3. 단축어 이름을 위에 입력한 이름으로 저장\n'
-                            '4. 아래 버튼을 눌러 QR/NFC 생성',
-                            style: TextStyle(fontSize: 14, height: 1.6),
+                          Text(
+                            l10n.screenIosInputGuideSteps,
+                            style: const TextStyle(fontSize: 14, height: 1.6),
                           ),
                           const SizedBox(height: 12),
                           TextButton.icon(
@@ -121,7 +120,7 @@ class _IosInputScreenState extends State<IosInputScreen> {
                             icon: Icon(Icons.open_in_new,
                                 size: 16, color: Colors.blue.shade700),
                             label: Text(
-                              'Apple 단축어 공식 사용 설명서',
+                              l10n.actionAppleShortcutsGuide,
                               style: TextStyle(
                                   fontSize: 13, color: Colors.blue.shade700),
                             ),

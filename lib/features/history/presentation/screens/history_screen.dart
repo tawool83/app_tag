@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../qr_task/domain/entities/qr_task.dart';
 import '../../../qr_task/domain/entities/qr_task_kind.dart';
 import '../../../qr_task/presentation/providers/qr_task_providers.dart';
@@ -12,28 +13,29 @@ class HistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tasks = ref.watch(qrTaskListNotifierProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('생성 이력'),
+        title: Text(l10n.screenHistoryTitle),
         actions: [
           if (tasks.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep),
-              tooltip: '전체 삭제',
+              tooltip: l10n.tooltipDeleteAll,
               onPressed: () => _confirmClearAll(context, ref),
             ),
         ],
       ),
       body: tasks.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.history, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('이력이 없습니다.',
-                      style: TextStyle(color: Colors.grey)),
+                  const Icon(Icons.history, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  Text(l10n.screenHistoryEmpty,
+                      style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             )
@@ -48,19 +50,20 @@ class HistoryScreen extends ConsumerWidget {
   }
 
   Future<void> _confirmClearAll(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('전체 삭제'),
-        content: const Text('모든 이력을 삭제하시겠습니까?'),
+        title: Text(l10n.dialogClearAllTitle),
+        content: Text(l10n.dialogClearAllContent),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('취소')),
+              child: Text(l10n.actionCancel)),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child:
-                  const Text('삭제', style: TextStyle(color: Colors.red))),
+                  Text(l10n.actionDelete, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -78,6 +81,7 @@ class _QrTaskTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isQr = task.kind == QrTaskKind.qr;
     final isAndroid = task.meta.platform == 'android';
+    final l10n = AppLocalizations.of(context)!;
 
     return ListTile(
       leading: CircleAvatar(
@@ -93,7 +97,7 @@ class _QrTaskTile extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${isQr ? 'QR 코드' : 'NFC 태그'} · ${isAndroid ? 'Android' : 'iOS'}',
+            '${isQr ? l10n.labelQrCode : l10n.labelNfcTag} · ${isAndroid ? 'Android' : 'iOS'}',
             style: const TextStyle(fontSize: 12),
           ),
           Text(
@@ -127,19 +131,20 @@ class _QrTaskTile extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('이력 삭제'),
-        content: Text('"${task.meta.appName}" 이력을 삭제하시겠습니까?'),
+        title: Text(l10n.dialogDeleteHistoryTitle),
+        content: Text(l10n.dialogDeleteHistoryContent(task.meta.appName)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('취소')),
+              child: Text(l10n.actionCancel)),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child:
-                  const Text('삭제', style: TextStyle(color: Colors.red))),
+                  Text(l10n.actionDelete, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
+import '../../l10n/app_localizations.dart';
 
 class EventTagScreen extends StatefulWidget {
   const EventTagScreen({super.key});
@@ -78,7 +79,7 @@ class _EventTagScreenState extends State<EventTagScreen> {
     final end = _combine(_endDate, _endTime);
     if (!end.isAfter(start)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('종료 일시는 시작 일시 이후여야 합니다.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.msgEventEndBeforeStart)),
       );
       return null;
     }
@@ -117,7 +118,7 @@ class _EventTagScreenState extends State<EventTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('이벤트/일정 태그')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenEventTitle)),
       body: Column(
         children: [
           Expanded(
@@ -128,21 +129,21 @@ class _EventTagScreenState extends State<EventTagScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('이벤트 제목 *',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelEventTitleRequired,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _titleController,
                       decoration: InputDecoration(
-                        hintText: '이벤트 제목',
+                        hintText: AppLocalizations.of(context)!.hintEventTitle,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? '제목을 입력해주세요.' : null,
+                          (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.msgEventTitleRequired : null,
                     ),
                     const SizedBox(height: 16),
-                    const Text('시작',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelEventStart,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -164,8 +165,8 @@ class _EventTagScreenState extends State<EventTagScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const Text('종료',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelEventEnd,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -187,25 +188,25 @@ class _EventTagScreenState extends State<EventTagScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const Text('장소/주소 (선택)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelEventLocationOptional,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _locationController,
                       decoration: InputDecoration(
-                        hintText: '서울특별시 중구 ...',
+                        hintText: AppLocalizations.of(context)!.hintEventLocation,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('설명 (선택)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelEventDescOptional,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _descController,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        hintText: '이벤트 설명',
+                        hintText: AppLocalizations.of(context)!.hintEventDesc,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/entities/sticker_config.dart';
+import '../../../l10n/app_localizations.dart';
 import '../qr_result_provider.dart' show qrResultProvider;
 
 // 플랫폼 제네릭 폰트: assets 추가 없이 Android/iOS 모두 동작
@@ -27,6 +28,8 @@ class TextTab extends ConsumerWidget {
       onChanged();
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -34,7 +37,7 @@ class TextTab extends ConsumerWidget {
         children: [
           // ① 상단 텍스트
           _TextEditor(
-            label: '상단 텍스트',
+            label: l10n.labelTopText,
             text: sticker.topText,
             onChanged: (t) => update(sticker.copyWith(topText: t)),
           ),
@@ -45,7 +48,7 @@ class TextTab extends ConsumerWidget {
 
           // ② 하단 텍스트
           _TextEditor(
-            label: '하단 텍스트',
+            label: l10n.labelBottomText,
             text: sticker.bottomText,
             onChanged: (t) => update(sticker.copyWith(bottomText: t)),
           ),
@@ -110,11 +113,12 @@ class _TextEditorState extends State<_TextEditor> {
   }
 
   Future<void> _pickColor() async {
+    final l10n = AppLocalizations.of(context)!;
     Color temp = _draft.color;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('색상 선택'),
+        title: Text(l10n.dialogColorPickerTitle),
         content: SingleChildScrollView(
           child: ColorPicker(
             pickerColor: temp,
@@ -126,11 +130,11 @@ class _TextEditorState extends State<_TextEditor> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
+            child: Text(l10n.actionCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('확인'),
+            child: Text(l10n.actionConfirm),
           ),
         ],
       ),
@@ -161,7 +165,7 @@ class _TextEditorState extends State<_TextEditor> {
                 controller: _ctrl,
                 maxLength: 40,
                 decoration: InputDecoration(
-                  hintText: '텍스트를 입력하세요',
+                  hintText: AppLocalizations.of(context)!.hintEnterText,
                   isDense: true,
                   counterText: '',
                   contentPadding:

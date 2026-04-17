@@ -7,6 +7,7 @@ import '../domain/entities/qr_template.dart';
 import '../domain/entities/sticker_config.dart' show LogoPosition;
 import '../data/services/qr_readability_service.dart';
 import '../qr_result_provider.dart' show QrResultState, qrResultProvider, QrEyeOuter, QrEyeInner;
+import '../../../l10n/app_localizations.dart';
 import 'qr_layer_stack.dart';
 
 /// 소형(160px) QR 미리보기 + 돋보기 확대 버튼 + 인식률 배지.
@@ -124,7 +125,7 @@ class _ReadabilityBadge extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '인식률',
+          AppLocalizations.of(context)!.labelReadability,
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -184,7 +185,7 @@ void _showQrZoomDialog(
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('닫기'),
+                  child: Text(AppLocalizations.of(context)!.actionClose),
                 ),
               ],
             );

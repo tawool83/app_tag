@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
+import '../../l10n/app_localizations.dart';
 
 class LocationTagScreen extends StatefulWidget {
   const LocationTagScreen({super.key});
@@ -177,7 +178,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
   void _onQr() {
     if (_selected == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('지도에서 위치를 선택해주세요.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.msgSelectLocation)),
       );
       return;
     }
@@ -187,7 +188,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
   void _onNfc() {
     if (_selected == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('지도에서 위치를 선택해주세요.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.msgSelectLocation)),
       );
       return;
     }
@@ -197,7 +198,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('위치 태그')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenLocationTitle)),
       body: Column(
         children: [
           // ── 지도 영역 ──────────────────────────────────────────────
@@ -319,7 +320,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                                   size: 16, color: Colors.grey),
                               const SizedBox(width: 6),
                               Text(
-                                '지도를 탭하여 위치를 선택하세요.',
+                                AppLocalizations.of(context)!.screenLocationTapHint,
                                 style: TextStyle(
                                     color: Colors.grey.shade600,
                                     fontSize: 13),
@@ -327,17 +328,17 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                             ],
                           )
                         : _isGeocoding
-                            ? const Row(
+                            ? Row(
                                 children: [
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 14,
                                     height: 14,
                                     child: CircularProgressIndicator(
                                         strokeWidth: 2),
                                   ),
-                                  SizedBox(width: 8),
-                                  Text('주소 검색 중...',
-                                      style: TextStyle(fontSize: 13)),
+                                  const SizedBox(width: 8),
+                                  Text(AppLocalizations.of(context)!.msgSearchingAddress,
+                                      style: const TextStyle(fontSize: 13)),
                                 ],
                               )
                             : Column(
@@ -378,7 +379,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: Text(
-                                          _address ?? '주소를 가져올 수 없습니다.',
+                                          _address ?? AppLocalizations.of(context)!.msgAddressUnavailable,
                                           style: TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey.shade700),
@@ -390,14 +391,14 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
                               ),
                   ),
                   const SizedBox(height: 14),
-                  const Text('장소명 (선택)',
-                      style: TextStyle(
+                  Text(AppLocalizations.of(context)!.labelPlaceNameOptional,
+                      style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _labelController,
                     decoration: InputDecoration(
-                      hintText: '비우면 건물명이 자동으로 사용됩니다.',
+                      hintText: AppLocalizations.of(context)!.hintPlaceName,
                       isDense: true,
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10)),

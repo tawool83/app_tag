@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../qr_task/domain/entities/qr_task_kind.dart';
 import '../qr_task/domain/entities/qr_task_meta.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
+import '../../l10n/app_localizations.dart';
 import 'nfc_writer_provider.dart';
 
 class NfcWriterScreen extends ConsumerStatefulWidget {
@@ -83,7 +84,7 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NFC 기록'),
+        title: Text(AppLocalizations.of(context)!.screenNfcWriterTitle),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
@@ -120,12 +121,12 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
                         _startWrite(args);
                       },
                       icon: const Icon(Icons.refresh),
-                      label: const Text('다시 시도'),
+                      label: Text(AppLocalizations.of(context)!.actionRetry),
                     ),
                   if (state.status == NfcWriteStatus.waiting)
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('취소'),
+                      child: Text(AppLocalizations.of(context)!.actionCancel),
                     ),
                 ],
               ),
@@ -158,7 +159,7 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
                   _startWrite(args);
                 },
               ),
-              const Text('iOS 단축어도 함께 기록'),
+              Text(AppLocalizations.of(context)!.labelNfcIncludeIos),
             ],
           ),
           if (_includeIos) ...[
@@ -166,8 +167,8 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
             TextField(
               controller: _iosShortcutController,
               decoration: InputDecoration(
-                labelText: 'iOS 단축어 이름',
-                hintText: '예: 카카오톡',
+                labelText: AppLocalizations.of(context)!.labelIosShortcutName,
+                hintText: AppLocalizations.of(context)!.hintIosShortcutName,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -202,25 +203,26 @@ class _NfcWriterScreenState extends ConsumerState<NfcWriterScreen> {
   }
 
   Widget _buildStatusText(NfcWriterState state) {
+    final l10n = AppLocalizations.of(context)!;
     switch (state.status) {
       case NfcWriteStatus.waiting:
-        return const Text(
-          'NFC 태그를 스마트폰 뒷면에\n가져다 대세요',
+        return Text(
+          l10n.msgNfcWaiting,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         );
       case NfcWriteStatus.success:
-        return const Text(
-          '기록 완료!\n홈으로 이동합니다...',
+        return Text(
+          l10n.msgNfcSuccess,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.green),
         );
       case NfcWriteStatus.error:
         return Text(
-          state.errorMessage ?? 'NFC 기록에 실패했습니다.',
+          state.errorMessage ?? l10n.msgNfcError,
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 16, color: Colors.red),
         );

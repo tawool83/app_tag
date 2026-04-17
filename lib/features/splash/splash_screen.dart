@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              '자신만의 QR 을 만들고 꾸미세요',
+              AppLocalizations.of(context)!.screenSplashSubtitle,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade700,

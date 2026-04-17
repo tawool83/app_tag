@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/deep_link_constants.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/widgets/output_action_buttons.dart';
 import 'domain/entities/app_info.dart';
 import 'presentation/providers/app_picker_providers.dart';
@@ -27,7 +28,7 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
   void _onQr() {
     if (_selectedApp == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('앱을 선택해주세요.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.msgSelectApp)),
       );
       return;
     }
@@ -37,7 +38,7 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
   void _onNfc() {
     if (_selectedApp == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('앱을 선택해주세요.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.msgSelectApp)),
       );
       return;
     }
@@ -49,16 +50,18 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
     final appsAsync = ref.watch(appListProvider);
     final filtered = ref.watch(filteredAppsProvider);
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('앱 선택'),
+        title: Text(l10n.screenAppPickerTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: TextField(
               decoration: InputDecoration(
-                hintText: '앱 검색...',
+                hintText: l10n.hintAppSearch,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -84,7 +87,7 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
                   children: [
                     const Icon(Icons.error_outline, size: 48, color: Colors.red),
                     const SizedBox(height: 12),
-                    const Text('앱 목록을 불러올 수 없습니다.'),
+                    Text(l10n.msgAppListError),
                     const SizedBox(height: 8),
                     Text('$e',
                         style: const TextStyle(
@@ -93,7 +96,7 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
                 ),
               ),
               data: (_) => filtered.isEmpty
-                  ? const Center(child: Text('검색 결과가 없습니다.'))
+                  ? Center(child: Text(l10n.msgSearchNoResults))
                   : ListView.builder(
                       itemCount: filtered.length,
                       itemBuilder: (context, index) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
+import '../../l10n/app_localizations.dart';
 
 class EmailTagScreen extends StatefulWidget {
   const EmailTagScreen({super.key});
@@ -49,7 +50,7 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('이메일 태그')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenEmailTitle)),
       body: Column(
         children: [
           Expanded(
@@ -60,42 +61,43 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('이메일 주소 *',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelEmailRequired,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _addressController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        hintText: 'example@email.com',
+                        hintText: AppLocalizations.of(context)!.hintEmail,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return '이메일 주소를 입력해주세요.';
-                        if (!v.contains('@')) return '올바른 이메일 형식으로 입력해주세요.';
+                        final l10n = AppLocalizations.of(context)!;
+                        if (v == null || v.trim().isEmpty) return l10n.msgEmailRequired;
+                        if (!v.contains('@')) return l10n.msgEmailInvalid;
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
-                    const Text('제목 (선택)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelEmailSubjectOptional,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _subjectController,
                       decoration: InputDecoration(
-                        hintText: '이메일 제목',
+                        hintText: AppLocalizations.of(context)!.hintEmailSubject,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('내용 (선택)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelEmailBodyOptional,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _bodyController,
                       maxLines: 4,
                       decoration: InputDecoration(
-                        hintText: '이메일 본문',
+                        hintText: AppLocalizations.of(context)!.hintEmailBody,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
+import '../../l10n/app_localizations.dart';
 
 class ClipboardTagScreen extends StatefulWidget {
   const ClipboardTagScreen({super.key});
@@ -57,7 +58,7 @@ class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('클립보드 태그')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenClipboardTitle)),
       body: Column(
         children: [
           Expanded(
@@ -77,26 +78,26 @@ class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.amber.shade200),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(Icons.info_outline, color: Colors.amber),
-                            SizedBox(width: 8),
+                            const Icon(Icons.info_outline, color: Colors.amber),
+                            const SizedBox(width: 8),
                             Expanded(
-                              child: Text('클립보드가 비어 있습니다. 직접 입력하세요.'),
+                              child: Text(AppLocalizations.of(context)!.msgClipboardEmpty),
                             ),
                           ],
                         ),
                       ),
-                    const Text('내용', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelContent, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controller,
                       maxLines: 5,
                       decoration: InputDecoration(
-                        hintText: '태그에 저장할 텍스트',
+                        hintText: AppLocalizations.of(context)!.hintClipboardText,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? '내용을 입력해주세요.' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.msgContentRequired : null,
                     ),
                   ],
                 ),

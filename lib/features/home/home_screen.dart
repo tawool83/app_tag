@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/settings_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -54,11 +55,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<_TileItem> _buildTiles() {
+    final l10n = AppLocalizations.of(context)!;
     return [
       _TileItem(
         key: 'app',
         icon: Platform.isAndroid ? Icons.apps : CupertinoIcons.square_stack_3d_up,
-        label: Platform.isAndroid ? '앱 실행' : '단축어',
+        label: Platform.isAndroid ? l10n.tileAppAndroid : l10n.tileAppIos,
         iconColor: Colors.white,
         bgColor: const Color(0xFF5C6BC0),
         onTap: () => context.push(
@@ -68,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _TileItem(
         key: 'clipboard',
         icon: Icons.content_paste,
-        label: '클립보드',
+        label: l10n.tileClipboard,
         iconColor: Colors.white,
         bgColor: const Color(0xFF78909C),
         onTap: () => context.push('/clipboard-tag'),
@@ -76,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _TileItem(
         key: 'website',
         icon: Icons.language,
-        label: '웹 사이트',
+        label: l10n.tileWebsite,
         iconColor: Colors.white,
         bgColor: const Color(0xFF42A5F5),
         onTap: () => context.push('/website-tag'),
@@ -84,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _TileItem(
         key: 'contact',
         icon: Icons.contact_phone,
-        label: '연락처',
+        label: l10n.tileContact,
         iconColor: Colors.white,
         bgColor: const Color(0xFF66BB6A),
         onTap: () => context.push('/contact-tag'),
@@ -92,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _TileItem(
         key: 'wifi',
         icon: Icons.wifi,
-        label: 'WiFi',
+        label: l10n.tileWifi,
         iconColor: Colors.white,
         bgColor: const Color(0xFF26A69A),
         onTap: () => context.push('/wifi-tag'),
@@ -100,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _TileItem(
         key: 'location',
         icon: Icons.location_on,
-        label: '위치',
+        label: l10n.tileLocation,
         iconColor: Colors.white,
         bgColor: const Color(0xFFEF5350),
         onTap: () => context.push('/location-tag'),
@@ -108,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _TileItem(
         key: 'event',
         icon: Icons.event,
-        label: '이벤트/일정',
+        label: l10n.tileEvent,
         iconColor: Colors.white,
         bgColor: const Color(0xFFFFA726),
         onTap: () => context.push('/event-tag'),
@@ -116,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _TileItem(
         key: 'email',
         icon: Icons.email,
-        label: '이메일',
+        label: l10n.tileEmail,
         iconColor: Colors.white,
         bgColor: const Color(0xFF7E57C2),
         onTap: () => context.push('/email-tag'),
@@ -124,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _TileItem(
         key: 'sms',
         icon: Icons.sms,
-        label: 'SMS',
+        label: l10n.tileSms,
         iconColor: Colors.white,
         bgColor: const Color(0xFFEC407A),
         onTap: () => context.push('/sms-tag'),
@@ -133,17 +135,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   AppBar _buildAppBar() {
+    final l10n = AppLocalizations.of(context)!;
     if (_editMode) {
       return AppBar(
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: Image.asset('assets/img/logo.png', width: 32),
         ),
-        title: const Text('편집 모드'),
+        title: Text(l10n.screenHomeEditModeTitle),
         actions: [
           TextButton(
             onPressed: _exitEditMode,
-            child: const Text('완료', style: TextStyle(fontSize: 16)),
+            child: Text(l10n.actionDone, style: const TextStyle(fontSize: 16)),
           ),
         ],
       );
@@ -154,25 +157,25 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.only(left: 12),
         child: Image.asset('assets/img/logo.png'),
       ),
-      title: const Text(
-        'QR, NFC 생성기',
-        style: TextStyle(
+      title: Text(
+        l10n.screenHomeTitle,
+        style: const TextStyle(
             fontFamily: 'BitcountGridDouble', fontWeight: FontWeight.bold),
       ),
       actions: [
         IconButton(
           icon: const Icon(Icons.settings_outlined),
-          tooltip: '설정',
+          tooltip: l10n.screenSettingsTitle,
           onPressed: () => context.push('/settings'),
         ),
         IconButton(
           icon: const Icon(Icons.help_outline),
-          tooltip: '사용 안내',
+          tooltip: l10n.tooltipHelp,
           onPressed: () => context.push('/help'),
         ),
         IconButton(
           icon: const Icon(Icons.history),
-          tooltip: '생성 이력',
+          tooltip: l10n.tooltipHistory,
           onPressed: () => context.push('/history'),
         ),
       ],
@@ -271,8 +274,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   _showHiddenSection
-                      ? '숨긴 메뉴 접기'
-                      : '숨긴 메뉴 보기 (${hiddenTiles.length})',
+                      ? AppLocalizations.of(context)!.actionCollapseHidden
+                      : AppLocalizations.of(context)!.actionShowHidden(hiddenTiles.length),
                   style: TextStyle(
                     fontSize: 13,
                     color: Theme.of(context).colorScheme.primary,

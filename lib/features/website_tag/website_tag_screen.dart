@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
+import '../../l10n/app_localizations.dart';
 
 class WebsiteTagScreen extends StatefulWidget {
   const WebsiteTagScreen({super.key});
@@ -41,7 +42,7 @@ class _WebsiteTagScreenState extends State<WebsiteTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('웹 사이트 태그')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenWebsiteTitle)),
       body: Column(
         children: [
           Expanded(
@@ -52,21 +53,22 @@ class _WebsiteTagScreenState extends State<WebsiteTagScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('URL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelUrl, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _controller,
                       keyboardType: TextInputType.url,
                       decoration: InputDecoration(
-                        hintText: 'https://example.com',
+                        hintText: AppLocalizations.of(context)!.hintUrl,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'URL을 입력해주세요.';
+                        final l10n = AppLocalizations.of(context)!;
+                        if (v == null || v.trim().isEmpty) return l10n.msgUrlRequired;
                         final url = v.trim();
                         final normalized = url.startsWith('http') ? url : 'https://$url';
                         final uri = Uri.tryParse(normalized);
-                        if (uri == null || !uri.hasAuthority) return '올바른 URL 형식으로 입력해주세요.';
+                        if (uri == null || !uri.hasAuthority) return l10n.msgUrlInvalid;
                         return null;
                       },
                     ),

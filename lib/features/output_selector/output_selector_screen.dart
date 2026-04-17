@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/app_localizations.dart';
 import '../app_picker/presentation/providers/app_picker_providers.dart';
 
 bool get _isIOSSimulator =>
@@ -25,9 +26,10 @@ class OutputSelectorScreen extends ConsumerWidget {
 
     final nfcAvailableAsync = ref.watch(nfcAvailableProvider);
     final nfcWriteSupportedAsync = ref.watch(nfcWriteSupportedProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('출력 방식 선택')),
+      appBar: AppBar(title: Text(l10n.screenOutputSelectorTitle)),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -49,8 +51,8 @@ class OutputSelectorScreen extends ConsumerWidget {
                 Expanded(
                   child: _OutputCard(
                     icon: Icons.qr_code_2,
-                    label: 'QR 코드',
-                    description: '카메라로 스캔하여 앱 실행',
+                    label: l10n.labelQrCode,
+                    description: l10n.screenOutputQrDesc,
                     onTap: () => context.push('/qr-result', extra: {
                       'appName': appName,
                       'deepLink': deepLink,
@@ -64,47 +66,47 @@ class OutputSelectorScreen extends ConsumerWidget {
                 const SizedBox(width: 16),
                 Expanded(
                   child: nfcAvailableAsync.when(
-                    loading: () => const _OutputCard(
+                    loading: () => _OutputCard(
                       icon: Icons.nfc,
-                      label: 'NFC 태그',
+                      label: l10n.labelNfcTag,
                       description: '...',
                       enabled: false,
                     ),
-                    error: (_, e) => const _OutputCard(
+                    error: (_, e) => _OutputCard(
                       icon: Icons.nfc,
-                      label: 'NFC 태그',
-                      description: 'NFC 확인 실패',
+                      label: l10n.labelNfcTag,
+                      description: l10n.msgNfcCheckFailed,
                       enabled: false,
                     ),
                     data: (nfcAvailable) {
                       if (!nfcAvailable) {
                         return _OutputCard(
                           icon: Icons.nfc,
-                          label: 'NFC 태그',
+                          label: l10n.labelNfcTag,
                           description: _isIOSSimulator
-                              ? '시뮬레이터에서는 NFC를 테스트할 수 없습니다'
-                              : '이 기기는 NFC를 지원하지 않습니다',
+                              ? l10n.msgNfcSimulator
+                              : l10n.msgNfcNotSupported,
                           enabled: false,
                         );
                       }
                       return nfcWriteSupportedAsync.when(
-                        loading: () => const _OutputCard(
+                        loading: () => _OutputCard(
                           icon: Icons.nfc,
-                          label: 'NFC 태그',
+                          label: l10n.labelNfcTag,
                           description: '...',
                           enabled: false,
                         ),
-                        error: (_, e) => const _OutputCard(
+                        error: (_, e) => _OutputCard(
                           icon: Icons.nfc,
-                          label: 'NFC 태그',
-                          description: '확인 실패',
+                          label: l10n.labelNfcTag,
+                          description: l10n.msgNfcCheckFailed,
                           enabled: false,
                         ),
                         data: (writeSupported) => writeSupported
                             ? _OutputCard(
                                 icon: Icons.nfc,
-                                label: 'NFC 태그',
-                                description: '태그에 가져다 대어 앱 실행',
+                                label: l10n.labelNfcTag,
+                                description: l10n.screenOutputNfcDesc,
                                 onTap: () => context.push('/nfc-writer', extra: {
                                   'appName': appName,
                                   'deepLink': deepLink,
@@ -114,11 +116,10 @@ class OutputSelectorScreen extends ConsumerWidget {
                                   'appIconBytes': appIconBytes,
                                 }),
                               )
-                            : const _OutputCard(
+                            : _OutputCard(
                                 icon: Icons.nfc,
-                                label: 'NFC 태그',
-                                description:
-                                    'NFC 쓰기는 iPhone XS 이상에서 지원됩니다',
+                                label: l10n.labelNfcTag,
+                                description: l10n.msgNfcWriteIosMin,
                                 enabled: false,
                               ),
                       );

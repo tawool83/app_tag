@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
+import '../../l10n/app_localizations.dart';
 
 class SmsTagScreen extends StatefulWidget {
   const SmsTagScreen({super.key});
@@ -46,7 +47,7 @@ class _SmsTagScreenState extends State<SmsTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SMS 태그')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenSmsTitle)),
       body: Column(
         children: [
           Expanded(
@@ -57,28 +58,28 @@ class _SmsTagScreenState extends State<SmsTagScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('전화번호 *',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelPhoneRequired,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
-                        hintText: '010-0000-0000',
+                        hintText: AppLocalizations.of(context)!.hintPhone,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? '전화번호를 입력해주세요.' : null,
+                          (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.msgPhoneRequired : null,
                     ),
                     const SizedBox(height: 16),
-                    const Text('메시지 (선택)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.labelMessageOptional,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _messageController,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        hintText: '문자 내용',
+                        hintText: AppLocalizations.of(context)!.hintSmsMessage,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),

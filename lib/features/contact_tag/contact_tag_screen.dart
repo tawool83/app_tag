@@ -3,6 +3,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../core/utils/tag_payload_encoder.dart';
+import '../../l10n/app_localizations.dart';
 
 class ContactTagScreen extends StatefulWidget {
   const ContactTagScreen({super.key});
@@ -90,7 +91,7 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('연락처 태그')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenContactTitle)),
       body: Column(
         children: [
           _buildDirectInputCard(),
@@ -107,9 +108,9 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: const Icon(Icons.edit_note, color: Colors.indigo),
-        title: const Text('직접 입력',
-            style: TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: const Text('이름, 전화번호, 이메일을 직접 입력합니다'),
+        title: Text(AppLocalizations.of(context)!.actionManualInput,
+            style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(AppLocalizations.of(context)!.screenContactManualSubtitle),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push('/contact-manual'),
       ),
@@ -122,7 +123,7 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: '이름으로 검색',
+          hintText: AppLocalizations.of(context)!.hintSearchByName,
           prefixIcon: const Icon(Icons.search),
           border:
               OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -152,7 +153,7 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
     final name = contact.displayName;
     final phone = contact.phones.isNotEmpty
         ? contact.phones.first.number
-        : '전화번호 없음';
+        : AppLocalizations.of(context)!.labelNoPhone;
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
     return ListTile(
@@ -178,20 +179,20 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
           children: [
             const Icon(Icons.contacts, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            const Text('연락처 접근 권한이 필요합니다',
+            Text(AppLocalizations.of(context)!.msgContactPermissionRequired,
                 style:
-                    TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            const Text(
-              '직접 입력을 사용하거나 설정에서 권한을 허용해주세요.',
+            Text(
+              AppLocalizations.of(context)!.msgContactPermissionHint,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => openAppSettings(),
               icon: const Icon(Icons.settings),
-              label: const Text('설정 열기'),
+              label: Text(AppLocalizations.of(context)!.actionOpenSettings),
             ),
           ],
         ),
@@ -203,7 +204,7 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
     final isSearching = _searchController.text.isNotEmpty;
     return Center(
       child: Text(
-        isSearching ? '검색 결과가 없습니다.' : '저장된 연락처가 없습니다.',
+        isSearching ? AppLocalizations.of(context)!.msgSearchNoResults : AppLocalizations.of(context)!.msgNoContacts,
         style: const TextStyle(color: Colors.grey),
       ),
     );

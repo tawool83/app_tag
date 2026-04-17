@@ -18,6 +18,7 @@ import 'presentation/providers/qr_result_providers.dart';
 import '../../core/services/settings_service.dart';
 import '../../core/constants/app_config.dart' show validateQrData;
 import 'qr_result_provider.dart';
+import '../../l10n/app_localizations.dart';
 import 'tabs/all_templates_tab.dart';
 import 'tabs/qr_shape_tab.dart';
 import 'tabs/qr_color_tab.dart';
@@ -259,14 +260,15 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   }
 
   Future<bool> _showLowReadabilityWarning(ReadabilityScore score) async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('인식률이 낮습니다'),
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const SizedBox(width: 8),
+            Text(l10n.dialogLowReadabilityTitle),
           ],
         ),
         content: Column(
@@ -274,14 +276,14 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '현재 인식률: ${score.total}%',
+              l10n.dialogLowReadabilityScore(score.total),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text('QR 코드가 일부 스캐너에서\n인식되지 않을 수 있습니다.'),
+            Text(l10n.dialogLowReadabilityWarning),
             const SizedBox(height: 8),
             Text(
-              '주요 원인: ${score.mainIssue}',
+              l10n.dialogLowReadabilityCause(score.mainIssue),
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           ],
@@ -289,11 +291,11 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('취소'),
+            child: Text(l10n.actionCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('그래도 저장'),
+            child: Text(l10n.actionSaveAnyway),
           ),
         ],
       ),
@@ -302,6 +304,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   }
 
   Future<void> _showSaveTemplateSheet() async {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController();
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
@@ -318,9 +321,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '템플릿 저장',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              l10n.dialogSaveTemplateTitle,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -328,8 +331,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
               autofocus: true,
               maxLength: 30,
               decoration: InputDecoration(
-                labelText: '템플릿 이름',
-                hintText: '예: 파란 배경 QR',
+                labelText: l10n.labelTemplateName,
+                hintText: l10n.hintTemplateName,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -341,7 +344,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('취소'),
+                  child: Text(l10n.actionCancel),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
@@ -350,7 +353,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                       Navigator.pop(ctx, true);
                     }
                   },
-                  child: const Text('저장'),
+                  child: Text(l10n.actionSave),
                 ),
               ],
             ),
@@ -402,7 +405,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('「$name」 템플릿이 저장되었습니다.'),
+          content: Text(l10n.msgTemplateSaved(name)),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -443,9 +446,10 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
 
     final state = ref.watch(qrResultProvider);
     final score = QrReadabilityService.calculate(state, deepLink);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('QR 코드')),
+      appBar: AppBar(title: Text(l10n.screenQrResultTitle)),
       body: Column(
         children: [
           // ① QR 미리보기 + 인식률 배지
@@ -463,12 +467,12 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             controller: _tabController,
             isScrollable: true,
             tabAlignment: TabAlignment.center,
-            tabs: const [
-              Tab(text: '템플릿'),
-              Tab(text: '모양'),
-              Tab(text: '색상'),
-              Tab(text: '로고'),
-              Tab(text: '텍스트'),
+            tabs: [
+              Tab(text: l10n.tabTemplate),
+              Tab(text: l10n.tabShape),
+              Tab(text: l10n.tabColor),
+              Tab(text: l10n.tabLogo),
+              Tab(text: l10n.tabText),
             ],
           ),
 
@@ -571,6 +575,7 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       decoration: BoxDecoration(
@@ -587,7 +592,7 @@ class _ActionButtons extends StatelessWidget {
               Expanded(
                 child: _ActionButton(
                   icon: Icons.save_alt,
-                  label: '갤러리 저장',
+                  label: l10n.actionSaveGallery,
                   status: state.saveStatus,
                   onTap: onSaveGallery,
                 ),
@@ -596,7 +601,7 @@ class _ActionButtons extends StatelessWidget {
               Expanded(
                 child: _ActionButton(
                   icon: Icons.bookmark_add_outlined,
-                  label: '템플릿 저장',
+                  label: l10n.actionSaveTemplate,
                   status: QrActionStatus.idle,
                   onTap: onSaveTemplate,
                 ),
@@ -605,7 +610,7 @@ class _ActionButtons extends StatelessWidget {
               Expanded(
                 child: _ActionButton(
                   icon: Icons.share,
-                  label: '공유',
+                  label: l10n.actionShare,
                   status: state.shareStatus,
                   onTap: onShare,
                 ),

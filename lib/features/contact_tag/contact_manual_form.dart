@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
+import '../../l10n/app_localizations.dart';
 
 class ContactManualFormScreen extends StatefulWidget {
   const ContactManualFormScreen({super.key});
@@ -50,7 +51,7 @@ class _ContactManualFormScreenState extends State<ContactManualFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('직접 입력')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenContactManualTitle)),
       body: Column(
         children: [
           Expanded(
@@ -61,24 +62,24 @@ class _ContactManualFormScreenState extends State<ContactManualFormScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _label('이름 *'),
+                    _label(AppLocalizations.of(context)!.labelNameRequired),
                     _field(_nameController,
-                        hint: '홍길동',
+                        hint: AppLocalizations.of(context)!.hintName,
                         validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? '이름을 입력해주세요.' : null),
+                            (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.msgNameRequired : null),
                     const SizedBox(height: 16),
-                    _label('전화번호'),
+                    _label(AppLocalizations.of(context)!.labelPhone),
                     _field(_phoneController,
-                        hint: '010-0000-0000',
+                        hint: AppLocalizations.of(context)!.hintPhone,
                         keyboardType: TextInputType.phone),
                     const SizedBox(height: 16),
-                    _label('이메일'),
+                    _label(AppLocalizations.of(context)!.labelEmail),
                     _field(_emailController,
-                        hint: 'example@email.com',
+                        hint: AppLocalizations.of(context)!.hintEmail,
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) return null;
-                          if (!v.contains('@')) return '올바른 이메일 형식으로 입력해주세요.';
+                          if (!v.contains('@')) return AppLocalizations.of(context)!.msgEmailInvalid;
                           return null;
                         }),
                   ],

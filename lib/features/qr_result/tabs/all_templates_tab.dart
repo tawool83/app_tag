@@ -5,6 +5,7 @@ import '../domain/entities/qr_template.dart';
 import '../domain/entities/user_qr_template.dart';
 import '../presentation/providers/qr_result_providers.dart';
 import '../qr_result_provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../widgets/template_thumbnail.dart';
 
 /// [템플릿] 탭: 나의 템플릿(상단) + 카테고리별 전체 템플릿(하단).
@@ -53,7 +54,7 @@ class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('「${t.name}」 템플릿이 적용되었습니다.'),
+          content: Text(AppLocalizations.of(context)!.msgTemplateApplied(t.name)),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -61,19 +62,20 @@ class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
   }
 
   Future<void> _deleteUserTemplate(UserQrTemplate t) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('템플릿 삭제'),
-        content: Text('「${t.name}」을(를) 삭제하시겠습니까?'),
+        title: Text(l10n.dialogDeleteTemplateTitle),
+        content: Text(l10n.dialogDeleteTemplateContent(t.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('취소'),
+            child: Text(l10n.actionCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('삭제', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.actionDelete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -105,9 +107,9 @@ class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
               child: Row(
                 children: [
-                  const Text(
-                    '나의 템플릿',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  Text(
+                    AppLocalizations.of(context)!.screenTemplateMyTemplates,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -155,7 +157,7 @@ class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
             child: OutlinedButton.icon(
               onPressed: widget.onTemplateClear,
               icon: const Icon(Icons.block, size: 16),
-              label: const Text('스타일 없음'),
+              label: Text(AppLocalizations.of(context)!.actionNoStyle),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
                   color: widget.activeTemplateId == null
