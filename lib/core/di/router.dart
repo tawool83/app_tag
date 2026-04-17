@@ -20,6 +20,7 @@ import '../../features/location_tag/location_tag_screen.dart';
 import '../../features/event_tag/event_tag_screen.dart';
 import '../../features/email_tag/email_tag_screen.dart';
 import '../../features/sms_tag/sms_tag_screen.dart';
+import '../../features/settings/settings_screen.dart';
 
 /// 향후 외부 deep link 수신 시 라우트 리다이렉션 처리.
 /// 현재는 no-op (앱이 deep link를 생성만 하고 수신하지 않음).
@@ -57,6 +58,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/event-tag', builder: (_, _) => const EventTagScreen()),
       GoRoute(path: '/email-tag', builder: (_, _) => const EmailTagScreen()),
       GoRoute(path: '/sms-tag', builder: (_, _) => const SmsTagScreen()),
+      GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
     ],
     errorBuilder: (_, _) => const Scaffold(
       body: Center(child: Text('페이지를 찾을 수 없습니다.')),

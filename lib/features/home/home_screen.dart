@@ -161,6 +161,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.settings_outlined),
+          tooltip: '설정',
+          onPressed: () => context.push('/settings'),
+        ),
+        IconButton(
           icon: const Icon(Icons.help_outline),
           tooltip: '사용 안내',
           onPressed: () => context.push('/help'),

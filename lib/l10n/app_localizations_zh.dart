@@ -1,0 +1,612 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Chinese (`zh`).
+class AppLocalizationsZh extends AppLocalizations {
+  AppLocalizationsZh([String locale = 'zh']) : super(locale);
+
+  @override
+  String get appTitle => 'QR和NFC生成器';
+
+  @override
+  String get screenSplashSubtitle => '创建并装饰您自己的QR码';
+
+  @override
+  String get tileAppAndroid => '启动应用';
+
+  @override
+  String get tileAppIos => '快捷指令';
+
+  @override
+  String get tileClipboard => '剪贴板';
+
+  @override
+  String get tileWebsite => '网站';
+
+  @override
+  String get tileContact => '联系人';
+
+  @override
+  String get tileWifi => 'WiFi';
+
+  @override
+  String get tileLocation => '位置';
+
+  @override
+  String get tileEvent => '事件/日程';
+
+  @override
+  String get tileEmail => '邮件';
+
+  @override
+  String get tileSms => 'SMS';
+
+  @override
+  String get screenHomeTitle => 'QR和NFC生成器';
+
+  @override
+  String get screenHomeEditModeTitle => '编辑模式';
+
+  @override
+  String get actionDone => '完成';
+
+  @override
+  String get actionCancel => '取消';
+
+  @override
+  String get actionDelete => '删除';
+
+  @override
+  String get actionSave => '保存';
+
+  @override
+  String get actionShare => '分享';
+
+  @override
+  String get actionRetry => '重试';
+
+  @override
+  String get actionClose => '关闭';
+
+  @override
+  String get actionConfirm => '确认';
+
+  @override
+  String get tooltipHelp => '使用指南';
+
+  @override
+  String get tooltipHistory => '生成记录';
+
+  @override
+  String get tooltipDeleteAll => '全部删除';
+
+  @override
+  String get actionCollapseHidden => '收起隐藏菜单';
+
+  @override
+  String actionShowHidden(int count) {
+    return '查看隐藏菜单 ($count)';
+  }
+
+  @override
+  String get screenHelpTitle => '使用指南';
+
+  @override
+  String get screenHistoryTitle => '生成记录';
+
+  @override
+  String get screenHistoryEmpty => '暂无记录。';
+
+  @override
+  String get labelQrCode => 'QR码';
+
+  @override
+  String get labelNfcTag => 'NFC标签';
+
+  @override
+  String get dialogClearAllTitle => '全部删除';
+
+  @override
+  String get dialogClearAllContent => '确定要删除所有记录吗？';
+
+  @override
+  String get dialogDeleteHistoryTitle => '删除记录';
+
+  @override
+  String dialogDeleteHistoryContent(String name) {
+    return '确定要删除「$name」的记录吗？';
+  }
+
+  @override
+  String get screenWebsiteTitle => '网站标签';
+
+  @override
+  String get labelUrl => 'URL';
+
+  @override
+  String get hintUrl => 'https://example.com';
+
+  @override
+  String get msgUrlRequired => '请输入URL。';
+
+  @override
+  String get msgUrlInvalid => '请输入有效的URL格式。';
+
+  @override
+  String get screenWifiTitle => 'WiFi标签';
+
+  @override
+  String get labelWifiSsid => '网络名称 (SSID) *';
+
+  @override
+  String get hintWifiSsid => 'MyWiFi';
+
+  @override
+  String get msgSsidRequired => '请输入SSID。';
+
+  @override
+  String get labelWifiSecurity => '安全方式';
+
+  @override
+  String get optionWpa2 => 'WPA2（推荐）';
+
+  @override
+  String get optionNoSecurity => '无';
+
+  @override
+  String get labelWifiPassword => '密码';
+
+  @override
+  String get hintWifiPassword => '密码';
+
+  @override
+  String get screenSmsTitle => 'SMS标签';
+
+  @override
+  String get labelPhoneRequired => '电话号码 *';
+
+  @override
+  String get hintPhone => '138-0000-0000';
+
+  @override
+  String get msgPhoneRequired => '请输入电话号码。';
+
+  @override
+  String get labelMessageOptional => '消息（可选）';
+
+  @override
+  String get hintSmsMessage => '短信内容';
+
+  @override
+  String get screenEmailTitle => '邮件标签';
+
+  @override
+  String get labelEmailRequired => '邮箱地址 *';
+
+  @override
+  String get hintEmail => 'example@email.com';
+
+  @override
+  String get msgEmailRequired => '请输入邮箱地址。';
+
+  @override
+  String get msgEmailInvalid => '请输入有效的邮箱格式。';
+
+  @override
+  String get labelEmailSubjectOptional => '主题（可选）';
+
+  @override
+  String get hintEmailSubject => '邮件主题';
+
+  @override
+  String get labelEmailBodyOptional => '正文（可选）';
+
+  @override
+  String get hintEmailBody => '邮件正文';
+
+  @override
+  String get screenContactTitle => '联系人标签';
+
+  @override
+  String get actionManualInput => '手动输入';
+
+  @override
+  String get screenContactManualSubtitle => '手动输入姓名、电话号码和邮箱';
+
+  @override
+  String get hintSearchByName => '按姓名搜索';
+
+  @override
+  String get labelNoPhone => '无电话号码';
+
+  @override
+  String get msgContactPermissionRequired => '需要通讯录访问权限';
+
+  @override
+  String get msgContactPermissionHint => '请使用手动输入或在设置中允许权限。';
+
+  @override
+  String get actionOpenSettings => '打开设置';
+
+  @override
+  String get msgSearchNoResults => '无搜索结果。';
+
+  @override
+  String get msgNoContacts => '没有已保存的联系人。';
+
+  @override
+  String get screenContactManualTitle => '手动输入';
+
+  @override
+  String get labelNameRequired => '姓名 *';
+
+  @override
+  String get hintName => '张三';
+
+  @override
+  String get msgNameRequired => '请输入姓名。';
+
+  @override
+  String get labelPhone => '电话';
+
+  @override
+  String get labelEmail => '邮箱';
+
+  @override
+  String get screenLocationTitle => '位置标签';
+
+  @override
+  String get screenLocationTapHint => '点击地图选择位置。';
+
+  @override
+  String get msgSearchingAddress => '正在搜索地址...';
+
+  @override
+  String get msgAddressUnavailable => '无法获取地址。';
+
+  @override
+  String get labelPlaceNameOptional => '地点名称（可选）';
+
+  @override
+  String get hintPlaceName => '留空将自动使用建筑名称。';
+
+  @override
+  String get msgSelectLocation => '请在地图上选择位置。';
+
+  @override
+  String get screenEventTitle => '事件/日程标签';
+
+  @override
+  String get labelEventTitleRequired => '事件标题 *';
+
+  @override
+  String get hintEventTitle => '事件标题';
+
+  @override
+  String get msgEventTitleRequired => '请输入标题。';
+
+  @override
+  String get labelEventStart => '开始';
+
+  @override
+  String get labelEventEnd => '结束';
+
+  @override
+  String get labelEventLocationOptional => '地点/地址（可选）';
+
+  @override
+  String get hintEventLocation => '北京市朝阳区...';
+
+  @override
+  String get labelEventDescOptional => '描述（可选）';
+
+  @override
+  String get hintEventDesc => '事件描述';
+
+  @override
+  String get msgEventEndBeforeStart => '结束时间必须在开始时间之后。';
+
+  @override
+  String get screenClipboardTitle => '剪贴板标签';
+
+  @override
+  String get msgClipboardEmpty => '剪贴板为空。请手动输入。';
+
+  @override
+  String get labelContent => '内容';
+
+  @override
+  String get hintClipboardText => '要保存到标签的文本';
+
+  @override
+  String get msgContentRequired => '请输入内容。';
+
+  @override
+  String get screenIosInputTitle => 'iOS 应用启动设置';
+
+  @override
+  String get labelShortcutName => '要启动的应用快捷指令名称';
+
+  @override
+  String get hintShortcutName => '例：我的应用';
+
+  @override
+  String get msgAppNameRequired => '请输入应用名称。';
+
+  @override
+  String get screenIosInputGuideTitle => '快捷指令设置指南';
+
+  @override
+  String get screenIosInputGuideSteps =>
+      '1. 打开iPhone上的快捷指令(Shortcuts)应用\n2. 创建一个打开目标应用的快捷指令\n3. 用上面输入的名称保存快捷指令\n4. 点击下方按钮生成QR/NFC';
+
+  @override
+  String get actionAppleShortcutsGuide => 'Apple 快捷指令官方指南';
+
+  @override
+  String get screenAppPickerTitle => '选择应用';
+
+  @override
+  String get hintAppSearch => '搜索应用...';
+
+  @override
+  String get msgAppListError => '无法加载应用列表。';
+
+  @override
+  String get msgSelectApp => '请选择一个应用。';
+
+  @override
+  String get screenNfcWriterTitle => 'NFC写入';
+
+  @override
+  String get msgNfcWaiting => '请将NFC标签靠近\n手机背面';
+
+  @override
+  String get msgNfcSuccess => '写入完成！\n正在返回首页...';
+
+  @override
+  String get msgNfcError => 'NFC写入失败。';
+
+  @override
+  String get labelNfcIncludeIos => '同时写入iOS快捷指令';
+
+  @override
+  String get labelIosShortcutName => 'iOS 快捷指令名称';
+
+  @override
+  String get hintIosShortcutName => '例：微信';
+
+  @override
+  String get screenOutputSelectorTitle => '选择输出方式';
+
+  @override
+  String get screenOutputQrDesc => '用相机扫描启动应用';
+
+  @override
+  String get screenOutputNfcDesc => '触碰标签启动应用';
+
+  @override
+  String get msgNfcCheckFailed => 'NFC检查失败';
+
+  @override
+  String get msgNfcSimulator => '模拟器中无法测试NFC';
+
+  @override
+  String get msgNfcNotSupported => '此设备不支持NFC';
+
+  @override
+  String get msgNfcWriteIosMin => 'NFC写入需要iPhone XS或更新机型';
+
+  @override
+  String get msgNfcUnsupportedDevice => 'NFC不支持的设备';
+
+  @override
+  String get actionNfcWrite => '写入NFC标签';
+
+  @override
+  String get screenQrResultTitle => 'QR码';
+
+  @override
+  String get tabTemplate => '模板';
+
+  @override
+  String get tabShape => '形状';
+
+  @override
+  String get tabColor => '颜色';
+
+  @override
+  String get tabLogo => 'Logo';
+
+  @override
+  String get tabText => '文字';
+
+  @override
+  String get actionSaveGallery => '保存到相册';
+
+  @override
+  String get actionSaveTemplate => '保存模板';
+
+  @override
+  String get dialogLowReadabilityTitle => '识别率较低';
+
+  @override
+  String dialogLowReadabilityScore(int score) {
+    return '当前识别率：$score%';
+  }
+
+  @override
+  String get dialogLowReadabilityWarning => 'QR码可能无法被\n某些扫描器识别。';
+
+  @override
+  String dialogLowReadabilityCause(String issue) {
+    return '主要原因：$issue';
+  }
+
+  @override
+  String get actionSaveAnyway => '仍然保存';
+
+  @override
+  String get dialogSaveTemplateTitle => '保存模板';
+
+  @override
+  String get labelTemplateName => '模板名称';
+
+  @override
+  String get hintTemplateName => '例：蓝色背景QR';
+
+  @override
+  String msgTemplateSaved(String name) {
+    return '模板「$name」已保存。';
+  }
+
+  @override
+  String get msgSaveFailed => '图片保存失败。';
+
+  @override
+  String get msgPrintFailed => '打印失败。请检查打印机连接。';
+
+  @override
+  String get labelReadability => '识别率';
+
+  @override
+  String get screenTemplateMyTemplates => '我的模板';
+
+  @override
+  String get actionNoStyle => '无样式';
+
+  @override
+  String msgTemplateApplied(String name) {
+    return '模板「$name」已应用。';
+  }
+
+  @override
+  String get dialogDeleteTemplateTitle => '删除模板';
+
+  @override
+  String dialogDeleteTemplateContent(String name) {
+    return '确定要删除「$name」吗？';
+  }
+
+  @override
+  String get msgNoSavedTemplates => '没有已保存的模板。';
+
+  @override
+  String get msgNoSavedTemplatesHint => '使用下方的「保存模板」按钮保存当前样式。';
+
+  @override
+  String get tabColorSolid => '纯色';
+
+  @override
+  String get tabColorGradient => '渐变';
+
+  @override
+  String get actionPickColor => '自选颜色';
+
+  @override
+  String get labelRecommendedColors => '推荐颜色';
+
+  @override
+  String get labelGradientPresets => '渐变预设';
+
+  @override
+  String get dialogColorPickerTitle => '选择颜色';
+
+  @override
+  String get labelDotShape => '点形状';
+
+  @override
+  String get labelEyeOuter => '眼形 — 外圈';
+
+  @override
+  String get labelEyeInner => '眼形 — 内圈';
+
+  @override
+  String get shapeSquare => '方形';
+
+  @override
+  String get shapeRounded => '圆角';
+
+  @override
+  String get shapeCircle => '圆形';
+
+  @override
+  String get shapeCircleRound => '圆形甜甜圈';
+
+  @override
+  String get shapeSmooth => '平滑';
+
+  @override
+  String get shapeDiamond => '菱形';
+
+  @override
+  String get shapeStar => '星形';
+
+  @override
+  String get actionRandomRegenerate => '随机重新生成';
+
+  @override
+  String get actionRandomEye => '随机眼形';
+
+  @override
+  String get actionClear => '清除';
+
+  @override
+  String get labelShowIcon => '显示图标';
+
+  @override
+  String get msgIconUnavailable => '仅在设置了应用图标或表情符号时显示。';
+
+  @override
+  String get labelLogoPosition => 'Logo位置';
+
+  @override
+  String get optionCenter => '居中';
+
+  @override
+  String get optionBottomRight => '右下角';
+
+  @override
+  String get labelLogoBackground => 'Logo背景';
+
+  @override
+  String get optionNone => '无';
+
+  @override
+  String get optionSquare => '方形';
+
+  @override
+  String get optionCircle => '圆形';
+
+  @override
+  String get labelTopText => '顶部文字';
+
+  @override
+  String get labelBottomText => '底部文字';
+
+  @override
+  String get hintEnterText => '请输入文字';
+
+  @override
+  String get screenSettingsTitle => '设置';
+
+  @override
+  String get settingsLanguage => '语言';
+
+  @override
+  String get settingsLanguageSystem => '跟随系统';
+
+  @override
+  String msgCopiedToClipboard(String text) {
+    return '「$text」已复制到剪贴板';
+  }
+
+  @override
+  String get platformAndroid => 'Android';
+
+  @override
+  String get platformIos => 'iOS';
+}

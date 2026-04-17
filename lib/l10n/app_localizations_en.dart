@@ -1,0 +1,621 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appTitle => 'QR & NFC Generator';
+
+  @override
+  String get screenSplashSubtitle => 'Create and customize your own QR codes';
+
+  @override
+  String get tileAppAndroid => 'Launch App';
+
+  @override
+  String get tileAppIos => 'Shortcut';
+
+  @override
+  String get tileClipboard => 'Clipboard';
+
+  @override
+  String get tileWebsite => 'Website';
+
+  @override
+  String get tileContact => 'Contact';
+
+  @override
+  String get tileWifi => 'WiFi';
+
+  @override
+  String get tileLocation => 'Location';
+
+  @override
+  String get tileEvent => 'Event';
+
+  @override
+  String get tileEmail => 'Email';
+
+  @override
+  String get tileSms => 'SMS';
+
+  @override
+  String get screenHomeTitle => 'QR & NFC Generator';
+
+  @override
+  String get screenHomeEditModeTitle => 'Edit Mode';
+
+  @override
+  String get actionDone => 'Done';
+
+  @override
+  String get actionCancel => 'Cancel';
+
+  @override
+  String get actionDelete => 'Delete';
+
+  @override
+  String get actionSave => 'Save';
+
+  @override
+  String get actionShare => 'Share';
+
+  @override
+  String get actionRetry => 'Retry';
+
+  @override
+  String get actionClose => 'Close';
+
+  @override
+  String get actionConfirm => 'OK';
+
+  @override
+  String get tooltipHelp => 'Help';
+
+  @override
+  String get tooltipHistory => 'History';
+
+  @override
+  String get tooltipDeleteAll => 'Delete All';
+
+  @override
+  String get actionCollapseHidden => 'Collapse hidden menu';
+
+  @override
+  String actionShowHidden(int count) {
+    return 'Show hidden menu ($count)';
+  }
+
+  @override
+  String get screenHelpTitle => 'Help';
+
+  @override
+  String get screenHistoryTitle => 'History';
+
+  @override
+  String get screenHistoryEmpty => 'No history yet.';
+
+  @override
+  String get labelQrCode => 'QR Code';
+
+  @override
+  String get labelNfcTag => 'NFC Tag';
+
+  @override
+  String get dialogClearAllTitle => 'Delete All';
+
+  @override
+  String get dialogClearAllContent =>
+      'Are you sure you want to delete all history?';
+
+  @override
+  String get dialogDeleteHistoryTitle => 'Delete History';
+
+  @override
+  String dialogDeleteHistoryContent(String name) {
+    return 'Are you sure you want to delete \"$name\"?';
+  }
+
+  @override
+  String get screenWebsiteTitle => 'Website Tag';
+
+  @override
+  String get labelUrl => 'URL';
+
+  @override
+  String get hintUrl => 'https://example.com';
+
+  @override
+  String get msgUrlRequired => 'Please enter a URL.';
+
+  @override
+  String get msgUrlInvalid => 'Please enter a valid URL.';
+
+  @override
+  String get screenWifiTitle => 'WiFi Tag';
+
+  @override
+  String get labelWifiSsid => 'Network Name (SSID) *';
+
+  @override
+  String get hintWifiSsid => 'MyWiFi';
+
+  @override
+  String get msgSsidRequired => 'Please enter the SSID.';
+
+  @override
+  String get labelWifiSecurity => 'Security';
+
+  @override
+  String get optionWpa2 => 'WPA2 (Recommended)';
+
+  @override
+  String get optionNoSecurity => 'None';
+
+  @override
+  String get labelWifiPassword => 'Password';
+
+  @override
+  String get hintWifiPassword => 'Password';
+
+  @override
+  String get screenSmsTitle => 'SMS Tag';
+
+  @override
+  String get labelPhoneRequired => 'Phone Number *';
+
+  @override
+  String get hintPhone => '010-0000-0000';
+
+  @override
+  String get msgPhoneRequired => 'Please enter a phone number.';
+
+  @override
+  String get labelMessageOptional => 'Message (Optional)';
+
+  @override
+  String get hintSmsMessage => 'Message content';
+
+  @override
+  String get screenEmailTitle => 'Email Tag';
+
+  @override
+  String get labelEmailRequired => 'Email Address *';
+
+  @override
+  String get hintEmail => 'example@email.com';
+
+  @override
+  String get msgEmailRequired => 'Please enter an email address.';
+
+  @override
+  String get msgEmailInvalid => 'Please enter a valid email address.';
+
+  @override
+  String get labelEmailSubjectOptional => 'Subject (Optional)';
+
+  @override
+  String get hintEmailSubject => 'Email subject';
+
+  @override
+  String get labelEmailBodyOptional => 'Body (Optional)';
+
+  @override
+  String get hintEmailBody => 'Email body';
+
+  @override
+  String get screenContactTitle => 'Contact Tag';
+
+  @override
+  String get actionManualInput => 'Manual Input';
+
+  @override
+  String get screenContactManualSubtitle =>
+      'Enter name, phone number, and email manually';
+
+  @override
+  String get hintSearchByName => 'Search by name';
+
+  @override
+  String get labelNoPhone => 'No phone number';
+
+  @override
+  String get msgContactPermissionRequired =>
+      'Contact access permission is required';
+
+  @override
+  String get msgContactPermissionHint =>
+      'Use manual input or allow permission in settings.';
+
+  @override
+  String get actionOpenSettings => 'Open Settings';
+
+  @override
+  String get msgSearchNoResults => 'No search results.';
+
+  @override
+  String get msgNoContacts => 'No saved contacts.';
+
+  @override
+  String get screenContactManualTitle => 'Manual Input';
+
+  @override
+  String get labelNameRequired => 'Name *';
+
+  @override
+  String get hintName => 'John Doe';
+
+  @override
+  String get msgNameRequired => 'Please enter a name.';
+
+  @override
+  String get labelPhone => 'Phone';
+
+  @override
+  String get labelEmail => 'Email';
+
+  @override
+  String get screenLocationTitle => 'Location Tag';
+
+  @override
+  String get screenLocationTapHint => 'Tap the map to select a location.';
+
+  @override
+  String get msgSearchingAddress => 'Searching address...';
+
+  @override
+  String get msgAddressUnavailable => 'Unable to retrieve address.';
+
+  @override
+  String get labelPlaceNameOptional => 'Place Name (Optional)';
+
+  @override
+  String get hintPlaceName =>
+      'Leave empty to use the building name automatically.';
+
+  @override
+  String get msgSelectLocation => 'Please select a location on the map.';
+
+  @override
+  String get screenEventTitle => 'Event Tag';
+
+  @override
+  String get labelEventTitleRequired => 'Event Title *';
+
+  @override
+  String get hintEventTitle => 'Event title';
+
+  @override
+  String get msgEventTitleRequired => 'Please enter a title.';
+
+  @override
+  String get labelEventStart => 'Start';
+
+  @override
+  String get labelEventEnd => 'End';
+
+  @override
+  String get labelEventLocationOptional => 'Location/Address (Optional)';
+
+  @override
+  String get hintEventLocation => '123 Main St...';
+
+  @override
+  String get labelEventDescOptional => 'Description (Optional)';
+
+  @override
+  String get hintEventDesc => 'Event description';
+
+  @override
+  String get msgEventEndBeforeStart => 'End time must be after start time.';
+
+  @override
+  String get screenClipboardTitle => 'Clipboard Tag';
+
+  @override
+  String get msgClipboardEmpty => 'Clipboard is empty. Enter text manually.';
+
+  @override
+  String get labelContent => 'Content';
+
+  @override
+  String get hintClipboardText => 'Text to save to tag';
+
+  @override
+  String get msgContentRequired => 'Please enter content.';
+
+  @override
+  String get screenIosInputTitle => 'iOS App Launch Setup';
+
+  @override
+  String get labelShortcutName => 'Shortcut name of the app to launch';
+
+  @override
+  String get hintShortcutName => 'e.g.: MyApp';
+
+  @override
+  String get msgAppNameRequired => 'Please enter an app name.';
+
+  @override
+  String get screenIosInputGuideTitle => 'Shortcut Setup Guide';
+
+  @override
+  String get screenIosInputGuideSteps =>
+      '1. Open the Shortcuts app on your iPhone\n2. Create a shortcut that opens the desired app\n3. Save the shortcut with the name entered above\n4. Press the button below to generate QR/NFC';
+
+  @override
+  String get actionAppleShortcutsGuide => 'Apple Shortcuts Official Guide';
+
+  @override
+  String get screenAppPickerTitle => 'Select App';
+
+  @override
+  String get hintAppSearch => 'Search apps...';
+
+  @override
+  String get msgAppListError => 'Unable to load app list.';
+
+  @override
+  String get msgSelectApp => 'Please select an app.';
+
+  @override
+  String get screenNfcWriterTitle => 'NFC Write';
+
+  @override
+  String get msgNfcWaiting => 'Hold the NFC tag near the\nback of your phone';
+
+  @override
+  String get msgNfcSuccess => 'Write complete!\nReturning to home...';
+
+  @override
+  String get msgNfcError => 'NFC write failed.';
+
+  @override
+  String get labelNfcIncludeIos => 'Also write iOS shortcut';
+
+  @override
+  String get labelIosShortcutName => 'iOS Shortcut Name';
+
+  @override
+  String get hintIosShortcutName => 'e.g.: KakaoTalk';
+
+  @override
+  String get screenOutputSelectorTitle => 'Select Output Method';
+
+  @override
+  String get screenOutputQrDesc => 'Scan with camera to launch app';
+
+  @override
+  String get screenOutputNfcDesc => 'Tap tag to launch app';
+
+  @override
+  String get msgNfcCheckFailed => 'NFC check failed';
+
+  @override
+  String get msgNfcSimulator => 'Cannot test NFC on simulator';
+
+  @override
+  String get msgNfcNotSupported => 'This device does not support NFC';
+
+  @override
+  String get msgNfcWriteIosMin => 'NFC writing requires iPhone XS or later';
+
+  @override
+  String get msgNfcUnsupportedDevice => 'NFC unsupported device';
+
+  @override
+  String get actionNfcWrite => 'Write NFC Tag';
+
+  @override
+  String get screenQrResultTitle => 'QR Code';
+
+  @override
+  String get tabTemplate => 'Template';
+
+  @override
+  String get tabShape => 'Shape';
+
+  @override
+  String get tabColor => 'Color';
+
+  @override
+  String get tabLogo => 'Logo';
+
+  @override
+  String get tabText => 'Text';
+
+  @override
+  String get actionSaveGallery => 'Save to Gallery';
+
+  @override
+  String get actionSaveTemplate => 'Save Template';
+
+  @override
+  String get dialogLowReadabilityTitle => 'Low Readability';
+
+  @override
+  String dialogLowReadabilityScore(int score) {
+    return 'Current readability: $score%';
+  }
+
+  @override
+  String get dialogLowReadabilityWarning =>
+      'The QR code may not be recognized\nby some scanners.';
+
+  @override
+  String dialogLowReadabilityCause(String issue) {
+    return 'Main cause: $issue';
+  }
+
+  @override
+  String get actionSaveAnyway => 'Save Anyway';
+
+  @override
+  String get dialogSaveTemplateTitle => 'Save Template';
+
+  @override
+  String get labelTemplateName => 'Template Name';
+
+  @override
+  String get hintTemplateName => 'e.g.: Blue Background QR';
+
+  @override
+  String msgTemplateSaved(String name) {
+    return 'Template \"$name\" has been saved.';
+  }
+
+  @override
+  String get msgSaveFailed => 'Failed to save image.';
+
+  @override
+  String get msgPrintFailed =>
+      'Print failed. Please check the printer connection.';
+
+  @override
+  String get labelReadability => 'Readability';
+
+  @override
+  String get screenTemplateMyTemplates => 'My Templates';
+
+  @override
+  String get actionNoStyle => 'No Style';
+
+  @override
+  String msgTemplateApplied(String name) {
+    return 'Template \"$name\" has been applied.';
+  }
+
+  @override
+  String get dialogDeleteTemplateTitle => 'Delete Template';
+
+  @override
+  String dialogDeleteTemplateContent(String name) {
+    return 'Are you sure you want to delete \"$name\"?';
+  }
+
+  @override
+  String get msgNoSavedTemplates => 'No saved templates.';
+
+  @override
+  String get msgNoSavedTemplatesHint =>
+      'Save your current style using the [Save Template] button below.';
+
+  @override
+  String get tabColorSolid => 'Solid';
+
+  @override
+  String get tabColorGradient => 'Gradient';
+
+  @override
+  String get actionPickColor => 'Pick Color';
+
+  @override
+  String get labelRecommendedColors => 'Recommended Colors';
+
+  @override
+  String get labelGradientPresets => 'Gradient Presets';
+
+  @override
+  String get dialogColorPickerTitle => 'Pick a Color';
+
+  @override
+  String get labelDotShape => 'Dot Shape';
+
+  @override
+  String get labelEyeOuter => 'Eye Shape — Outer';
+
+  @override
+  String get labelEyeInner => 'Eye Shape — Inner';
+
+  @override
+  String get shapeSquare => 'Square';
+
+  @override
+  String get shapeRounded => 'Rounded';
+
+  @override
+  String get shapeCircle => 'Circle';
+
+  @override
+  String get shapeCircleRound => 'Circle Donut';
+
+  @override
+  String get shapeSmooth => 'Smooth';
+
+  @override
+  String get shapeDiamond => 'Diamond';
+
+  @override
+  String get shapeStar => 'Star';
+
+  @override
+  String get actionRandomRegenerate => 'Random Regenerate';
+
+  @override
+  String get actionRandomEye => 'Random Eye Shape';
+
+  @override
+  String get actionClear => 'Clear';
+
+  @override
+  String get labelShowIcon => 'Show Icon';
+
+  @override
+  String get msgIconUnavailable =>
+      'Only displayed when an app icon or emoji is set.';
+
+  @override
+  String get labelLogoPosition => 'Logo Position';
+
+  @override
+  String get optionCenter => 'Center';
+
+  @override
+  String get optionBottomRight => 'Bottom Right';
+
+  @override
+  String get labelLogoBackground => 'Logo Background';
+
+  @override
+  String get optionNone => 'None';
+
+  @override
+  String get optionSquare => 'Square';
+
+  @override
+  String get optionCircle => 'Circle';
+
+  @override
+  String get labelTopText => 'Top Text';
+
+  @override
+  String get labelBottomText => 'Bottom Text';
+
+  @override
+  String get hintEnterText => 'Enter text';
+
+  @override
+  String get screenSettingsTitle => 'Settings';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsLanguageSystem => 'System Default';
+
+  @override
+  String msgCopiedToClipboard(String text) {
+    return '\"$text\" copied to clipboard';
+  }
+
+  @override
+  String get platformAndroid => 'Android';
+
+  @override
+  String get platformIos => 'iOS';
+}

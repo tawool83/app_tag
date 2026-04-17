@@ -8,8 +8,23 @@ const _kQrDataModuleShape = 'qr_data_module_shape';
 const _kQrEmbedIcon = 'qr_embed_icon';
 const _kQrCenterEmoji = 'qr_center_emoji';
 const _kActiveTemplateId = 'active_template_id';
+const _kLocaleCode = 'app_locale';
 
 class SettingsService {
+  static Future<String?> getLocaleCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kLocaleCode);
+  }
+
+  static Future<void> saveLocaleCode(String? code) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (code == null) {
+      await prefs.remove(_kLocaleCode);
+    } else {
+      await prefs.setString(_kLocaleCode, code);
+    }
+  }
+
   static Future<double> getLastPrintSizeCm() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getDouble(_kPrintSizeCm) ?? _kDefaultPrintSizeCm;

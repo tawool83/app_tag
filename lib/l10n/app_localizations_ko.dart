@@ -1,0 +1,612 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Korean (`ko`).
+class AppLocalizationsKo extends AppLocalizations {
+  AppLocalizationsKo([String locale = 'ko']) : super(locale);
+
+  @override
+  String get appTitle => 'QR, NFC 생성기';
+
+  @override
+  String get screenSplashSubtitle => '자신만의 QR 을 만들고 꾸미세요';
+
+  @override
+  String get tileAppAndroid => '앱 실행';
+
+  @override
+  String get tileAppIos => '단축어';
+
+  @override
+  String get tileClipboard => '클립보드';
+
+  @override
+  String get tileWebsite => '웹 사이트';
+
+  @override
+  String get tileContact => '연락처';
+
+  @override
+  String get tileWifi => 'WiFi';
+
+  @override
+  String get tileLocation => '위치';
+
+  @override
+  String get tileEvent => '이벤트/일정';
+
+  @override
+  String get tileEmail => '이메일';
+
+  @override
+  String get tileSms => 'SMS';
+
+  @override
+  String get screenHomeTitle => 'QR, NFC 생성기';
+
+  @override
+  String get screenHomeEditModeTitle => '편집 모드';
+
+  @override
+  String get actionDone => '완료';
+
+  @override
+  String get actionCancel => '취소';
+
+  @override
+  String get actionDelete => '삭제';
+
+  @override
+  String get actionSave => '저장';
+
+  @override
+  String get actionShare => '공유';
+
+  @override
+  String get actionRetry => '다시 시도';
+
+  @override
+  String get actionClose => '닫기';
+
+  @override
+  String get actionConfirm => '확인';
+
+  @override
+  String get tooltipHelp => '사용 안내';
+
+  @override
+  String get tooltipHistory => '생성 이력';
+
+  @override
+  String get tooltipDeleteAll => '전체 삭제';
+
+  @override
+  String get actionCollapseHidden => '숨긴 메뉴 접기';
+
+  @override
+  String actionShowHidden(int count) {
+    return '숨긴 메뉴 보기 ($count)';
+  }
+
+  @override
+  String get screenHelpTitle => '사용 안내';
+
+  @override
+  String get screenHistoryTitle => '생성 이력';
+
+  @override
+  String get screenHistoryEmpty => '이력이 없습니다.';
+
+  @override
+  String get labelQrCode => 'QR 코드';
+
+  @override
+  String get labelNfcTag => 'NFC 태그';
+
+  @override
+  String get dialogClearAllTitle => '전체 삭제';
+
+  @override
+  String get dialogClearAllContent => '모든 이력을 삭제하시겠습니까?';
+
+  @override
+  String get dialogDeleteHistoryTitle => '이력 삭제';
+
+  @override
+  String dialogDeleteHistoryContent(String name) {
+    return '\"$name\" 이력을 삭제하시겠습니까?';
+  }
+
+  @override
+  String get screenWebsiteTitle => '웹 사이트 태그';
+
+  @override
+  String get labelUrl => 'URL';
+
+  @override
+  String get hintUrl => 'https://example.com';
+
+  @override
+  String get msgUrlRequired => 'URL을 입력해주세요.';
+
+  @override
+  String get msgUrlInvalid => '올바른 URL 형식으로 입력해주세요.';
+
+  @override
+  String get screenWifiTitle => 'WiFi 태그';
+
+  @override
+  String get labelWifiSsid => '네트워크 이름 (SSID) *';
+
+  @override
+  String get hintWifiSsid => 'MyWiFi';
+
+  @override
+  String get msgSsidRequired => 'SSID를 입력해주세요.';
+
+  @override
+  String get labelWifiSecurity => '보안 방식';
+
+  @override
+  String get optionWpa2 => 'WPA2 (권장)';
+
+  @override
+  String get optionNoSecurity => '없음';
+
+  @override
+  String get labelWifiPassword => '비밀번호';
+
+  @override
+  String get hintWifiPassword => '비밀번호';
+
+  @override
+  String get screenSmsTitle => 'SMS 태그';
+
+  @override
+  String get labelPhoneRequired => '전화번호 *';
+
+  @override
+  String get hintPhone => '010-0000-0000';
+
+  @override
+  String get msgPhoneRequired => '전화번호를 입력해주세요.';
+
+  @override
+  String get labelMessageOptional => '메시지 (선택)';
+
+  @override
+  String get hintSmsMessage => '문자 내용';
+
+  @override
+  String get screenEmailTitle => '이메일 태그';
+
+  @override
+  String get labelEmailRequired => '이메일 주소 *';
+
+  @override
+  String get hintEmail => 'example@email.com';
+
+  @override
+  String get msgEmailRequired => '이메일 주소를 입력해주세요.';
+
+  @override
+  String get msgEmailInvalid => '올바른 이메일 형식으로 입력해주세요.';
+
+  @override
+  String get labelEmailSubjectOptional => '제목 (선택)';
+
+  @override
+  String get hintEmailSubject => '이메일 제목';
+
+  @override
+  String get labelEmailBodyOptional => '내용 (선택)';
+
+  @override
+  String get hintEmailBody => '이메일 본문';
+
+  @override
+  String get screenContactTitle => '연락처 태그';
+
+  @override
+  String get actionManualInput => '직접 입력';
+
+  @override
+  String get screenContactManualSubtitle => '이름, 전화번호, 이메일을 직접 입력합니다';
+
+  @override
+  String get hintSearchByName => '이름으로 검색';
+
+  @override
+  String get labelNoPhone => '전화번호 없음';
+
+  @override
+  String get msgContactPermissionRequired => '연락처 접근 권한이 필요합니다';
+
+  @override
+  String get msgContactPermissionHint => '직접 입력을 사용하거나 설정에서 권한을 허용해주세요.';
+
+  @override
+  String get actionOpenSettings => '설정 열기';
+
+  @override
+  String get msgSearchNoResults => '검색 결과가 없습니다.';
+
+  @override
+  String get msgNoContacts => '저장된 연락처가 없습니다.';
+
+  @override
+  String get screenContactManualTitle => '직접 입력';
+
+  @override
+  String get labelNameRequired => '이름 *';
+
+  @override
+  String get hintName => '홍길동';
+
+  @override
+  String get msgNameRequired => '이름을 입력해주세요.';
+
+  @override
+  String get labelPhone => '전화번호';
+
+  @override
+  String get labelEmail => '이메일';
+
+  @override
+  String get screenLocationTitle => '위치 태그';
+
+  @override
+  String get screenLocationTapHint => '지도를 탭하여 위치를 선택하세요.';
+
+  @override
+  String get msgSearchingAddress => '주소 검색 중...';
+
+  @override
+  String get msgAddressUnavailable => '주소를 가져올 수 없습니다.';
+
+  @override
+  String get labelPlaceNameOptional => '장소명 (선택)';
+
+  @override
+  String get hintPlaceName => '비우면 건물명이 자동으로 사용됩니다.';
+
+  @override
+  String get msgSelectLocation => '지도에서 위치를 선택해주세요.';
+
+  @override
+  String get screenEventTitle => '이벤트/일정 태그';
+
+  @override
+  String get labelEventTitleRequired => '이벤트 제목 *';
+
+  @override
+  String get hintEventTitle => '이벤트 제목';
+
+  @override
+  String get msgEventTitleRequired => '제목을 입력해주세요.';
+
+  @override
+  String get labelEventStart => '시작';
+
+  @override
+  String get labelEventEnd => '종료';
+
+  @override
+  String get labelEventLocationOptional => '장소/주소 (선택)';
+
+  @override
+  String get hintEventLocation => '서울특별시 중구 ...';
+
+  @override
+  String get labelEventDescOptional => '설명 (선택)';
+
+  @override
+  String get hintEventDesc => '이벤트 설명';
+
+  @override
+  String get msgEventEndBeforeStart => '종료 일시는 시작 일시 이후여야 합니다.';
+
+  @override
+  String get screenClipboardTitle => '클립보드 태그';
+
+  @override
+  String get msgClipboardEmpty => '클립보드가 비어 있습니다. 직접 입력하세요.';
+
+  @override
+  String get labelContent => '내용';
+
+  @override
+  String get hintClipboardText => '태그에 저장할 텍스트';
+
+  @override
+  String get msgContentRequired => '내용을 입력해주세요.';
+
+  @override
+  String get screenIosInputTitle => 'iOS 앱 실행 설정';
+
+  @override
+  String get labelShortcutName => '실행할 앱의 단축어 이름';
+
+  @override
+  String get hintShortcutName => '예: 내냉장고';
+
+  @override
+  String get msgAppNameRequired => '앱 이름을 입력해주세요.';
+
+  @override
+  String get screenIosInputGuideTitle => '단축어 설정 안내';
+
+  @override
+  String get screenIosInputGuideSteps =>
+      '1. iPhone의 단축어(Shortcuts) 앱을 열기\n2. 실행하려는 앱을 여는 단축어 만들기\n3. 단축어 이름을 위에 입력한 이름으로 저장\n4. 아래 버튼을 눌러 QR/NFC 생성';
+
+  @override
+  String get actionAppleShortcutsGuide => 'Apple 단축어 공식 사용 설명서';
+
+  @override
+  String get screenAppPickerTitle => '앱 선택';
+
+  @override
+  String get hintAppSearch => '앱 검색...';
+
+  @override
+  String get msgAppListError => '앱 목록을 불러올 수 없습니다.';
+
+  @override
+  String get msgSelectApp => '앱을 선택해주세요.';
+
+  @override
+  String get screenNfcWriterTitle => 'NFC 기록';
+
+  @override
+  String get msgNfcWaiting => 'NFC 태그를 스마트폰 뒷면에\n가져다 대세요';
+
+  @override
+  String get msgNfcSuccess => '기록 완료!\n홈으로 이동합니다...';
+
+  @override
+  String get msgNfcError => 'NFC 기록에 실패했습니다.';
+
+  @override
+  String get labelNfcIncludeIos => 'iOS 단축어도 함께 기록';
+
+  @override
+  String get labelIosShortcutName => 'iOS 단축어 이름';
+
+  @override
+  String get hintIosShortcutName => '예: 카카오톡';
+
+  @override
+  String get screenOutputSelectorTitle => '출력 방식 선택';
+
+  @override
+  String get screenOutputQrDesc => '카메라로 스캔하여 앱 실행';
+
+  @override
+  String get screenOutputNfcDesc => '태그에 가져다 대어 앱 실행';
+
+  @override
+  String get msgNfcCheckFailed => 'NFC 확인 실패';
+
+  @override
+  String get msgNfcSimulator => '시뮬레이터에서는 NFC를 테스트할 수 없습니다';
+
+  @override
+  String get msgNfcNotSupported => '이 기기는 NFC를 지원하지 않습니다';
+
+  @override
+  String get msgNfcWriteIosMin => 'NFC 쓰기는 iPhone XS 이상에서 지원됩니다';
+
+  @override
+  String get msgNfcUnsupportedDevice => 'NFC 미지원 기기';
+
+  @override
+  String get actionNfcWrite => 'NFC 태그 쓰기';
+
+  @override
+  String get screenQrResultTitle => 'QR 코드';
+
+  @override
+  String get tabTemplate => '템플릿';
+
+  @override
+  String get tabShape => '모양';
+
+  @override
+  String get tabColor => '색상';
+
+  @override
+  String get tabLogo => '로고';
+
+  @override
+  String get tabText => '텍스트';
+
+  @override
+  String get actionSaveGallery => '갤러리 저장';
+
+  @override
+  String get actionSaveTemplate => '템플릿 저장';
+
+  @override
+  String get dialogLowReadabilityTitle => '인식률이 낮습니다';
+
+  @override
+  String dialogLowReadabilityScore(int score) {
+    return '현재 인식률: $score%';
+  }
+
+  @override
+  String get dialogLowReadabilityWarning => 'QR 코드가 일부 스캐너에서\n인식되지 않을 수 있습니다.';
+
+  @override
+  String dialogLowReadabilityCause(String issue) {
+    return '주요 원인: $issue';
+  }
+
+  @override
+  String get actionSaveAnyway => '그래도 저장';
+
+  @override
+  String get dialogSaveTemplateTitle => '템플릿 저장';
+
+  @override
+  String get labelTemplateName => '템플릿 이름';
+
+  @override
+  String get hintTemplateName => '예: 파란 배경 QR';
+
+  @override
+  String msgTemplateSaved(String name) {
+    return '「$name」 템플릿이 저장되었습니다.';
+  }
+
+  @override
+  String get msgSaveFailed => '이미지 저장에 실패했습니다.';
+
+  @override
+  String get msgPrintFailed => '인쇄에 실패했습니다. 프린터 연결을 확인해주세요.';
+
+  @override
+  String get labelReadability => '인식률';
+
+  @override
+  String get screenTemplateMyTemplates => '나의 템플릿';
+
+  @override
+  String get actionNoStyle => '스타일 없음';
+
+  @override
+  String msgTemplateApplied(String name) {
+    return '「$name」 템플릿이 적용되었습니다.';
+  }
+
+  @override
+  String get dialogDeleteTemplateTitle => '템플릿 삭제';
+
+  @override
+  String dialogDeleteTemplateContent(String name) {
+    return '「$name」을(를) 삭제하시겠습니까?';
+  }
+
+  @override
+  String get msgNoSavedTemplates => '저장된 템플릿이 없습니다.';
+
+  @override
+  String get msgNoSavedTemplatesHint => '하단 [템플릿 저장] 버튼으로 현재 스타일을 저장하세요.';
+
+  @override
+  String get tabColorSolid => '단색';
+
+  @override
+  String get tabColorGradient => '그라디언트';
+
+  @override
+  String get actionPickColor => '직접 선택';
+
+  @override
+  String get labelRecommendedColors => '추천 색상';
+
+  @override
+  String get labelGradientPresets => '그라디언트 프리셋';
+
+  @override
+  String get dialogColorPickerTitle => '색상 선택';
+
+  @override
+  String get labelDotShape => '도트 모양';
+
+  @override
+  String get labelEyeOuter => '눈 모양 — 외곽';
+
+  @override
+  String get labelEyeInner => '눈 모양 — 내부';
+
+  @override
+  String get shapeSquare => '사각';
+
+  @override
+  String get shapeRounded => '둥글기';
+
+  @override
+  String get shapeCircle => '원형';
+
+  @override
+  String get shapeCircleRound => '원형도넛';
+
+  @override
+  String get shapeSmooth => '부드럽게';
+
+  @override
+  String get shapeDiamond => '다이아';
+
+  @override
+  String get shapeStar => '별';
+
+  @override
+  String get actionRandomRegenerate => '랜덤 재생성';
+
+  @override
+  String get actionRandomEye => '랜덤 눈 모양';
+
+  @override
+  String get actionClear => '해제';
+
+  @override
+  String get labelShowIcon => '아이콘 표시';
+
+  @override
+  String get msgIconUnavailable => '앱 아이콘 또는 이모지가 설정된 경우에만 표시됩니다.';
+
+  @override
+  String get labelLogoPosition => '로고 위치';
+
+  @override
+  String get optionCenter => '중앙';
+
+  @override
+  String get optionBottomRight => '우하단';
+
+  @override
+  String get labelLogoBackground => '로고 배경';
+
+  @override
+  String get optionNone => '없음';
+
+  @override
+  String get optionSquare => '사각';
+
+  @override
+  String get optionCircle => '원형';
+
+  @override
+  String get labelTopText => '상단 텍스트';
+
+  @override
+  String get labelBottomText => '하단 텍스트';
+
+  @override
+  String get hintEnterText => '텍스트를 입력하세요';
+
+  @override
+  String get screenSettingsTitle => '설정';
+
+  @override
+  String get settingsLanguage => '언어';
+
+  @override
+  String get settingsLanguageSystem => '시스템 기본';
+
+  @override
+  String msgCopiedToClipboard(String text) {
+    return '\"$text\" 클립보드에 복사됨';
+  }
+
+  @override
+  String get platformAndroid => 'Android';
+
+  @override
+  String get platformIos => 'iOS';
+}
