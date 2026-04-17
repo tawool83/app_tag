@@ -14,3 +14,9 @@
 | qr-task-json-storage | 2026-04-16 | 95% | [qr-task-json-storage/](qr-task-json-storage/) |
 | clean-architecture-refactor | 2026-04-17 | 97% | [clean-architecture-refactor/](clean-architecture-refactor/) |
 | imagegallerysaver | 2026-04-17 | N/A | (hotfix, 문서 없음) |
+| logo-tab-text-editor | 2026-04-17 | N/A | [logo-tab-text-editor/](logo-tab-text-editor/) (Plan only, 구현 완료) |
+| qr-customization | 2026-04-17 | N/A | [qr-customization/](qr-customization/) (Plan only, 구현 완료) |
+| qr-style-customization | 2026-04-17 | N/A | [qr-style-customization/](qr-style-customization/) (Plan+Analysis, 구현 완료) |
+| qr-template-system | 2026-04-17 | N/A | [qr-template-system/](qr-template-system/) (Plan+Design, 구현 완료) |
+| qr-focus-redesign | 2026-04-17 | N/A | [qr-focus-redesign/](qr-focus-redesign/) (Plan+Design+Analysis, 구현 완료) |
+| qr-readability-indicator | 2026-04-17 | N/A | [qr-readability-indicator/](qr-readability-indicator/) (Plan only, 구현 완료) |
