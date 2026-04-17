@@ -605,6 +605,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get settingsReadabilityAlert => '認識率アラート';
+
+  @override
   String get platformAndroid => 'Android';
 
   @override

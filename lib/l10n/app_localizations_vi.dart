@@ -612,6 +612,9 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get settingsReadabilityAlert => 'Cảnh báo tỷ lệ nhận dạng';
+
+  @override
   String get platformAndroid => 'Android';
 
   @override

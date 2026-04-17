@@ -201,6 +201,7 @@
   "settingsLanguageSystem": "跟随系统",
   "msgCopiedToClipboard": "「{text}」已复制到剪贴板",
   "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
+    "settingsReadabilityAlert": "识别率提醒",
   "platformAndroid": "Android",
   "platformIos": "iOS"
 }

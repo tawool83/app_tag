@@ -10,18 +10,16 @@ import '../qr_result_provider.dart' show QrResultState, qrResultProvider, QrEyeO
 import '../../../l10n/app_localizations.dart';
 import 'qr_layer_stack.dart';
 
-/// 소형(160px) QR 미리보기 + 돋보기 확대 버튼 + 인식률 배지.
+/// 소형(160px) QR 미리보기 + 돋보기 확대 버튼.
 /// RepaintBoundary를 포함하여 캡처 기준이 됩니다.
 class QrPreviewSection extends ConsumerWidget {
   final GlobalKey repaintKey;
   final String deepLink;
-  final ReadabilityScore score;
 
   const QrPreviewSection({
     super.key,
     required this.repaintKey,
     required this.deepLink,
-    required this.score,
   });
 
   @override
@@ -30,70 +28,53 @@ class QrPreviewSection extends ConsumerWidget {
 
     return Column(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        Stack(
+          alignment: Alignment.center,
           children: [
-            // 왼쪽 영역 70%: QR 코드 (중앙 배치)
-            Expanded(
-              flex: 7,
-              child: Align(
-                alignment: Alignment.center,
-                child: Stack(
-                  alignment: Alignment.center,
+            // 캡처 영역
+            RepaintBoundary(
+              key: repaintKey,
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 캡처 영역
-                    RepaintBoundary(
-                      key: repaintKey,
-                      child: Container(
-                        color: Colors.white,
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            QrLayerStack(deepLink: deepLink, size: 160),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // 돋보기 버튼 (우하단)
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () =>
-                              _showQrZoomDialog(context, state, deepLink),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surface
-                                  .withValues(alpha: 0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(Icons.zoom_in, size: 20),
-                          ),
-                        ),
-                      ),
-                    ),
+                    QrLayerStack(deepLink: deepLink, size: 180),
                   ],
                 ),
               ),
             ),
-            // 오른쪽 영역 30%: 인식률 배지 (가운데 정렬)
-            Expanded(
-              flex: 3,
-              child: Center(child: _ReadabilityBadge(score: score)),
+            // 돋보기 버튼 (우하단)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () =>
+                      _showQrZoomDialog(context, state, deepLink),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withValues(alpha: 0.9),
+                      shape: BoxShape.circle,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.zoom_in, size: 20),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -108,61 +89,6 @@ class QrPreviewSection extends ConsumerWidget {
     );
   }
 
-}
-
-// ── 인식률 배지 ────────────────────────────────────────────────────────────────
-
-class _ReadabilityBadge extends StatelessWidget {
-  final ReadabilityScore score;
-  const _ReadabilityBadge({required this.score});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = score.color;
-    final isDanger = score.isDanger;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          AppLocalizations.of(context)!.labelReadability,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: isDanger ? Colors.red.shade600 : Colors.grey.shade300,
-              width: isDanger ? 1.5 : 1.0,
-            ),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isDanger)
-                Icon(Icons.warning_amber_rounded, size: 16, color: color),
-              if (isDanger) const SizedBox(height: 4),
-              Text(
-                '${score.total}%',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 // ── 확대 다이얼로그 ────────────────────────────────────────────────────────────

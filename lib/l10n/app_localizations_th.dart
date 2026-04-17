@@ -612,6 +612,9 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get settingsReadabilityAlert => 'แจ้งเตือนอัตราการอ่าน';
+
+  @override
   String get platformAndroid => 'Android';
 
   @override

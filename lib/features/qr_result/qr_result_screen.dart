@@ -259,48 +259,19 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     }
   }
 
-  Future<bool> _showLowReadabilityWarning(ReadabilityScore score) async {
+  Future<void> _showReadabilitySnackBarIfNeeded(ReadabilityScore score) async {
+    final alertEnabled = await SettingsService.getReadabilityAlert();
+    if (!alertEnabled || !score.shouldWarnOnSave || !mounted) return;
     final l10n = AppLocalizations.of(context)!;
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            const SizedBox(width: 8),
-            Text(l10n.dialogLowReadabilityTitle),
-          ],
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${l10n.dialogLowReadabilityTitle}: ${score.total}% — ${score.mainIssue}',
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.dialogLowReadabilityScore(score.total),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(l10n.dialogLowReadabilityWarning),
-            const SizedBox(height: 8),
-            Text(
-              l10n.dialogLowReadabilityCause(score.mainIssue),
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.actionCancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.actionSaveAnyway),
-          ),
-        ],
+        backgroundColor: Colors.orange.shade700,
+        duration: const Duration(seconds: 3),
       ),
     );
-    return result == true;
   }
 
   Future<void> _showSaveTemplateSheet() async {
@@ -452,13 +423,12 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       appBar: AppBar(title: Text(l10n.screenQrResultTitle)),
       body: Column(
         children: [
-          // ① QR 미리보기 + 인식률 배지
+          // ① QR 미리보기
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: QrPreviewSection(
               repaintKey: _repaintKey,
               deepLink: deepLink,
-              score: score,
             ),
           ),
 
@@ -536,17 +506,11 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           _ActionButtons(
             state: state,
             onSaveGallery: () async {
-              if (score.shouldWarnOnSave) {
-                final proceed = await _showLowReadabilityWarning(score);
-                if (!proceed || !mounted) return;
-              }
+              await _showReadabilitySnackBarIfNeeded(score);
               ref.read(qrResultProvider.notifier).saveToGallery(appName);
             },
             onSaveTemplate: () async {
-              if (score.shouldWarnOnSave) {
-                final proceed = await _showLowReadabilityWarning(score);
-                if (!proceed || !mounted) return;
-              }
+              await _showReadabilitySnackBarIfNeeded(score);
               _showSaveTemplateSheet();
             },
             onShare: () =>

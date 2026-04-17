@@ -201,6 +201,7 @@
   "settingsLanguageSystem": "Padrão do sistema",
   "msgCopiedToClipboard": "\"{text}\" copiado para a área de transferência",
   "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
+    "settingsReadabilityAlert": "Alerta de legibilidade",
   "platformAndroid": "Android",
   "platformIos": "iOS"
 }

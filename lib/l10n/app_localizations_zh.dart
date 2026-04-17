@@ -605,6 +605,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get settingsReadabilityAlert => '识别率提醒';
+
+  @override
   String get platformAndroid => 'Android';
 
   @override

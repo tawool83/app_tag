@@ -9,6 +9,7 @@ const _kQrEmbedIcon = 'qr_embed_icon';
 const _kQrCenterEmoji = 'qr_center_emoji';
 const _kActiveTemplateId = 'active_template_id';
 const _kLocaleCode = 'app_locale';
+const _kReadabilityAlert = 'readability_alert';
 
 class SettingsService {
   static Future<String?> getLocaleCode() async {
@@ -23,6 +24,16 @@ class SettingsService {
     } else {
       await prefs.setString(_kLocaleCode, code);
     }
+  }
+
+  static Future<bool> getReadabilityAlert() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kReadabilityAlert) ?? false;
+  }
+
+  static Future<void> saveReadabilityAlert(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kReadabilityAlert, enabled);
   }
 
   static Future<double> getLastPrintSizeCm() async {

@@ -201,6 +201,7 @@
   "settingsLanguageSystem": "시스템 기본",
   "msgCopiedToClipboard": "\"{text}\" 클립보드에 복사됨",
   "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
+    "settingsReadabilityAlert": "인식률 알림 사용",
   "platformAndroid": "Android",
   "platformIos": "iOS"
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/locale_provider.dart';
+import '../../core/services/settings_service.dart';
 
 const _kSupportedLanguages = [
   (code: null, nativeName: null),       // 시스템 기본
@@ -17,11 +18,29 @@ const _kSupportedLanguages = [
   (code: 'th', nativeName: 'ภาษาไทย'),
 ];
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool _readabilityAlert = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final alert = await SettingsService.getReadabilityAlert();
+    if (mounted) setState(() => _readabilityAlert = alert);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentLocale = ref.watch(localeProvider);
     final currentCode = currentLocale?.languageCode;
@@ -31,7 +50,7 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 언어 설정 항목
+          // 언어 설정
           ListTile(
             leading: const Icon(Icons.language),
             title: Text(l10n.settingsLanguage),
@@ -53,6 +72,17 @@ class SettingsScreen extends ConsumerWidget {
                 ref.read(localeProvider.notifier).setLocale(locale);
               },
             ),
+          ),
+          const Divider(),
+          // 인식률 알림 설정
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_outlined),
+            title: Text(l10n.settingsReadabilityAlert),
+            value: _readabilityAlert,
+            onChanged: (v) {
+              setState(() => _readabilityAlert = v);
+              SettingsService.saveReadabilityAlert(v);
+            },
           ),
         ],
       ),

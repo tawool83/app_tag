@@ -624,6 +624,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get settingsReadabilityAlert => 'Lesbarkeitswarnung';
+
+  @override
   String get platformAndroid => 'Android';
 
   @override

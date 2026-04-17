@@ -1272,6 +1272,12 @@ abstract class AppLocalizations {
   /// **'\"{text}\" 클립보드에 복사됨'**
   String msgCopiedToClipboard(String text);
 
+  /// No description provided for @settingsReadabilityAlert.
+  ///
+  /// In ko, this message translates to:
+  /// **'인식률 알림 사용'**
+  String get settingsReadabilityAlert;
+
   /// No description provided for @platformAndroid.
   ///
   /// In ko, this message translates to:

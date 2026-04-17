@@ -201,6 +201,7 @@
   "settingsLanguageSystem": "システムデフォルト",
   "msgCopiedToClipboard": "「{text}」をクリップボードにコピーしました",
   "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
+    "settingsReadabilityAlert": "認識率アラート",
   "platformAndroid": "Android",
   "platformIos": "iOS"
 }

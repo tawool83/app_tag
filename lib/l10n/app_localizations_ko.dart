@@ -605,6 +605,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get settingsReadabilityAlert => '인식률 알림 사용';
+
+  @override
   String get platformAndroid => 'Android';
 
   @override

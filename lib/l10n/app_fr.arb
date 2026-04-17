@@ -201,6 +201,7 @@
   "settingsLanguageSystem": "Par défaut du système",
   "msgCopiedToClipboard": "« {text} » copié dans le presse-papiers",
   "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
+    "settingsReadabilityAlert": "Alerte de lisibilité",
   "platformAndroid": "Android",
   "platformIos": "iOS"
 }

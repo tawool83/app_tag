@@ -201,6 +201,7 @@
   "settingsLanguageSystem": "Systemstandard",
   "msgCopiedToClipboard": "'{text}' in die Zwischenablage kopiert",
   "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
+    "settingsReadabilityAlert": "Lesbarkeitswarnung",
   "platformAndroid": "Android",
   "platformIos": "iOS"
 }

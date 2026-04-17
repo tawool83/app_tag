@@ -201,6 +201,7 @@
   "settingsLanguageSystem": "Mặc định hệ thống",
   "msgCopiedToClipboard": "\"{text}\" đã sao chép vào bộ nhớ tạm",
   "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
+    "settingsReadabilityAlert": "Cảnh báo tỷ lệ nhận dạng",
   "platformAndroid": "Android",
   "platformIos": "iOS"
 }

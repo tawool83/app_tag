@@ -201,6 +201,7 @@
   "settingsLanguageSystem": "ค่าเริ่มต้นของระบบ",
   "msgCopiedToClipboard": "\"{text}\" คัดลอกไปยังคลิปบอร์ดแล้ว",
   "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
+    "settingsReadabilityAlert": "แจ้งเตือนอัตราการอ่าน",
   "platformAndroid": "Android",
   "platformIos": "iOS"
 }
