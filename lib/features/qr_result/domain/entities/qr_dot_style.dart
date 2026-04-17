@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
+import 'dart:ui' show Color, Offset, Paint, PaintingStyle, Path, Rect;
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 /// QR 도트 모양 프리셋

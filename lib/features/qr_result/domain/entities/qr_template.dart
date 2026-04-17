@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:ui' show Color;
 
 // ── 헬퍼 ──────────────────────────────────────────────────────────────────────
 
 Color _hexToColor(String? hex) {
-  if (hex == null || hex.isEmpty) return Colors.black;
+  if (hex == null || hex.isEmpty) return const Color(0xFF000000);
   final clean = hex.replaceFirst('#', '');
   final argb = clean.length == 6 ? 'FF$clean' : clean;
   return Color(int.parse(argb, radix: 16));

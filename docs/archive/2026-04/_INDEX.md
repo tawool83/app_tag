@@ -12,3 +12,5 @@
 | qr-layer-editor | 2026-04-14 | 96% | [qr-layer-editor/](qr-layer-editor/) |
 | text-tab-separation | 2026-04-16 | 100% | [text-tab-separation/](text-tab-separation/) |
 | qr-task-json-storage | 2026-04-16 | 95% | [qr-task-json-storage/](qr-task-json-storage/) |
+| clean-architecture-refactor | 2026-04-17 | 97% | [clean-architecture-refactor/](clean-architecture-refactor/) |
+| imagegallerysaver | 2026-04-17 | N/A | (hotfix, 문서 없음) |

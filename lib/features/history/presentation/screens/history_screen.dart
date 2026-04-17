@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../qr_task/domain/entities/qr_task.dart';
 import '../../../qr_task/domain/entities/qr_task_kind.dart';
-import '../../../qr_task/presentation/providers/qr_task_list_notifier.dart';
+import '../../../qr_task/presentation/providers/qr_task_providers.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});

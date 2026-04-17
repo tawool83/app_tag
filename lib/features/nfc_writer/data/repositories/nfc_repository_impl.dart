@@ -103,7 +103,14 @@ class NfcRepositoryImpl implements NfcRepository {
   }
 
   @override
-  Future<void> stopSession() => _dataSource.stopSession();
+  Future<Result<void>> stopSession() async {
+    try {
+      await _dataSource.stopSession();
+      return const Success(null);
+    } catch (e) {
+      return Err(PlatformFailure('NFC 세션 종료 실패: $e'));
+    }
+  }
 
   String _resolveErrorMessage(String error) {
     if (error.contains('쓰기 불가능') || error.contains('not writable')) {

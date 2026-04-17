@@ -14,5 +14,5 @@ abstract class NfcRepository {
     String? iosShortcutName,
   });
 
-  Future<void> stopSession();
+  Future<Result<void>> stopSession();
 }

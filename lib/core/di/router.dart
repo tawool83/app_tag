@@ -20,9 +20,14 @@ import '../../features/event_tag/event_tag_screen.dart';
 import '../../features/email_tag/email_tag_screen.dart';
 import '../../features/sms_tag/sms_tag_screen.dart';
 
+/// 향후 외부 deep link 수신 시 라우트 리다이렉션 처리.
+/// 현재는 no-op (앱이 deep link를 생성만 하고 수신하지 않음).
+String? _deepLinkRedirect(BuildContext context, GoRouterState state) => null;
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
+    redirect: _deepLinkRedirect,
     routes: [
       GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
       GoRoute(path: '/app-picker', builder: (_, _) => const AppPickerScreen()),

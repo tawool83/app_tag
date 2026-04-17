@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'dart:ui' show Color;
 
 const _stickerSentinel = Object();
 
@@ -15,7 +15,7 @@ class StickerText {
 
   const StickerText({
     required this.content,
-    this.color = Colors.black,
+    this.color = const Color(0xFF000000),
     this.fontFamily = 'sans-serif',
     this.fontSize = 14,
   });

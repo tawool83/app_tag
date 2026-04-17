@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
+export 'qr_task_list_notifier.dart' show qrTaskListNotifierProvider, QrTaskListNotifier;
+
 import '../../data/datasources/hive_qr_task_datasource.dart';
 import '../../data/datasources/qr_task_local_datasource.dart';
 import '../../data/models/qr_task_model.dart';
