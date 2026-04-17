@@ -20,3 +20,4 @@
 | qr-template-system | 2026-04-17 | N/A | [qr-template-system/](qr-template-system/) (Plan+Design, 구현 완료) |
 | qr-focus-redesign | 2026-04-17 | N/A | [qr-focus-redesign/](qr-focus-redesign/) (Plan+Design+Analysis, 구현 완료) |
 | qr-readability-indicator | 2026-04-17 | N/A | [qr-readability-indicator/](qr-readability-indicator/) (Plan only, 구현 완료) |
+| app-branding | 2026-04-17 | 100% | [app-branding/](app-branding/) (Plan+Design, 구현 완료) |

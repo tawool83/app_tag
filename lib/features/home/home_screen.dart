@@ -59,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
         key: 'app',
         icon: Platform.isAndroid ? Icons.apps : CupertinoIcons.square_stack_3d_up,
         label: Platform.isAndroid ? '앱 실행' : '단축어',
-        iconColor: Colors.indigo,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFF5C6BC0),
         onTap: () => context.push(
           Platform.isAndroid ? '/app-picker' : '/ios-input',
         ),
@@ -68,56 +69,64 @@ class _HomeScreenState extends State<HomeScreen> {
         key: 'clipboard',
         icon: Icons.content_paste,
         label: '클립보드',
-        iconColor: Colors.blueGrey,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFF78909C),
         onTap: () => context.push('/clipboard-tag'),
       ),
       _TileItem(
         key: 'website',
         icon: Icons.language,
         label: '웹 사이트',
-        iconColor: Colors.blue,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFF42A5F5),
         onTap: () => context.push('/website-tag'),
       ),
       _TileItem(
         key: 'contact',
         icon: Icons.contact_phone,
         label: '연락처',
-        iconColor: Colors.green,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFF66BB6A),
         onTap: () => context.push('/contact-tag'),
       ),
       _TileItem(
         key: 'wifi',
         icon: Icons.wifi,
         label: 'WiFi',
-        iconColor: Colors.teal,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFF26A69A),
         onTap: () => context.push('/wifi-tag'),
       ),
       _TileItem(
         key: 'location',
         icon: Icons.location_on,
         label: '위치',
-        iconColor: Colors.red,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFFEF5350),
         onTap: () => context.push('/location-tag'),
       ),
       _TileItem(
         key: 'event',
         icon: Icons.event,
         label: '이벤트/일정',
-        iconColor: Colors.orange,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFFFFA726),
         onTap: () => context.push('/event-tag'),
       ),
       _TileItem(
         key: 'email',
         icon: Icons.email,
         label: '이메일',
-        iconColor: Colors.deepPurple,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFF7E57C2),
         onTap: () => context.push('/email-tag'),
       ),
       _TileItem(
         key: 'sms',
         icon: Icons.sms,
         label: 'SMS',
-        iconColor: Colors.pink,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFFEC407A),
         onTap: () => context.push('/sms-tag'),
       ),
     ];
@@ -126,9 +135,9 @@ class _HomeScreenState extends State<HomeScreen> {
   AppBar _buildAppBar() {
     if (_editMode) {
       return AppBar(
-        leading: const Padding(
-          padding: EdgeInsets.only(left: 16),
-          child: Icon(Icons.nfc),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Image.asset('assets/img/logo.png', width: 32),
         ),
         title: const Text('편집 모드'),
         actions: [
@@ -140,17 +149,10 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     return AppBar(
-      leadingWidth: 72,
-      leading: const Padding(
-        padding: EdgeInsets.only(left: 12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.qr_code),
-            SizedBox(width: 4),
-            Icon(Icons.nfc),
-          ],
-        ),
+      leadingWidth: 56,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 12),
+        child: Image.asset('assets/img/logo.png'),
       ),
       title: const Text(
         'QR, NFC 생성기',
@@ -303,6 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: t.icon,
                   label: t.label,
                   iconColor: t.iconColor,
+                  bgColor: t.bgColor,
                   onTap: () => _restoreTile(t.key),
                 );
                 return _TileCard(
@@ -324,6 +327,7 @@ class _TileItem {
   final IconData icon;
   final String label;
   final Color iconColor;
+  final Color bgColor;
   final VoidCallback onTap;
 
   const _TileItem({
@@ -331,6 +335,7 @@ class _TileItem {
     required this.icon,
     required this.label,
     required this.iconColor,
+    required this.bgColor,
     required this.onTap,
   });
 }
@@ -351,7 +356,8 @@ class _TileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: 3,
+      color: item.bgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -365,7 +371,7 @@ class _TileCard extends StatelessWidget {
             Text(
               item.label,
               style: const TextStyle(
-                  fontSize: 21, fontWeight: FontWeight.w600),
+                  fontSize: 21, fontWeight: FontWeight.w600, color: Colors.white),
               textAlign: TextAlign.center,
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/splash/splash_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/app_picker/app_picker_screen.dart';
 import '../../features/ios_input/ios_input_screen.dart';
@@ -29,7 +30,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     redirect: _deepLinkRedirect,
     routes: [
-      GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+      GoRoute(path: '/', builder: (_, _) => const SplashScreen()),
+      GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
       GoRoute(path: '/app-picker', builder: (_, _) => const AppPickerScreen()),
       GoRoute(path: '/ios-input', builder: (_, _) => const IosInputScreen()),
       GoRoute(

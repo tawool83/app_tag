@@ -90,6 +90,16 @@ dev_dependencies:
   hive_generator: ^2.0.1
   build_runner: ^2.4.9
   mocktail: ^1.0.3
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/img/logo.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  adaptive_icon_background: "#00000000"
+  adaptive_icon_foreground: "assets/img/logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -104,6 +114,7 @@ flutter:
 
   assets:
     - assets/default_templates.json
+    - assets/img/
 
   fonts:
     - family: BitcountGridDouble
