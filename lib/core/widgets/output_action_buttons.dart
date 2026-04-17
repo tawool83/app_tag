@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/app_picker/app_picker_provider.dart';
+import '../../l10n/app_localizations.dart';
 
 class OutputActionButtons extends ConsumerWidget {
   final VoidCallback onQrPressed;
@@ -28,16 +29,17 @@ class OutputActionButtons extends ConsumerWidget {
       orElse: () => false,
     );
 
+    final l10n = AppLocalizations.of(context)!;
     final nfcLabel = nfcAvailableAsync.maybeWhen(
       data: (available) {
-        if (!available) return 'NFC 미지원 기기';
+        if (!available) return l10n.msgNfcUnsupportedDevice;
         return nfcWriteSupportedAsync.maybeWhen(
           data: (supported) =>
-              supported ? 'NFC 태그 쓰기' : 'NFC 미지원 기기',
-          orElse: () => 'NFC 태그 쓰기',
+              supported ? l10n.actionNfcWrite : l10n.msgNfcUnsupportedDevice,
+          orElse: () => l10n.actionNfcWrite,
         );
       },
-      orElse: () => 'NFC 태그 쓰기',
+      orElse: () => l10n.actionNfcWrite,
     );
 
     final buttonShape = RoundedRectangleBorder(
@@ -54,12 +56,12 @@ class OutputActionButtons extends ConsumerWidget {
               padding: buttonPadding,
               shape: buttonShape,
             ),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.qr_code, size: 36),
-                SizedBox(height: 8),
-                Text('QR 코드', style: TextStyle(fontSize: 14)),
+                const Icon(Icons.qr_code, size: 36),
+                const SizedBox(height: 8),
+                Text(l10n.labelQrCode, style: const TextStyle(fontSize: 14)),
               ],
             ),
           ),
