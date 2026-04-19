@@ -45,3 +45,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# bkit runtime/audit/snapshots (auto-generated)
+.bkit/runtime/
+.bkit/audit/
+.bkit/snapshots/
+.bkit/state/memory.json
+.bkit/state/session-history.json
+
+# Claude Code local settings
+.claude/settings.local.json
