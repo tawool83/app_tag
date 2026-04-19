@@ -106,17 +106,27 @@ class QrResultScreen extends ConsumerStatefulWidget {
 class _QrResultScreenState extends ConsumerState<QrResultScreen>
     with SingleTickerProviderStateMixin {
   final _repaintKey = GlobalKey();
+  final _colorTabKey = GlobalKey<QrColorTabState>();
+  final _shapeTabKey = GlobalKey<QrShapeTabState>();
   late TabController _tabController;
   QrTemplateManifest _templateManifest = QrTemplateManifest.empty;
 
   // 나의 템플릿 갱신용 key (AllTemplatesTab 강제 재빌드)
   int _myTemplatesVersion = 0;
 
+  // 편집기 모드 (탭/하단 버튼 숨김용)
+  bool _colorEditorMode = false;
+  bool _shapeEditorMode = false;
+
+  /// 편집기 활성 여부
+  bool get _isEditorActive => _colorEditorMode || _shapeEditorMode;
+
   @override
   void initState() {
     super.initState();
     // 탭: 템플릿 / 모양 / 색상 / 로고 / 텍스트
     _tabController = TabController(length: 5, vsync: this);
+    _tabController.addListener(_onTabChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
@@ -223,10 +233,48 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     });
   }
 
+  /// 탭 전환 시 편집기 모드 자동 확인(닫기)
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) return;
+    // 모양 탭(index 1) 이외로 이동하면 모양 편집기를 확인 처리
+    if (_shapeEditorMode && _tabController.index != 1) {
+      _shapeTabKey.currentState?.confirmAndCloseEditor();
+      setState(() => _shapeEditorMode = false);
+    }
+    // 색상 탭(index 2) 이외로 이동하면 색상 편집기를 확인 처리
+    if (_colorEditorMode && _tabController.index != 2) {
+      _colorTabKey.currentState?.confirmAndCloseEditor();
+      setState(() => _colorEditorMode = false);
+    }
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
+  }
+
+  /// 편집기 저장(확인) — AppBar [저장] 버튼 시 호출
+  void _confirmActiveEditor() {
+    if (_shapeEditorMode) {
+      _shapeTabKey.currentState?.confirmAndCloseEditor();
+      setState(() => _shapeEditorMode = false);
+    } else if (_colorEditorMode) {
+      _colorTabKey.currentState?.confirmAndCloseEditor();
+      setState(() => _colorEditorMode = false);
+    }
+  }
+
+  /// 편집기 취소 — AppBar 뒤로가기 시 호출
+  Future<void> _cancelActiveEditor() async {
+    if (_shapeEditorMode) {
+      final closed = await _shapeTabKey.currentState?.cancelAndCloseEditor() ?? true;
+      if (closed && mounted) setState(() => _shapeEditorMode = false);
+    } else if (_colorEditorMode) {
+      _colorTabKey.currentState?.cancelAndCloseEditor();
+      setState(() => _colorEditorMode = false);
+    }
   }
 
   /// QR 위젯이 렌더링된 후 미리보기 이미지 캡처 (UI 보조).
@@ -419,8 +467,38 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     final score = QrReadabilityService.calculate(state, deepLink);
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.screenQrResultTitle)),
+    // 편집기 활성 시 AppBar 타이틀
+    final editorTitle = _shapeEditorMode
+        ? _shapeTabKey.currentState?.activeEditorLabel(l10n)
+        : _colorEditorMode
+            ? l10n.labelCustomGradient
+            : null;
+
+    return PopScope(
+      canPop: !_isEditorActive,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _isEditorActive) _cancelActiveEditor();
+      },
+      child: Scaffold(
+      appBar: AppBar(
+        title: Text(editorTitle ?? l10n.screenQrResultTitle),
+        leading: _isEditorActive
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: _cancelActiveEditor,
+              )
+            : null,
+        actions: [
+          if (_isEditorActive)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilledButton(
+                onPressed: _confirmActiveEditor,
+                child: Text(l10n.actionSave),
+              ),
+            ),
+        ],
+      ),
       body: Column(
         children: [
           // ① QR 미리보기
@@ -432,24 +510,27 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             ),
           ),
 
-          // ② 탭 바: 템플릿 / 모양 / 색상 / 로고 / 텍스트
-          TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.center,
-            tabs: [
-              Tab(text: l10n.tabTemplate),
-              Tab(text: l10n.tabShape),
-              Tab(text: l10n.tabColor),
-              Tab(text: l10n.tabLogo),
-              Tab(text: l10n.tabText),
-            ],
-          ),
+          // ② 탭 바: 편집기 모드에서는 숨김
+          if (!_isEditorActive)
+            TabBar(
+              controller: _tabController,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              tabs: [
+                Tab(text: l10n.tabTemplate),
+                Tab(text: l10n.tabShape),
+                Tab(text: l10n.tabColor),
+                Tab(text: l10n.tabLogo),
+                Tab(text: l10n.tabText),
+              ],
+            ),
 
           // ③ 탭 콘텐츠
           Expanded(
             child: TabBarView(
               controller: _tabController,
+              physics: _isEditorActive
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
               children: [
                 // 0: 템플릿 (나의 템플릿 + 전체 템플릿 통합)
                 AllTemplatesTab(
@@ -460,12 +541,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                   onTemplateClear: _onTemplateClear,
                   onChanged: _recapture,
                 ),
-                // 1: 모양 (도트 + 눈)
+                // 1: 모양 (도트 + 눈 + 외곽 + 애니메이션)
                 QrShapeTab(
-                  onDotStyleChanged: (s) {
-                    ref.read(qrResultProvider.notifier).setDotStyle(s);
-                    _recapture();
-                  },
+                  key: _shapeTabKey,
                   onEyeOuterChanged: (s) {
                     ref.read(qrResultProvider.notifier).setEyeOuter(s);
                     _recapture();
@@ -482,9 +560,13 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                     ref.read(qrResultProvider.notifier).clearRandomEye();
                     _recapture();
                   },
+                  onEditorModeChanged: (editing) {
+                    setState(() => _shapeEditorMode = editing);
+                  },
                 ),
                 // 3: 색상 (단색 + 그라디언트 서브탭)
                 QrColorTab(
+                  key: _colorTabKey,
                   onColorSelected: (c) {
                     ref.read(qrResultProvider.notifier).setQrColor(c);
                     _recapture();
@@ -492,6 +574,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                   onGradientChanged: (g) {
                     ref.read(qrResultProvider.notifier).setCustomGradient(g);
                     _recapture();
+                  },
+                  onEditorModeChanged: (editing) {
+                    setState(() => _colorEditorMode = editing);
                   },
                 ),
                 // 4: 로고
@@ -502,8 +587,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             ),
           ),
 
-          // ④ 액션 버튼
-          _ActionButtons(
+          // ④ 액션 버튼 (편집기 모드일 때 숨김 — 편집기 자체에 확인/취소 버튼)
+          if (!_colorEditorMode && !_shapeEditorMode) _ActionButtons(
             state: state,
             onSaveGallery: () async {
               await _showReadabilitySnackBarIfNeeded(score);
@@ -518,6 +603,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           ),
         ],
       ),
+    ),
     );
   }
 }

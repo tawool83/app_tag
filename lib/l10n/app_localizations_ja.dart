@@ -60,6 +60,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get actionDelete => '削除';
 
   @override
+  String get actionEdit => '編集';
+
+  @override
+  String actionDeleteCount(int count) {
+    return '$count件削除';
+  }
+
+  @override
   String get actionSave => '保存';
 
   @override
@@ -612,4 +620,256 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get platformIos => 'iOS';
+
+  @override
+  String get labelCustomGradient => 'カスタムグラデーション';
+
+  @override
+  String get labelGradientType => 'タイプ';
+
+  @override
+  String get optionLinear => '線形';
+
+  @override
+  String get optionRadial => '放射状';
+
+  @override
+  String get labelAngle => '角度';
+
+  @override
+  String get labelCenter => '中心';
+
+  @override
+  String get optionCenterCenter => '中央';
+
+  @override
+  String get optionCenterTopLeft => '左上';
+
+  @override
+  String get optionCenterTopRight => '右上';
+
+  @override
+  String get optionCenterBottomLeft => '左下';
+
+  @override
+  String get optionCenterBottomRight => '右下';
+
+  @override
+  String get labelColorStops => 'カラーストップ';
+
+  @override
+  String get actionAddStop => '追加';
+
+  @override
+  String get actionDeleteStop => '削除';
+
+  @override
+  String get loginTitle => 'ログイン';
+
+  @override
+  String get signupTitle => '新規登録';
+
+  @override
+  String get continueWithGoogle => 'Googleで続ける';
+
+  @override
+  String get continueWithApple => 'Appleで続ける';
+
+  @override
+  String get loginWithEmail => 'メールでログイン';
+
+  @override
+  String get useWithoutLogin => 'ログインせずに使用';
+
+  @override
+  String get orDivider => 'または';
+
+  @override
+  String get noAccountYet => 'アカウントをお持ちでないですか？';
+
+  @override
+  String get signUp => '登録';
+
+  @override
+  String get nickname => 'ニックネーム';
+
+  @override
+  String get email => 'メール';
+
+  @override
+  String get password => 'パスワード';
+
+  @override
+  String get passwordConfirm => 'パスワード確認';
+
+  @override
+  String get passwordMinLength => 'パスワードは8文字以上必要です';
+
+  @override
+  String get passwordMismatch => 'パスワードが一致しません';
+
+  @override
+  String get invalidEmail => '有効なメールアドレスを入力してください';
+
+  @override
+  String get nicknameRequired => 'ニックネームを入力してください';
+
+  @override
+  String get profileTitle => 'マイプロフィール';
+
+  @override
+  String get changePhoto => '写真を変更';
+
+  @override
+  String get loginMethod => 'ログイン方法';
+
+  @override
+  String get joinDate => '登録日';
+
+  @override
+  String get syncStatus => '同期状態';
+
+  @override
+  String get synced => '同期済み';
+
+  @override
+  String get syncing => '同期中...';
+
+  @override
+  String get syncError => '同期失敗';
+
+  @override
+  String get lastSynced => '最終同期';
+
+  @override
+  String get justNow => 'たった今';
+
+  @override
+  String get manualSync => '手動同期';
+
+  @override
+  String get logout => 'ログアウト';
+
+  @override
+  String get deleteAccount => 'アカウント削除';
+
+  @override
+  String get deleteAccountConfirm => '本当にアカウントを削除しますか？クラウドデータがすべて削除されます。';
+
+  @override
+  String get logoutConfirm => 'ログアウトしますか？ローカルデータは保持されます。';
+
+  @override
+  String get accountSection => 'アカウント';
+
+  @override
+  String get syncSection => '同期';
+
+  @override
+  String get loginPrompt => 'ログイン';
+
+  @override
+  String get cloudSync => 'クラウド同期';
+
+  @override
+  String get cancel => 'キャンセル';
+
+  @override
+  String get labelSavePreset => 'プリセット保存';
+
+  @override
+  String get hintPresetName => 'プリセット名';
+
+  @override
+  String get labelBoundaryShape => 'QR外枠';
+
+  @override
+  String get labelAnimation => 'アニメーション';
+
+  @override
+  String get labelCustomDot => 'カスタムドット';
+
+  @override
+  String get labelCustomEye => 'カスタムアイ';
+
+  @override
+  String get labelCustomBoundary => 'カスタム外枠';
+
+  @override
+  String get labelCustomAnimation => 'カスタムアニメーション';
+
+  @override
+  String get actionApply => '適用';
+
+  @override
+  String get sliderVertices => '頂点数';
+
+  @override
+  String get sliderInnerRadius => '内半径';
+
+  @override
+  String get sliderRoundness => '丸み';
+
+  @override
+  String get sliderRotation => '回転';
+
+  @override
+  String get sliderDotScale => 'サイズ';
+
+  @override
+  String get labelSymmetric => '対称';
+
+  @override
+  String get labelAsymmetric => '非対称';
+
+  @override
+  String get sliderSfM => '対称次数 (m)';
+
+  @override
+  String get sliderSfN1 => '曲率 1';
+
+  @override
+  String get sliderSfN2 => '曲率 2';
+
+  @override
+  String get sliderSfN3 => '曲率 3';
+
+  @override
+  String get sliderSfA => 'X スケール';
+
+  @override
+  String get sliderSfB => 'Y スケール';
+
+  @override
+  String get sliderOuterN => '外枠形状';
+
+  @override
+  String get sliderInnerN => '内部形状';
+
+  @override
+  String get sliderInnerScale => '内部サイズ';
+
+  @override
+  String get labelBoundaryType => '外枠タイプ';
+
+  @override
+  String get sliderSuperellipseN => '形状N値';
+
+  @override
+  String get sliderStarVertices => '星の頂点';
+
+  @override
+  String get sliderStarInnerRadius => '星の深さ';
+
+  @override
+  String get sliderPadding => 'パディング';
+
+  @override
+  String get sliderSpeed => '速度';
+
+  @override
+  String get sliderAmplitude => '振幅';
+
+  @override
+  String get sliderFrequency => '周波数';
 }

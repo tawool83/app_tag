@@ -60,6 +60,14 @@ class AppLocalizationsTh extends AppLocalizations {
   String get actionDelete => 'ลบ';
 
   @override
+  String get actionEdit => 'แก้ไข';
+
+  @override
+  String actionDeleteCount(int count) {
+    return 'ลบ $count รายการ';
+  }
+
+  @override
   String get actionSave => 'บันทึก';
 
   @override
@@ -619,4 +627,258 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get platformIos => 'iOS';
+
+  @override
+  String get labelCustomGradient => 'ไล่สีกำหนดเอง';
+
+  @override
+  String get labelGradientType => 'ประเภท';
+
+  @override
+  String get optionLinear => 'เชิงเส้น';
+
+  @override
+  String get optionRadial => 'รัศมี';
+
+  @override
+  String get labelAngle => 'มุม';
+
+  @override
+  String get labelCenter => 'กึ่งกลาง';
+
+  @override
+  String get optionCenterCenter => 'กลาง';
+
+  @override
+  String get optionCenterTopLeft => 'บนซ้าย';
+
+  @override
+  String get optionCenterTopRight => 'บนขวา';
+
+  @override
+  String get optionCenterBottomLeft => 'ล่างซ้าย';
+
+  @override
+  String get optionCenterBottomRight => 'ล่างขวา';
+
+  @override
+  String get labelColorStops => 'จุดสี';
+
+  @override
+  String get actionAddStop => 'เพิ่ม';
+
+  @override
+  String get actionDeleteStop => 'ลบ';
+
+  @override
+  String get loginTitle => 'เข้าสู่ระบบ';
+
+  @override
+  String get signupTitle => 'สมัครสมาชิก';
+
+  @override
+  String get continueWithGoogle => 'ดำเนินการด้วย Google';
+
+  @override
+  String get continueWithApple => 'ดำเนินการด้วย Apple';
+
+  @override
+  String get loginWithEmail => 'เข้าสู่ระบบด้วยอีเมล';
+
+  @override
+  String get useWithoutLogin => 'ใช้งานโดยไม่เข้าสู่ระบบ';
+
+  @override
+  String get orDivider => 'หรือ';
+
+  @override
+  String get noAccountYet => 'ยังไม่มีบัญชี?';
+
+  @override
+  String get signUp => 'สมัครสมาชิก';
+
+  @override
+  String get nickname => 'ชื่อเล่น';
+
+  @override
+  String get email => 'อีเมล';
+
+  @override
+  String get password => 'รหัสผ่าน';
+
+  @override
+  String get passwordConfirm => 'ยืนยันรหัสผ่าน';
+
+  @override
+  String get passwordMinLength => 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+
+  @override
+  String get passwordMismatch => 'รหัสผ่านไม่ตรงกัน';
+
+  @override
+  String get invalidEmail => 'กรุณาใส่อีเมลที่ถูกต้อง';
+
+  @override
+  String get nicknameRequired => 'กรุณาใส่ชื่อเล่น';
+
+  @override
+  String get profileTitle => 'โปรไฟล์ของฉัน';
+
+  @override
+  String get changePhoto => 'เปลี่ยนรูปภาพ';
+
+  @override
+  String get loginMethod => 'วิธีเข้าสู่ระบบ';
+
+  @override
+  String get joinDate => 'วันที่สมัคร';
+
+  @override
+  String get syncStatus => 'สถานะการซิงค์';
+
+  @override
+  String get synced => 'ซิงค์แล้ว';
+
+  @override
+  String get syncing => 'กำลังซิงค์...';
+
+  @override
+  String get syncError => 'ซิงค์ล้มเหลว';
+
+  @override
+  String get lastSynced => 'ซิงค์ล่าสุด';
+
+  @override
+  String get justNow => 'เมื่อสักครู่';
+
+  @override
+  String get manualSync => 'ซิงค์ตอนนี้';
+
+  @override
+  String get logout => 'ออกจากระบบ';
+
+  @override
+  String get deleteAccount => 'ลบบัญชี';
+
+  @override
+  String get deleteAccountConfirm =>
+      'คุณแน่ใจหรือไม่ที่จะลบบัญชี? ข้อมูลบนคลาวด์ทั้งหมดจะถูกลบ';
+
+  @override
+  String get logoutConfirm =>
+      'คุณแน่ใจหรือไม่ที่จะออกจากระบบ? ข้อมูลในเครื่องจะยังคงอยู่';
+
+  @override
+  String get accountSection => 'บัญชี';
+
+  @override
+  String get syncSection => 'การซิงค์';
+
+  @override
+  String get loginPrompt => 'เข้าสู่ระบบ';
+
+  @override
+  String get cloudSync => 'ซิงค์คลาวด์';
+
+  @override
+  String get cancel => 'ยกเลิก';
+
+  @override
+  String get labelSavePreset => 'บันทึกพรีเซ็ต';
+
+  @override
+  String get hintPresetName => 'ชื่อพรีเซ็ต';
+
+  @override
+  String get labelBoundaryShape => 'รูปทรงกรอบ QR';
+
+  @override
+  String get labelAnimation => 'แอนิเมชัน';
+
+  @override
+  String get labelCustomDot => 'จุดกำหนดเอง';
+
+  @override
+  String get labelCustomEye => 'ตากำหนดเอง';
+
+  @override
+  String get labelCustomBoundary => 'กรอบกำหนดเอง';
+
+  @override
+  String get labelCustomAnimation => 'แอนิเมชันกำหนดเอง';
+
+  @override
+  String get actionApply => 'นำไปใช้';
+
+  @override
+  String get sliderVertices => 'จุดยอด';
+
+  @override
+  String get sliderInnerRadius => 'รัศมีใน';
+
+  @override
+  String get sliderRoundness => 'ความมน';
+
+  @override
+  String get sliderRotation => 'การหมุน';
+
+  @override
+  String get sliderDotScale => 'ขนาด';
+
+  @override
+  String get labelSymmetric => 'สมมาตร';
+
+  @override
+  String get labelAsymmetric => 'ไม่สมมาตร';
+
+  @override
+  String get sliderSfM => 'ความสมมาตร (m)';
+
+  @override
+  String get sliderSfN1 => 'ความโค้ง 1';
+
+  @override
+  String get sliderSfN2 => 'ความโค้ง 2';
+
+  @override
+  String get sliderSfN3 => 'ความโค้ง 3';
+
+  @override
+  String get sliderSfA => 'สเกล X';
+
+  @override
+  String get sliderSfB => 'สเกล Y';
+
+  @override
+  String get sliderOuterN => 'รูปทรงนอก';
+
+  @override
+  String get sliderInnerN => 'รูปทรงใน';
+
+  @override
+  String get sliderInnerScale => 'ขนาดด้านใน';
+
+  @override
+  String get labelBoundaryType => 'ประเภทกรอบ';
+
+  @override
+  String get sliderSuperellipseN => 'รูปทรง N';
+
+  @override
+  String get sliderStarVertices => 'แฉกดาว';
+
+  @override
+  String get sliderStarInnerRadius => 'ความลึกดาว';
+
+  @override
+  String get sliderPadding => 'ระยะขอบ';
+
+  @override
+  String get sliderSpeed => 'ความเร็ว';
+
+  @override
+  String get sliderAmplitude => 'แอมพลิจูด';
+
+  @override
+  String get sliderFrequency => 'ความถี่';
 }

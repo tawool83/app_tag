@@ -60,6 +60,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get actionDelete => '删除';
 
   @override
+  String get actionEdit => '编辑';
+
+  @override
+  String actionDeleteCount(int count) {
+    return '删除$count个';
+  }
+
+  @override
   String get actionSave => '保存';
 
   @override
@@ -612,4 +620,256 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get platformIos => 'iOS';
+
+  @override
+  String get labelCustomGradient => '自定义渐变';
+
+  @override
+  String get labelGradientType => '类型';
+
+  @override
+  String get optionLinear => '线性';
+
+  @override
+  String get optionRadial => '径向';
+
+  @override
+  String get labelAngle => '角度';
+
+  @override
+  String get labelCenter => '中心';
+
+  @override
+  String get optionCenterCenter => '居中';
+
+  @override
+  String get optionCenterTopLeft => '左上';
+
+  @override
+  String get optionCenterTopRight => '右上';
+
+  @override
+  String get optionCenterBottomLeft => '左下';
+
+  @override
+  String get optionCenterBottomRight => '右下';
+
+  @override
+  String get labelColorStops => '色标';
+
+  @override
+  String get actionAddStop => '添加';
+
+  @override
+  String get actionDeleteStop => '删除';
+
+  @override
+  String get loginTitle => '登录';
+
+  @override
+  String get signupTitle => '注册';
+
+  @override
+  String get continueWithGoogle => '使用Google继续';
+
+  @override
+  String get continueWithApple => '使用Apple继续';
+
+  @override
+  String get loginWithEmail => '使用邮箱登录';
+
+  @override
+  String get useWithoutLogin => '不登录直接使用';
+
+  @override
+  String get orDivider => '或';
+
+  @override
+  String get noAccountYet => '还没有账号？';
+
+  @override
+  String get signUp => '注册';
+
+  @override
+  String get nickname => '昵称';
+
+  @override
+  String get email => '邮箱';
+
+  @override
+  String get password => '密码';
+
+  @override
+  String get passwordConfirm => '确认密码';
+
+  @override
+  String get passwordMinLength => '密码至少需要8个字符';
+
+  @override
+  String get passwordMismatch => '密码不匹配';
+
+  @override
+  String get invalidEmail => '请输入有效的邮箱地址';
+
+  @override
+  String get nicknameRequired => '请输入昵称';
+
+  @override
+  String get profileTitle => '我的资料';
+
+  @override
+  String get changePhoto => '更换头像';
+
+  @override
+  String get loginMethod => '登录方式';
+
+  @override
+  String get joinDate => '注册日期';
+
+  @override
+  String get syncStatus => '同步状态';
+
+  @override
+  String get synced => '已同步';
+
+  @override
+  String get syncing => '同步中...';
+
+  @override
+  String get syncError => '同步失败';
+
+  @override
+  String get lastSynced => '上次同步';
+
+  @override
+  String get justNow => '刚刚';
+
+  @override
+  String get manualSync => '手动同步';
+
+  @override
+  String get logout => '退出登录';
+
+  @override
+  String get deleteAccount => '删除账号';
+
+  @override
+  String get deleteAccountConfirm => '确定要删除账号吗？所有云端数据将被永久删除。';
+
+  @override
+  String get logoutConfirm => '确定要退出登录吗？本地数据将会保留。';
+
+  @override
+  String get accountSection => '账号';
+
+  @override
+  String get syncSection => '同步';
+
+  @override
+  String get loginPrompt => '登录';
+
+  @override
+  String get cloudSync => '云同步';
+
+  @override
+  String get cancel => '取消';
+
+  @override
+  String get labelSavePreset => '保存预设';
+
+  @override
+  String get hintPresetName => '预设名称';
+
+  @override
+  String get labelBoundaryShape => 'QR外框形状';
+
+  @override
+  String get labelAnimation => '动画';
+
+  @override
+  String get labelCustomDot => '自定义点阵';
+
+  @override
+  String get labelCustomEye => '自定义眼框';
+
+  @override
+  String get labelCustomBoundary => '自定义外框';
+
+  @override
+  String get labelCustomAnimation => '自定义动画';
+
+  @override
+  String get actionApply => '应用';
+
+  @override
+  String get sliderVertices => '顶点数';
+
+  @override
+  String get sliderInnerRadius => '内半径';
+
+  @override
+  String get sliderRoundness => '圆角';
+
+  @override
+  String get sliderRotation => '旋转';
+
+  @override
+  String get sliderDotScale => '大小';
+
+  @override
+  String get labelSymmetric => '对称';
+
+  @override
+  String get labelAsymmetric => '非对称';
+
+  @override
+  String get sliderSfM => '对称阶数 (m)';
+
+  @override
+  String get sliderSfN1 => '曲率 1';
+
+  @override
+  String get sliderSfN2 => '曲率 2';
+
+  @override
+  String get sliderSfN3 => '曲率 3';
+
+  @override
+  String get sliderSfA => 'X 缩放';
+
+  @override
+  String get sliderSfB => 'Y 缩放';
+
+  @override
+  String get sliderOuterN => '外框形状';
+
+  @override
+  String get sliderInnerN => '内部形状';
+
+  @override
+  String get sliderInnerScale => '内部大小';
+
+  @override
+  String get labelBoundaryType => '外框类型';
+
+  @override
+  String get sliderSuperellipseN => '形状N值';
+
+  @override
+  String get sliderStarVertices => '星形顶点';
+
+  @override
+  String get sliderStarInnerRadius => '星形深度';
+
+  @override
+  String get sliderPadding => '内边距';
+
+  @override
+  String get sliderSpeed => '速度';
+
+  @override
+  String get sliderAmplitude => '振幅';
+
+  @override
+  String get sliderFrequency => '频率';
 }

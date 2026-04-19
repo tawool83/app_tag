@@ -19,12 +19,14 @@ class QrGradient {
   final List<Color> colors;
   final List<double>? stops;
   final double angleDegrees; // linear 전용
+  final String? center; // radial 전용: 'center' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'
 
   const QrGradient({
     required this.type,
     required this.colors,
     this.stops,
     this.angleDegrees = 45,
+    this.center,
   });
 
   factory QrGradient.fromJson(Map<String, dynamic> json) => QrGradient(
@@ -36,6 +38,7 @@ class QrGradient {
             ?.map((e) => (e as num).toDouble())
             .toList(),
         angleDegrees: (json['angleDegrees'] as num?)?.toDouble() ?? 45,
+        center: json['center'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -43,6 +46,7 @@ class QrGradient {
         'colors': colors.map(_colorToHex).toList(),
         if (stops != null) 'stops': stops,
         'angleDegrees': angleDegrees,
+        if (center != null) 'center': center,
       };
 
   @override
@@ -50,10 +54,11 @@ class QrGradient {
       identical(this, other) ||
       other is QrGradient &&
           type == other.type &&
-          angleDegrees == other.angleDegrees;
+          angleDegrees == other.angleDegrees &&
+          center == other.center;
 
   @override
-  int get hashCode => Object.hash(type, angleDegrees);
+  int get hashCode => Object.hash(type, angleDegrees, center);
 }
 
 // ── QrForeground ──────────────────────────────────────────────────────────────

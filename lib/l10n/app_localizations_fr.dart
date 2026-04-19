@@ -61,6 +61,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get actionDelete => 'Supprimer';
 
   @override
+  String get actionEdit => 'Modifier';
+
+  @override
+  String actionDeleteCount(int count) {
+    return 'Supprimer $count';
+  }
+
+  @override
   String get actionSave => 'Enregistrer';
 
   @override
@@ -628,4 +636,259 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get platformIos => 'iOS';
+
+  @override
+  String get labelCustomGradient => 'Dégradé personnalisé';
+
+  @override
+  String get labelGradientType => 'Type';
+
+  @override
+  String get optionLinear => 'Linéaire';
+
+  @override
+  String get optionRadial => 'Radial';
+
+  @override
+  String get labelAngle => 'Angle';
+
+  @override
+  String get labelCenter => 'Centre';
+
+  @override
+  String get optionCenterCenter => 'Centre';
+
+  @override
+  String get optionCenterTopLeft => 'Haut gauche';
+
+  @override
+  String get optionCenterTopRight => 'Haut droite';
+
+  @override
+  String get optionCenterBottomLeft => 'Bas gauche';
+
+  @override
+  String get optionCenterBottomRight => 'Bas droite';
+
+  @override
+  String get labelColorStops => 'Points de couleur';
+
+  @override
+  String get actionAddStop => 'Ajouter';
+
+  @override
+  String get actionDeleteStop => 'Supprimer';
+
+  @override
+  String get loginTitle => 'Connexion';
+
+  @override
+  String get signupTitle => 'Inscription';
+
+  @override
+  String get continueWithGoogle => 'Continuer avec Google';
+
+  @override
+  String get continueWithApple => 'Continuer avec Apple';
+
+  @override
+  String get loginWithEmail => 'Se connecter par email';
+
+  @override
+  String get useWithoutLogin => 'Utiliser sans connexion';
+
+  @override
+  String get orDivider => 'ou';
+
+  @override
+  String get noAccountYet => 'Pas encore de compte ?';
+
+  @override
+  String get signUp => 'S\'inscrire';
+
+  @override
+  String get nickname => 'Pseudo';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Mot de passe';
+
+  @override
+  String get passwordConfirm => 'Confirmer le mot de passe';
+
+  @override
+  String get passwordMinLength =>
+      'Le mot de passe doit contenir au moins 8 caractères';
+
+  @override
+  String get passwordMismatch => 'Les mots de passe ne correspondent pas';
+
+  @override
+  String get invalidEmail => 'Veuillez entrer un email valide';
+
+  @override
+  String get nicknameRequired => 'Veuillez entrer un pseudo';
+
+  @override
+  String get profileTitle => 'Mon Profil';
+
+  @override
+  String get changePhoto => 'Changer la photo';
+
+  @override
+  String get loginMethod => 'Méthode de connexion';
+
+  @override
+  String get joinDate => 'Date d\'inscription';
+
+  @override
+  String get syncStatus => 'État de synchronisation';
+
+  @override
+  String get synced => 'Synchronisé';
+
+  @override
+  String get syncing => 'Synchronisation...';
+
+  @override
+  String get syncError => 'Échec de synchronisation';
+
+  @override
+  String get lastSynced => 'Dernière synchronisation';
+
+  @override
+  String get justNow => 'À l\'instant';
+
+  @override
+  String get manualSync => 'Synchroniser maintenant';
+
+  @override
+  String get logout => 'Déconnexion';
+
+  @override
+  String get deleteAccount => 'Supprimer le compte';
+
+  @override
+  String get deleteAccountConfirm =>
+      'Voulez-vous vraiment supprimer votre compte ? Toutes les données cloud seront supprimées.';
+
+  @override
+  String get logoutConfirm =>
+      'Voulez-vous vous déconnecter ? Les données locales seront conservées.';
+
+  @override
+  String get accountSection => 'Compte';
+
+  @override
+  String get syncSection => 'Synchronisation';
+
+  @override
+  String get loginPrompt => 'Se connecter';
+
+  @override
+  String get cloudSync => 'Synchronisation cloud';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get labelSavePreset => 'Enregistrer le preset';
+
+  @override
+  String get hintPresetName => 'Nom du preset';
+
+  @override
+  String get labelBoundaryShape => 'Forme du contour QR';
+
+  @override
+  String get labelAnimation => 'Animation';
+
+  @override
+  String get labelCustomDot => 'Point personnalisé';
+
+  @override
+  String get labelCustomEye => 'Œil personnalisé';
+
+  @override
+  String get labelCustomBoundary => 'Contour personnalisé';
+
+  @override
+  String get labelCustomAnimation => 'Animation personnalisée';
+
+  @override
+  String get actionApply => 'Appliquer';
+
+  @override
+  String get sliderVertices => 'Sommets';
+
+  @override
+  String get sliderInnerRadius => 'Rayon interne';
+
+  @override
+  String get sliderRoundness => 'Arrondi';
+
+  @override
+  String get sliderRotation => 'Rotation';
+
+  @override
+  String get sliderDotScale => 'Taille';
+
+  @override
+  String get labelSymmetric => 'Symétrique';
+
+  @override
+  String get labelAsymmetric => 'Asymétrique';
+
+  @override
+  String get sliderSfM => 'Symétrie (m)';
+
+  @override
+  String get sliderSfN1 => 'Courbure 1';
+
+  @override
+  String get sliderSfN2 => 'Courbure 2';
+
+  @override
+  String get sliderSfN3 => 'Courbure 3';
+
+  @override
+  String get sliderSfA => 'Échelle X';
+
+  @override
+  String get sliderSfB => 'Échelle Y';
+
+  @override
+  String get sliderOuterN => 'Forme extérieure';
+
+  @override
+  String get sliderInnerN => 'Forme intérieure';
+
+  @override
+  String get sliderInnerScale => 'Taille interne';
+
+  @override
+  String get labelBoundaryType => 'Type de contour';
+
+  @override
+  String get sliderSuperellipseN => 'Forme N';
+
+  @override
+  String get sliderStarVertices => 'Pointes d\'étoile';
+
+  @override
+  String get sliderStarInnerRadius => 'Profondeur';
+
+  @override
+  String get sliderPadding => 'Marge';
+
+  @override
+  String get sliderSpeed => 'Vitesse';
+
+  @override
+  String get sliderAmplitude => 'Amplitude';
+
+  @override
+  String get sliderFrequency => 'Fréquence';
 }

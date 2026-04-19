@@ -5,7 +5,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/error/result.dart';
+import 'domain/entities/qr_animation_params.dart';
+import 'domain/entities/qr_boundary_params.dart';
 import 'domain/entities/qr_dot_style.dart';
+import 'domain/entities/qr_shape_params.dart';
 import 'domain/entities/qr_template.dart';
 import 'domain/entities/sticker_config.dart';
 import 'data/services/qr_service.dart';
@@ -16,6 +19,14 @@ import 'presentation/providers/qr_result_providers.dart';
 import 'utils/customization_mapper.dart';
 
 final qrServiceProvider = Provider<QrService>((ref) => QrService());
+
+/// 미리보기 모드: 슬라이더 드래그 중 전용 모양 미리보기 / 평소 전체 QR.
+enum ShapePreviewMode { fullQr, dedicatedDot, dedicatedEye, dedicatedBoundary, dedicatedAnim }
+
+/// 현재 미리보기 모드. 슬라이더 onChanged 시 dedicated*, onChangeEnd 시 fullQr.
+final shapePreviewModeProvider = StateProvider<ShapePreviewMode>(
+  (_) => ShapePreviewMode.fullQr,
+);
 
 enum QrActionStatus { idle, loading, success, error }
 
@@ -88,6 +99,13 @@ class QrResultState {
   final Color quietZoneColor;              // QR 콰이어트 존 배경색
   final QrDotStyle dotStyle;              // QR 도트 모양
 
+  // 커스텀 모양 파라미터 (qr-custom-shape)
+  final DotShapeParams? customDotParams;     // null = 기존 QrDotStyle enum 사용
+  final EyeShapeParams? customEyeParams;     // null = 기존 QrEyeOuter/Inner enum 사용
+  final QrBoundaryParams boundaryParams;     // 기본값 = square (기존 동작)
+  final QrAnimationParams animationParams;   // 기본값 = none
+  final bool shapeEditorMode;                // true 시 하단 액션 버튼 숨김
+
   const QrResultState({
     this.capturedImage,
     this.saveStatus = QrActionStatus.idle,
@@ -112,6 +130,11 @@ class QrResultState {
     this.sticker = const StickerConfig(),
     this.quietZoneColor = Colors.white,
     this.dotStyle = QrDotStyle.square,
+    this.customDotParams,
+    this.customEyeParams,
+    this.boundaryParams = const QrBoundaryParams(),
+    this.animationParams = const QrAnimationParams(),
+    this.shapeEditorMode = false,
   });
 
   QrResultState copyWith({
@@ -138,6 +161,11 @@ class QrResultState {
     StickerConfig? sticker,
     Color? quietZoneColor,
     QrDotStyle? dotStyle,
+    Object? customDotParams = _sentinel,
+    Object? customEyeParams = _sentinel,
+    QrBoundaryParams? boundaryParams,
+    QrAnimationParams? animationParams,
+    bool? shapeEditorMode,
   }) =>
       QrResultState(
         capturedImage: capturedImage ?? this.capturedImage,
@@ -179,6 +207,15 @@ class QrResultState {
         sticker: sticker ?? this.sticker,
         quietZoneColor: quietZoneColor ?? this.quietZoneColor,
         dotStyle: dotStyle ?? this.dotStyle,
+        customDotParams: customDotParams == _sentinel
+            ? this.customDotParams
+            : customDotParams as DotShapeParams?,
+        customEyeParams: customEyeParams == _sentinel
+            ? this.customEyeParams
+            : customEyeParams as EyeShapeParams?,
+        boundaryParams: boundaryParams ?? this.boundaryParams,
+        animationParams: animationParams ?? this.animationParams,
+        shapeEditorMode: shapeEditorMode ?? this.shapeEditorMode,
       );
 }
 
@@ -227,6 +264,10 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
         activeTemplateId: c.activeTemplateId,
         templateGradient: null,
         templateCenterIconBytes: null,
+        customDotParams: CustomizationMapper.dotParamsFromJson(c.customDotParams),
+        customEyeParams: CustomizationMapper.eyeParamsFromJson(c.customEyeParams),
+        boundaryParams: CustomizationMapper.boundaryParamsFromJson(c.boundaryParams),
+        animationParams: CustomizationMapper.animationParamsFromJson(c.animationParams),
       );
     } finally {
       _suppressPush = false;
@@ -378,8 +419,34 @@ class QrResultNotifier extends StateNotifier<QrResultState> {
   }
 
   void setDotStyle(QrDotStyle style) {
-    state = state.copyWith(dotStyle: style);
+    state = state.copyWith(dotStyle: style, customDotParams: null);
     _schedulePush();
+  }
+
+  // ── 커스텀 모양 파라미터 (qr-custom-shape) ──
+
+  void setCustomDotParams(DotShapeParams? params) {
+    state = state.copyWith(customDotParams: params);
+    _schedulePush();
+  }
+
+  void setCustomEyeParams(EyeShapeParams? params) {
+    state = state.copyWith(customEyeParams: params);
+    _schedulePush();
+  }
+
+  void setBoundaryParams(QrBoundaryParams params) {
+    state = state.copyWith(boundaryParams: params);
+    _schedulePush();
+  }
+
+  void setAnimationParams(QrAnimationParams params) {
+    state = state.copyWith(animationParams: params);
+    _schedulePush();
+  }
+
+  void setShapeEditorMode(bool active) {
+    state = state.copyWith(shapeEditorMode: active);
   }
 
   /// 나의 템플릿 일괄 적용 (모든 레이어 설정 복원)

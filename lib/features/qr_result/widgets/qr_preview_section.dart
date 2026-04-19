@@ -6,12 +6,23 @@ import '../domain/entities/qr_dot_style.dart';
 import '../domain/entities/qr_template.dart';
 import '../domain/entities/sticker_config.dart' show LogoPosition;
 import '../data/services/qr_readability_service.dart';
-import '../qr_result_provider.dart' show QrResultState, qrResultProvider, QrEyeOuter, QrEyeInner;
+import '../domain/entities/qr_boundary_params.dart';
+import '../domain/entities/qr_shape_params.dart';
+import '../qr_result_provider.dart' show QrResultState, qrResultProvider, QrEyeOuter, QrEyeInner, ShapePreviewMode, shapePreviewModeProvider;
+import '../utils/polar_polygon.dart';
+import '../utils/superellipse.dart';
+import '../utils/qr_boundary_clipper.dart';
 import '../../../l10n/app_localizations.dart';
 import 'qr_layer_stack.dart';
 
 /// 소형(160px) QR 미리보기 + 돋보기 확대 버튼.
 /// RepaintBoundary를 포함하여 캡처 기준이 됩니다.
+///
+/// ShapePreviewMode에 따라:
+///   fullQr / dedicatedAnim → 전체 QR (QrLayerStack)
+///   dedicatedDot → 단일 도트 확대 미리보기
+///   dedicatedEye → 단일 finder pattern 확대 미리보기
+///   dedicatedBoundary → 외곽 클리핑 윤곽선 미리보기
 class QrPreviewSection extends ConsumerWidget {
   final GlobalKey repaintKey;
   final String deepLink;
@@ -25,58 +36,54 @@ class QrPreviewSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(qrResultProvider);
+    final previewMode = ref.watch(shapePreviewModeProvider);
+
+    // 전용 미리보기 위젯 결정
+    final Widget previewContent = switch (previewMode) {
+      ShapePreviewMode.fullQr || ShapePreviewMode.dedicatedAnim =>
+        QrLayerStack(deepLink: deepLink, size: 160),
+      ShapePreviewMode.dedicatedDot => _DotShapePreview(
+          params: state.customDotParams ?? const DotShapeParams(),
+          color: state.qrColor,
+        ),
+      ShapePreviewMode.dedicatedEye => _EyeShapePreview(
+          params: state.customEyeParams ?? const EyeShapeParams(),
+          color: state.qrColor,
+        ),
+      ShapePreviewMode.dedicatedBoundary => _BoundaryShapePreview(
+          params: state.boundaryParams,
+          color: state.qrColor,
+        ),
+    };
+
+    // 고정 높이: QR 160 + padding 24 = 184 + deepLink 텍스트 ~18 = ~202
+    // 미리보기 모드 전환 시 레이아웃 점프 방지
+    const previewBoxHeight = 184.0;
 
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            // 캡처 영역
-            RepaintBoundary(
-              key: repaintKey,
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    QrLayerStack(deepLink: deepLink, size: 180),
-                  ],
-                ),
-              ),
-            ),
-            // 돋보기 버튼 (우하단)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () =>
-                      _showQrZoomDialog(context, state, deepLink),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surface
-                          .withValues(alpha: 0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+        GestureDetector(
+          onTap: previewMode == ShapePreviewMode.fullQr
+              ? () => _showQrZoomDialog(context, state, deepLink)
+              : null,
+          child: SizedBox(
+            height: previewBoxHeight,
+            child: ClipRect(
+              child: RepaintBoundary(
+                key: repaintKey,
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(12),
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: previewContent,
                     ),
-                    child: const Icon(Icons.zoom_in, size: 20),
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -88,7 +95,181 @@ class QrPreviewSection extends ConsumerWidget {
       ],
     );
   }
+}
 
+// ── 전용 미리보기 위젯들 ──────────────────────────────────────────────────────
+
+/// 단일 도트 확대 미리보기. 미리보기 영역의 80%.
+class _DotShapePreview extends StatelessWidget {
+  final DotShapeParams params;
+  final Color color;
+
+  const _DotShapePreview({required this.params, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 160,
+      height: 160,
+      child: CustomPaint(
+        painter: _DotPreviewPainter(params: params, color: color),
+      ),
+    );
+  }
+}
+
+class _DotPreviewPainter extends CustomPainter {
+  final DotShapeParams params;
+  final Color color;
+
+  const _DotPreviewPainter({required this.params, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width * 0.4; // 80%의 절반
+    final path = PolarPolygon.buildPath(center, radius, params);
+    canvas.drawPath(path, Paint()..color = color..style = PaintingStyle.fill..isAntiAlias = true);
+  }
+
+  @override
+  bool shouldRepaint(_DotPreviewPainter old) =>
+      params != old.params || color != old.color;
+}
+
+/// 단일 finder pattern 확대 미리보기. 미리보기 영역의 80%.
+class _EyeShapePreview extends StatelessWidget {
+  final EyeShapeParams params;
+  final Color color;
+
+  const _EyeShapePreview({required this.params, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 160,
+      height: 160,
+      child: CustomPaint(
+        painter: _EyePreviewPainter(params: params, color: color),
+      ),
+    );
+  }
+}
+
+class _EyePreviewPainter extends CustomPainter {
+  final EyeShapeParams params;
+  final Color color;
+
+  const _EyePreviewPainter({required this.params, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final eyeSize = size.width * 0.8;
+    final bounds = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height / 2),
+      width: eyeSize,
+      height: eyeSize,
+    );
+    final paint = Paint()..color = color..style = PaintingStyle.fill..isAntiAlias = true;
+    SuperellipsePath.paintEye(canvas, bounds, params, paint);
+  }
+
+  @override
+  bool shouldRepaint(_EyePreviewPainter old) =>
+      params != old.params || color != old.color;
+}
+
+/// 외곽 클리핑 윤곽선 미리보기. 미리보기 영역의 90%.
+class _BoundaryShapePreview extends StatelessWidget {
+  final QrBoundaryParams params;
+  final Color color;
+
+  const _BoundaryShapePreview({required this.params, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 160,
+      height: 160,
+      child: CustomPaint(
+        painter: _BoundaryPreviewPainter(params: params, color: color),
+      ),
+    );
+  }
+}
+
+class _BoundaryPreviewPainter extends CustomPainter {
+  final QrBoundaryParams params;
+  final Color color;
+
+  const _BoundaryPreviewPainter({required this.params, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final previewSize = size.width * 0.9;
+    final offset = (size.width - previewSize) / 2;
+    final previewRect = Size.square(previewSize);
+    final clipPath = QrBoundaryClipper.buildClipPath(previewRect, params);
+
+    canvas.save();
+    canvas.translate(offset, offset);
+
+    if (clipPath != null) {
+      // 외곽선 그리기
+      final strokePaint = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0
+        ..isAntiAlias = true;
+      canvas.drawPath(clipPath, strokePaint);
+
+      // 내부 반투명 채우기
+      final fillPaint = Paint()
+        ..color = color.withValues(alpha: 0.1)
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(clipPath, fillPaint);
+
+      // 내부에 작은 그리드 패턴으로 QR 느낌 표현
+      canvas.clipPath(clipPath);
+      _drawGridPattern(canvas, previewRect, color);
+    } else {
+      // square 기본형: 사각형 테두리
+      final rect = Offset.zero & previewRect;
+      canvas.drawRect(rect, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 2.0);
+      _drawGridPattern(canvas, previewRect, color);
+    }
+
+    canvas.restore();
+  }
+
+  void _drawGridPattern(Canvas canvas, Size size, Color color) {
+    final gridPaint = Paint()
+      ..color = color.withValues(alpha: 0.3)
+      ..style = PaintingStyle.fill;
+    const gridCount = 7;
+    final cellSize = size.width / gridCount;
+    final margin = cellSize * 0.15;
+    for (int r = 0; r < gridCount; r++) {
+      for (int c = 0; c < gridCount; c++) {
+        // 체커보드 패턴으로 QR 느낌
+        if ((r + c) % 2 == 0) {
+          canvas.drawRect(
+            Rect.fromLTWH(
+              c * cellSize + margin,
+              r * cellSize + margin,
+              cellSize - margin * 2,
+              cellSize - margin * 2,
+            ),
+            gridPaint,
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BoundaryPreviewPainter old) =>
+      params != old.params || color != old.color;
 }
 
 // ── 확대 다이얼로그 ────────────────────────────────────────────────────────────
@@ -97,25 +278,34 @@ void _showQrZoomDialog(
     BuildContext context, QrResultState state, String deepLink) {
   showDialog(
     context: context,
-    builder: (_) => Dialog(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: LayoutBuilder(
-          builder: (_, constraints) {
-            final double qrSize =
-                constraints.maxWidth.clamp(100.0, 300.0);
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                QrLayerStack(deepLink: deepLink, size: qrSize, isDialog: true),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(AppLocalizations.of(context)!.actionClose),
-                ),
-              ],
-            );
-          },
+    barrierColor: Colors.black87,
+    builder: (_) => GestureDetector(
+      onTap: () => Navigator.pop(context),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Center(
+            child: LayoutBuilder(
+              builder: (_, constraints) {
+                // 기기가 지원하는 최대 크기 (가로/세로 중 작은 값, 패딩 제외)
+                final maxSide =
+                    constraints.biggest.shortestSide - 48; // 양쪽 24px 여백
+                final double qrSize = maxSide.clamp(100.0, 600.0);
+                return GestureDetector(
+                  onTap: () {}, // 내부 탭 시 닫힘 방지
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: QrLayerStack(
+                        deepLink: deepLink, size: qrSize, isDialog: true),
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     ),
@@ -141,7 +331,13 @@ Widget buildPrettyQr(
       embedInQr ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
   final dotColor = hasGradient ? Colors.black : state.qrColor;
 
-  final dotShape = buildDotShape(state.dotStyle, dotColor);
+  // 맞춤 도트가 설정되면 PolarPolygon 기반 PrettyQrShape 사용 (QR 스펙 보존)
+  final PrettyQrShape dotShape;
+  if (state.customDotParams != null) {
+    dotShape = buildCustomDotShape(state.customDotParams!, dotColor);
+  } else {
+    dotShape = buildDotShape(state.dotStyle, dotColor);
+  }
 
   // finder pattern 결정: 랜덤 시드 우선, 아니면 outer+inner 조합
   // circleRound 외각 선택 시 hole도 원형으로 자동 파생
@@ -162,6 +358,7 @@ Widget buildPrettyQr(
     isDialog,
     deepLink,
     state.dotStyle,
+    state.customDotParams,
     state.eyeOuter,
     state.eyeInner,
     state.randomEyeSeed,
@@ -479,13 +676,33 @@ class _RandomFinderPattern extends PrettyQrShape {
   int get hashCode => Object.hash(color, seed);
 }
 
+Alignment _gradientCenter(String? center) {
+  switch (center) {
+    case 'topLeft':
+      return Alignment.topLeft;
+    case 'topRight':
+      return Alignment.topRight;
+    case 'bottomLeft':
+      return Alignment.bottomLeft;
+    case 'bottomRight':
+      return Alignment.bottomRight;
+    default:
+      return Alignment.center;
+  }
+}
+
 /// 템플릿 썸네일에서도 공용 사용 가능한 그라디언트 셰이더 빌더.
 Shader buildQrGradientShader(QrGradient gradient, Rect bounds) {
   final colors = gradient.colors;
   final stops = gradient.stops;
 
   if (gradient.type == 'radial') {
+    final align = _gradientCenter(gradient.center);
+    // 코너 기준이면 대각선까지 커버하도록 radius 확대 (기본 0.5 → 1.4)
+    final radius = (align == Alignment.center) ? 0.5 : 1.4;
     return RadialGradient(
+      center: align,
+      radius: radius,
       colors: colors,
       stops: stops,
     ).createShader(bounds);

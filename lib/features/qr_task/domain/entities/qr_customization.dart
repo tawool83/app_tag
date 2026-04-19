@@ -34,6 +34,12 @@ class QrCustomization {
   final StickerSpec sticker;
   final String? activeTemplateId;
 
+  // 커스텀 모양 (qr-custom-shape). null = 기존 enum 사용.
+  final Map<String, dynamic>? customDotParams;
+  final Map<String, dynamic>? customEyeParams;
+  final Map<String, dynamic>? boundaryParams;
+  final Map<String, dynamic>? animationParams;
+
   const QrCustomization({
     this.qrColorArgb = 0xFF000000,
     this.gradient,
@@ -49,6 +55,10 @@ class QrCustomization {
     this.printSizeCm = 5.0,
     this.sticker = const StickerSpec(),
     this.activeTemplateId,
+    this.customDotParams,
+    this.customEyeParams,
+    this.boundaryParams,
+    this.animationParams,
   });
 
   Map<String, dynamic> toJson() => {
@@ -66,6 +76,10 @@ class QrCustomization {
         'printSizeCm': printSizeCm,
         'sticker': sticker.toJson(),
         'activeTemplateId': activeTemplateId,
+        if (customDotParams != null) 'customDotParams': customDotParams,
+        if (customEyeParams != null) 'customEyeParams': customEyeParams,
+        if (boundaryParams != null) 'boundaryParams': boundaryParams,
+        if (animationParams != null) 'animationParams': animationParams,
       };
 
   factory QrCustomization.fromJson(Map<String, dynamic> json) => QrCustomization(
@@ -90,6 +104,10 @@ class QrCustomization {
             ? StickerSpec.fromJson(json['sticker'] as Map<String, dynamic>)
             : const StickerSpec(),
         activeTemplateId: json['activeTemplateId'] as String?,
+        customDotParams: json['customDotParams'] as Map<String, dynamic>?,
+        customEyeParams: json['customEyeParams'] as Map<String, dynamic>?,
+        boundaryParams: json['boundaryParams'] as Map<String, dynamic>?,
+        animationParams: json['animationParams'] as Map<String, dynamic>?,
       );
 
   QrCustomization copyWith({
@@ -112,6 +130,14 @@ class QrCustomization {
     StickerSpec? sticker,
     String? activeTemplateId,
     bool clearActiveTemplateId = false,
+    Map<String, dynamic>? customDotParams,
+    bool clearCustomDotParams = false,
+    Map<String, dynamic>? customEyeParams,
+    bool clearCustomEyeParams = false,
+    Map<String, dynamic>? boundaryParams,
+    bool clearBoundaryParams = false,
+    Map<String, dynamic>? animationParams,
+    bool clearAnimationParams = false,
   }) =>
       QrCustomization(
         qrColorArgb: qrColorArgb ?? this.qrColorArgb,
@@ -134,5 +160,17 @@ class QrCustomization {
         activeTemplateId: clearActiveTemplateId
             ? null
             : (activeTemplateId ?? this.activeTemplateId),
+        customDotParams: clearCustomDotParams
+            ? null
+            : (customDotParams ?? this.customDotParams),
+        customEyeParams: clearCustomEyeParams
+            ? null
+            : (customEyeParams ?? this.customEyeParams),
+        boundaryParams: clearBoundaryParams
+            ? null
+            : (boundaryParams ?? this.boundaryParams),
+        animationParams: clearAnimationParams
+            ? null
+            : (animationParams ?? this.animationParams),
       );
 }

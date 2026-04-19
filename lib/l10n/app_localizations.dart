@@ -216,6 +216,18 @@ abstract class AppLocalizations {
   /// **'삭제'**
   String get actionDelete;
 
+  /// No description provided for @actionEdit.
+  ///
+  /// In ko, this message translates to:
+  /// **'편집'**
+  String get actionEdit;
+
+  /// No description provided for @actionDeleteCount.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}개 삭제'**
+  String actionDeleteCount(int count);
+
   /// No description provided for @actionSave.
   ///
   /// In ko, this message translates to:
@@ -1289,6 +1301,510 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'iOS'**
   String get platformIos;
+
+  /// No description provided for @labelCustomGradient.
+  ///
+  /// In ko, this message translates to:
+  /// **'맞춤 그라디언트'**
+  String get labelCustomGradient;
+
+  /// No description provided for @labelGradientType.
+  ///
+  /// In ko, this message translates to:
+  /// **'유형'**
+  String get labelGradientType;
+
+  /// No description provided for @optionLinear.
+  ///
+  /// In ko, this message translates to:
+  /// **'선형'**
+  String get optionLinear;
+
+  /// No description provided for @optionRadial.
+  ///
+  /// In ko, this message translates to:
+  /// **'방사형'**
+  String get optionRadial;
+
+  /// No description provided for @labelAngle.
+  ///
+  /// In ko, this message translates to:
+  /// **'각도'**
+  String get labelAngle;
+
+  /// No description provided for @labelCenter.
+  ///
+  /// In ko, this message translates to:
+  /// **'가운데'**
+  String get labelCenter;
+
+  /// No description provided for @optionCenterCenter.
+  ///
+  /// In ko, this message translates to:
+  /// **'중앙'**
+  String get optionCenterCenter;
+
+  /// No description provided for @optionCenterTopLeft.
+  ///
+  /// In ko, this message translates to:
+  /// **'왼쪽 상단'**
+  String get optionCenterTopLeft;
+
+  /// No description provided for @optionCenterTopRight.
+  ///
+  /// In ko, this message translates to:
+  /// **'오른쪽 상단'**
+  String get optionCenterTopRight;
+
+  /// No description provided for @optionCenterBottomLeft.
+  ///
+  /// In ko, this message translates to:
+  /// **'왼쪽 하단'**
+  String get optionCenterBottomLeft;
+
+  /// No description provided for @optionCenterBottomRight.
+  ///
+  /// In ko, this message translates to:
+  /// **'오른쪽 하단'**
+  String get optionCenterBottomRight;
+
+  /// No description provided for @labelColorStops.
+  ///
+  /// In ko, this message translates to:
+  /// **'색 지점'**
+  String get labelColorStops;
+
+  /// No description provided for @actionAddStop.
+  ///
+  /// In ko, this message translates to:
+  /// **'추가'**
+  String get actionAddStop;
+
+  /// No description provided for @actionDeleteStop.
+  ///
+  /// In ko, this message translates to:
+  /// **'삭제'**
+  String get actionDeleteStop;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인'**
+  String get loginTitle;
+
+  /// No description provided for @signupTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'회원가입'**
+  String get signupTitle;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In ko, this message translates to:
+  /// **'Google로 계속하기'**
+  String get continueWithGoogle;
+
+  /// No description provided for @continueWithApple.
+  ///
+  /// In ko, this message translates to:
+  /// **'Apple로 계속하기'**
+  String get continueWithApple;
+
+  /// No description provided for @loginWithEmail.
+  ///
+  /// In ko, this message translates to:
+  /// **'이메일로 로그인'**
+  String get loginWithEmail;
+
+  /// No description provided for @useWithoutLogin.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인 없이 사용하기'**
+  String get useWithoutLogin;
+
+  /// No description provided for @orDivider.
+  ///
+  /// In ko, this message translates to:
+  /// **'또는'**
+  String get orDivider;
+
+  /// No description provided for @noAccountYet.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정이 없으신가요?'**
+  String get noAccountYet;
+
+  /// No description provided for @signUp.
+  ///
+  /// In ko, this message translates to:
+  /// **'가입'**
+  String get signUp;
+
+  /// No description provided for @nickname.
+  ///
+  /// In ko, this message translates to:
+  /// **'닉네임'**
+  String get nickname;
+
+  /// No description provided for @email.
+  ///
+  /// In ko, this message translates to:
+  /// **'이메일'**
+  String get email;
+
+  /// No description provided for @password.
+  ///
+  /// In ko, this message translates to:
+  /// **'비밀번호'**
+  String get password;
+
+  /// No description provided for @passwordConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'비밀번호 확인'**
+  String get passwordConfirm;
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In ko, this message translates to:
+  /// **'비밀번호는 8자 이상이어야 합니다'**
+  String get passwordMinLength;
+
+  /// No description provided for @passwordMismatch.
+  ///
+  /// In ko, this message translates to:
+  /// **'비밀번호가 일치하지 않습니다'**
+  String get passwordMismatch;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In ko, this message translates to:
+  /// **'올바른 이메일을 입력해주세요'**
+  String get invalidEmail;
+
+  /// No description provided for @nicknameRequired.
+  ///
+  /// In ko, this message translates to:
+  /// **'닉네임을 입력해주세요'**
+  String get nicknameRequired;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 프로필'**
+  String get profileTitle;
+
+  /// No description provided for @changePhoto.
+  ///
+  /// In ko, this message translates to:
+  /// **'사진 변경'**
+  String get changePhoto;
+
+  /// No description provided for @loginMethod.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인 방법'**
+  String get loginMethod;
+
+  /// No description provided for @joinDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'가입일'**
+  String get joinDate;
+
+  /// No description provided for @syncStatus.
+  ///
+  /// In ko, this message translates to:
+  /// **'동기화 상태'**
+  String get syncStatus;
+
+  /// No description provided for @synced.
+  ///
+  /// In ko, this message translates to:
+  /// **'동기화됨'**
+  String get synced;
+
+  /// No description provided for @syncing.
+  ///
+  /// In ko, this message translates to:
+  /// **'동기화 중...'**
+  String get syncing;
+
+  /// No description provided for @syncError.
+  ///
+  /// In ko, this message translates to:
+  /// **'동기화 실패'**
+  String get syncError;
+
+  /// No description provided for @lastSynced.
+  ///
+  /// In ko, this message translates to:
+  /// **'마지막 동기화'**
+  String get lastSynced;
+
+  /// No description provided for @justNow.
+  ///
+  /// In ko, this message translates to:
+  /// **'방금 전'**
+  String get justNow;
+
+  /// No description provided for @manualSync.
+  ///
+  /// In ko, this message translates to:
+  /// **'수동 동기화'**
+  String get manualSync;
+
+  /// No description provided for @logout.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그아웃'**
+  String get logout;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정 삭제'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'정말 계정을 삭제하시겠습니까? 클라우드 데이터가 모두 삭제됩니다.'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @logoutConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그아웃하시겠습니까? 로컬 데이터는 유지됩니다.'**
+  String get logoutConfirm;
+
+  /// No description provided for @accountSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정'**
+  String get accountSection;
+
+  /// No description provided for @syncSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'동기화'**
+  String get syncSection;
+
+  /// No description provided for @loginPrompt.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인하기'**
+  String get loginPrompt;
+
+  /// No description provided for @cloudSync.
+  ///
+  /// In ko, this message translates to:
+  /// **'클라우드 동기화'**
+  String get cloudSync;
+
+  /// No description provided for @cancel.
+  ///
+  /// In ko, this message translates to:
+  /// **'취소'**
+  String get cancel;
+
+  /// No description provided for @labelSavePreset.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리셋 저장'**
+  String get labelSavePreset;
+
+  /// No description provided for @hintPresetName.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리셋 이름'**
+  String get hintPresetName;
+
+  /// No description provided for @labelBoundaryShape.
+  ///
+  /// In ko, this message translates to:
+  /// **'QR 전체 외곽'**
+  String get labelBoundaryShape;
+
+  /// No description provided for @labelAnimation.
+  ///
+  /// In ko, this message translates to:
+  /// **'애니메이션'**
+  String get labelAnimation;
+
+  /// No description provided for @labelCustomDot.
+  ///
+  /// In ko, this message translates to:
+  /// **'맞춤 도트'**
+  String get labelCustomDot;
+
+  /// No description provided for @labelCustomEye.
+  ///
+  /// In ko, this message translates to:
+  /// **'맞춤 눈'**
+  String get labelCustomEye;
+
+  /// No description provided for @labelCustomBoundary.
+  ///
+  /// In ko, this message translates to:
+  /// **'맞춤 외곽'**
+  String get labelCustomBoundary;
+
+  /// No description provided for @labelCustomAnimation.
+  ///
+  /// In ko, this message translates to:
+  /// **'맞춤 애니메이션'**
+  String get labelCustomAnimation;
+
+  /// No description provided for @actionApply.
+  ///
+  /// In ko, this message translates to:
+  /// **'적용'**
+  String get actionApply;
+
+  /// No description provided for @sliderVertices.
+  ///
+  /// In ko, this message translates to:
+  /// **'꼭짓점'**
+  String get sliderVertices;
+
+  /// No description provided for @sliderInnerRadius.
+  ///
+  /// In ko, this message translates to:
+  /// **'내부 반경'**
+  String get sliderInnerRadius;
+
+  /// No description provided for @sliderRoundness.
+  ///
+  /// In ko, this message translates to:
+  /// **'둥글기'**
+  String get sliderRoundness;
+
+  /// No description provided for @sliderRotation.
+  ///
+  /// In ko, this message translates to:
+  /// **'회전'**
+  String get sliderRotation;
+
+  /// No description provided for @sliderDotScale.
+  ///
+  /// In ko, this message translates to:
+  /// **'크기'**
+  String get sliderDotScale;
+
+  /// No description provided for @labelSymmetric.
+  ///
+  /// In ko, this message translates to:
+  /// **'대칭'**
+  String get labelSymmetric;
+
+  /// No description provided for @labelAsymmetric.
+  ///
+  /// In ko, this message translates to:
+  /// **'비대칭'**
+  String get labelAsymmetric;
+
+  /// No description provided for @sliderSfM.
+  ///
+  /// In ko, this message translates to:
+  /// **'대칭 차수 (m)'**
+  String get sliderSfM;
+
+  /// No description provided for @sliderSfN1.
+  ///
+  /// In ko, this message translates to:
+  /// **'곡률 1'**
+  String get sliderSfN1;
+
+  /// No description provided for @sliderSfN2.
+  ///
+  /// In ko, this message translates to:
+  /// **'곡률 2'**
+  String get sliderSfN2;
+
+  /// No description provided for @sliderSfN3.
+  ///
+  /// In ko, this message translates to:
+  /// **'곡률 3'**
+  String get sliderSfN3;
+
+  /// No description provided for @sliderSfA.
+  ///
+  /// In ko, this message translates to:
+  /// **'X 비율'**
+  String get sliderSfA;
+
+  /// No description provided for @sliderSfB.
+  ///
+  /// In ko, this message translates to:
+  /// **'Y 비율'**
+  String get sliderSfB;
+
+  /// No description provided for @sliderOuterN.
+  ///
+  /// In ko, this message translates to:
+  /// **'외곽 형태'**
+  String get sliderOuterN;
+
+  /// No description provided for @sliderInnerN.
+  ///
+  /// In ko, this message translates to:
+  /// **'내부 형태'**
+  String get sliderInnerN;
+
+  /// No description provided for @sliderInnerScale.
+  ///
+  /// In ko, this message translates to:
+  /// **'내부 크기'**
+  String get sliderInnerScale;
+
+  /// No description provided for @labelBoundaryType.
+  ///
+  /// In ko, this message translates to:
+  /// **'외곽 종류'**
+  String get labelBoundaryType;
+
+  /// No description provided for @sliderSuperellipseN.
+  ///
+  /// In ko, this message translates to:
+  /// **'형태 N값'**
+  String get sliderSuperellipseN;
+
+  /// No description provided for @sliderStarVertices.
+  ///
+  /// In ko, this message translates to:
+  /// **'별 꼭짓점'**
+  String get sliderStarVertices;
+
+  /// No description provided for @sliderStarInnerRadius.
+  ///
+  /// In ko, this message translates to:
+  /// **'별 깊이'**
+  String get sliderStarInnerRadius;
+
+  /// No description provided for @sliderPadding.
+  ///
+  /// In ko, this message translates to:
+  /// **'패딩'**
+  String get sliderPadding;
+
+  /// No description provided for @sliderSpeed.
+  ///
+  /// In ko, this message translates to:
+  /// **'속도'**
+  String get sliderSpeed;
+
+  /// No description provided for @sliderAmplitude.
+  ///
+  /// In ko, this message translates to:
+  /// **'강도'**
+  String get sliderAmplitude;
+
+  /// No description provided for @sliderFrequency.
+  ///
+  /// In ko, this message translates to:
+  /// **'빈도'**
+  String get sliderFrequency;
 }
 
 class _AppLocalizationsDelegate

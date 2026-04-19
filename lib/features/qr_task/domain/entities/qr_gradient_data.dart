@@ -14,11 +14,15 @@ class QrGradientData {
   /// linear 전용. 0~360.
   final double angleDegrees;
 
+  /// radial 전용: 'center' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'
+  final String? center;
+
   const QrGradientData({
     required this.type,
     required this.colorsArgb,
     this.stops,
     this.angleDegrees = 45,
+    this.center,
   });
 
   Map<String, dynamic> toJson() => {
@@ -26,6 +30,7 @@ class QrGradientData {
         'colorsArgb': colorsArgb,
         if (stops != null) 'stops': stops,
         'angleDegrees': angleDegrees,
+        if (center != null) 'center': center,
       };
 
   factory QrGradientData.fromJson(Map<String, dynamic> json) => QrGradientData(
@@ -37,5 +42,6 @@ class QrGradientData {
             ?.map((e) => (e as num).toDouble())
             .toList(),
         angleDegrees: (json['angleDegrees'] as num?)?.toDouble() ?? 45,
+        center: json['center'] as String?,
       );
 }

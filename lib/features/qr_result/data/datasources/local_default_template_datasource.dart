@@ -207,6 +207,7 @@ class LocalDefaultTemplateDataSource implements DefaultTemplateDataSource {
               .toList(),
           'stops': g.stops,
           'angleDegrees': g.angleDegrees,
+          if (g.center != null) 'center': g.center,
         },
       };
     }

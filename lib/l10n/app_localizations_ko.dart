@@ -60,6 +60,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get actionDelete => '삭제';
 
   @override
+  String get actionEdit => '편집';
+
+  @override
+  String actionDeleteCount(int count) {
+    return '$count개 삭제';
+  }
+
+  @override
   String get actionSave => '저장';
 
   @override
@@ -612,4 +620,256 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get platformIos => 'iOS';
+
+  @override
+  String get labelCustomGradient => '맞춤 그라디언트';
+
+  @override
+  String get labelGradientType => '유형';
+
+  @override
+  String get optionLinear => '선형';
+
+  @override
+  String get optionRadial => '방사형';
+
+  @override
+  String get labelAngle => '각도';
+
+  @override
+  String get labelCenter => '가운데';
+
+  @override
+  String get optionCenterCenter => '중앙';
+
+  @override
+  String get optionCenterTopLeft => '왼쪽 상단';
+
+  @override
+  String get optionCenterTopRight => '오른쪽 상단';
+
+  @override
+  String get optionCenterBottomLeft => '왼쪽 하단';
+
+  @override
+  String get optionCenterBottomRight => '오른쪽 하단';
+
+  @override
+  String get labelColorStops => '색 지점';
+
+  @override
+  String get actionAddStop => '추가';
+
+  @override
+  String get actionDeleteStop => '삭제';
+
+  @override
+  String get loginTitle => '로그인';
+
+  @override
+  String get signupTitle => '회원가입';
+
+  @override
+  String get continueWithGoogle => 'Google로 계속하기';
+
+  @override
+  String get continueWithApple => 'Apple로 계속하기';
+
+  @override
+  String get loginWithEmail => '이메일로 로그인';
+
+  @override
+  String get useWithoutLogin => '로그인 없이 사용하기';
+
+  @override
+  String get orDivider => '또는';
+
+  @override
+  String get noAccountYet => '계정이 없으신가요?';
+
+  @override
+  String get signUp => '가입';
+
+  @override
+  String get nickname => '닉네임';
+
+  @override
+  String get email => '이메일';
+
+  @override
+  String get password => '비밀번호';
+
+  @override
+  String get passwordConfirm => '비밀번호 확인';
+
+  @override
+  String get passwordMinLength => '비밀번호는 8자 이상이어야 합니다';
+
+  @override
+  String get passwordMismatch => '비밀번호가 일치하지 않습니다';
+
+  @override
+  String get invalidEmail => '올바른 이메일을 입력해주세요';
+
+  @override
+  String get nicknameRequired => '닉네임을 입력해주세요';
+
+  @override
+  String get profileTitle => '내 프로필';
+
+  @override
+  String get changePhoto => '사진 변경';
+
+  @override
+  String get loginMethod => '로그인 방법';
+
+  @override
+  String get joinDate => '가입일';
+
+  @override
+  String get syncStatus => '동기화 상태';
+
+  @override
+  String get synced => '동기화됨';
+
+  @override
+  String get syncing => '동기화 중...';
+
+  @override
+  String get syncError => '동기화 실패';
+
+  @override
+  String get lastSynced => '마지막 동기화';
+
+  @override
+  String get justNow => '방금 전';
+
+  @override
+  String get manualSync => '수동 동기화';
+
+  @override
+  String get logout => '로그아웃';
+
+  @override
+  String get deleteAccount => '계정 삭제';
+
+  @override
+  String get deleteAccountConfirm => '정말 계정을 삭제하시겠습니까? 클라우드 데이터가 모두 삭제됩니다.';
+
+  @override
+  String get logoutConfirm => '로그아웃하시겠습니까? 로컬 데이터는 유지됩니다.';
+
+  @override
+  String get accountSection => '계정';
+
+  @override
+  String get syncSection => '동기화';
+
+  @override
+  String get loginPrompt => '로그인하기';
+
+  @override
+  String get cloudSync => '클라우드 동기화';
+
+  @override
+  String get cancel => '취소';
+
+  @override
+  String get labelSavePreset => '프리셋 저장';
+
+  @override
+  String get hintPresetName => '프리셋 이름';
+
+  @override
+  String get labelBoundaryShape => 'QR 전체 외곽';
+
+  @override
+  String get labelAnimation => '애니메이션';
+
+  @override
+  String get labelCustomDot => '맞춤 도트';
+
+  @override
+  String get labelCustomEye => '맞춤 눈';
+
+  @override
+  String get labelCustomBoundary => '맞춤 외곽';
+
+  @override
+  String get labelCustomAnimation => '맞춤 애니메이션';
+
+  @override
+  String get actionApply => '적용';
+
+  @override
+  String get sliderVertices => '꼭짓점';
+
+  @override
+  String get sliderInnerRadius => '내부 반경';
+
+  @override
+  String get sliderRoundness => '둥글기';
+
+  @override
+  String get sliderRotation => '회전';
+
+  @override
+  String get sliderDotScale => '크기';
+
+  @override
+  String get labelSymmetric => '대칭';
+
+  @override
+  String get labelAsymmetric => '비대칭';
+
+  @override
+  String get sliderSfM => '대칭 차수 (m)';
+
+  @override
+  String get sliderSfN1 => '곡률 1';
+
+  @override
+  String get sliderSfN2 => '곡률 2';
+
+  @override
+  String get sliderSfN3 => '곡률 3';
+
+  @override
+  String get sliderSfA => 'X 비율';
+
+  @override
+  String get sliderSfB => 'Y 비율';
+
+  @override
+  String get sliderOuterN => '외곽 형태';
+
+  @override
+  String get sliderInnerN => '내부 형태';
+
+  @override
+  String get sliderInnerScale => '내부 크기';
+
+  @override
+  String get labelBoundaryType => '외곽 종류';
+
+  @override
+  String get sliderSuperellipseN => '형태 N값';
+
+  @override
+  String get sliderStarVertices => '별 꼭짓점';
+
+  @override
+  String get sliderStarInnerRadius => '별 깊이';
+
+  @override
+  String get sliderPadding => '패딩';
+
+  @override
+  String get sliderSpeed => '속도';
+
+  @override
+  String get sliderAmplitude => '강도';
+
+  @override
+  String get sliderFrequency => '빈도';
 }

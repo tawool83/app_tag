@@ -3,7 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../domain/entities/qr_animation_params.dart';
+import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_dot_style.dart';
+import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/qr_template.dart';
 import '../domain/entities/sticker_config.dart';
 import '../../qr_task/domain/entities/qr_customization.dart';
@@ -40,6 +43,14 @@ class CustomizationMapper {
       printSizeCm: state.printSizeCm,
       sticker: _stickerToSpec(state.sticker),
       activeTemplateId: state.activeTemplateId,
+      customDotParams: state.customDotParams?.toJson(),
+      customEyeParams: state.customEyeParams?.toJson(),
+      boundaryParams: state.boundaryParams.isDefault
+          ? null
+          : state.boundaryParams.toJson(),
+      animationParams: state.animationParams.isAnimated
+          ? state.animationParams.toJson()
+          : null,
     );
   }
 
@@ -55,6 +66,7 @@ class CustomizationMapper {
       colors: d.colorsArgb.map(Color.new).toList(),
       stops: d.stops,
       angleDegrees: d.angleDegrees,
+      center: d.center,
     );
   }
 
@@ -89,6 +101,26 @@ class CustomizationMapper {
     );
   }
 
+  static DotShapeParams? dotParamsFromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+    return DotShapeParams.fromJson(json);
+  }
+
+  static EyeShapeParams? eyeParamsFromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+    return EyeShapeParams.fromJson(json);
+  }
+
+  static QrBoundaryParams boundaryParamsFromJson(Map<String, dynamic>? json) {
+    if (json == null) return const QrBoundaryParams();
+    return QrBoundaryParams.fromJson(json);
+  }
+
+  static QrAnimationParams animationParamsFromJson(Map<String, dynamic>? json) {
+    if (json == null) return const QrAnimationParams();
+    return QrAnimationParams.fromJson(json);
+  }
+
   static Uint8List? bytesFromBase64(String? b64) {
     if (b64 == null || b64.isEmpty) return null;
     try {
@@ -107,6 +139,7 @@ class CustomizationMapper {
       colorsArgb: g.colors.map((c) => c.toARGB32()).toList(),
       stops: g.stops,
       angleDegrees: g.angleDegrees,
+      center: g.center,
     );
   }
 

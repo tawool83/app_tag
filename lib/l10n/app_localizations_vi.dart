@@ -60,6 +60,14 @@ class AppLocalizationsVi extends AppLocalizations {
   String get actionDelete => 'Xóa';
 
   @override
+  String get actionEdit => 'Chỉnh sửa';
+
+  @override
+  String actionDeleteCount(int count) {
+    return 'Xóa $count';
+  }
+
+  @override
   String get actionSave => 'Lưu';
 
   @override
@@ -619,4 +627,258 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get platformIos => 'iOS';
+
+  @override
+  String get labelCustomGradient => 'Chuyển màu tùy chỉnh';
+
+  @override
+  String get labelGradientType => 'Loại';
+
+  @override
+  String get optionLinear => 'Tuyến tính';
+
+  @override
+  String get optionRadial => 'Hướng tâm';
+
+  @override
+  String get labelAngle => 'Góc';
+
+  @override
+  String get labelCenter => 'Tâm';
+
+  @override
+  String get optionCenterCenter => 'Giữa';
+
+  @override
+  String get optionCenterTopLeft => 'Trên trái';
+
+  @override
+  String get optionCenterTopRight => 'Trên phải';
+
+  @override
+  String get optionCenterBottomLeft => 'Dưới trái';
+
+  @override
+  String get optionCenterBottomRight => 'Dưới phải';
+
+  @override
+  String get labelColorStops => 'Điểm màu';
+
+  @override
+  String get actionAddStop => 'Thêm';
+
+  @override
+  String get actionDeleteStop => 'Xóa';
+
+  @override
+  String get loginTitle => 'Đăng nhập';
+
+  @override
+  String get signupTitle => 'Đăng ký';
+
+  @override
+  String get continueWithGoogle => 'Tiếp tục với Google';
+
+  @override
+  String get continueWithApple => 'Tiếp tục với Apple';
+
+  @override
+  String get loginWithEmail => 'Đăng nhập bằng email';
+
+  @override
+  String get useWithoutLogin => 'Sử dụng không cần đăng nhập';
+
+  @override
+  String get orDivider => 'hoặc';
+
+  @override
+  String get noAccountYet => 'Chưa có tài khoản?';
+
+  @override
+  String get signUp => 'Đăng ký';
+
+  @override
+  String get nickname => 'Biệt danh';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Mật khẩu';
+
+  @override
+  String get passwordConfirm => 'Xác nhận mật khẩu';
+
+  @override
+  String get passwordMinLength => 'Mật khẩu phải có ít nhất 8 ký tự';
+
+  @override
+  String get passwordMismatch => 'Mật khẩu không khớp';
+
+  @override
+  String get invalidEmail => 'Vui lòng nhập email hợp lệ';
+
+  @override
+  String get nicknameRequired => 'Vui lòng nhập biệt danh';
+
+  @override
+  String get profileTitle => 'Hồ sơ của tôi';
+
+  @override
+  String get changePhoto => 'Đổi ảnh';
+
+  @override
+  String get loginMethod => 'Phương thức đăng nhập';
+
+  @override
+  String get joinDate => 'Ngày tham gia';
+
+  @override
+  String get syncStatus => 'Trạng thái đồng bộ';
+
+  @override
+  String get synced => 'Đã đồng bộ';
+
+  @override
+  String get syncing => 'Đang đồng bộ...';
+
+  @override
+  String get syncError => 'Đồng bộ thất bại';
+
+  @override
+  String get lastSynced => 'Đồng bộ lần cuối';
+
+  @override
+  String get justNow => 'Vừa xong';
+
+  @override
+  String get manualSync => 'Đồng bộ ngay';
+
+  @override
+  String get logout => 'Đăng xuất';
+
+  @override
+  String get deleteAccount => 'Xóa tài khoản';
+
+  @override
+  String get deleteAccountConfirm =>
+      'Bạn có chắc muốn xóa tài khoản? Tất cả dữ liệu đám mây sẽ bị xóa vĩnh viễn.';
+
+  @override
+  String get logoutConfirm =>
+      'Bạn có chắc muốn đăng xuất? Dữ liệu cục bộ sẽ được giữ lại.';
+
+  @override
+  String get accountSection => 'Tài khoản';
+
+  @override
+  String get syncSection => 'Đồng bộ';
+
+  @override
+  String get loginPrompt => 'Đăng nhập';
+
+  @override
+  String get cloudSync => 'Đồng bộ đám mây';
+
+  @override
+  String get cancel => 'Hủy';
+
+  @override
+  String get labelSavePreset => 'Lưu preset';
+
+  @override
+  String get hintPresetName => 'Tên preset';
+
+  @override
+  String get labelBoundaryShape => 'Hình dạng viền QR';
+
+  @override
+  String get labelAnimation => 'Hoạt ảnh';
+
+  @override
+  String get labelCustomDot => 'Chấm tùy chỉnh';
+
+  @override
+  String get labelCustomEye => 'Mắt tùy chỉnh';
+
+  @override
+  String get labelCustomBoundary => 'Viền tùy chỉnh';
+
+  @override
+  String get labelCustomAnimation => 'Hoạt ảnh tùy chỉnh';
+
+  @override
+  String get actionApply => 'Áp dụng';
+
+  @override
+  String get sliderVertices => 'Đỉnh';
+
+  @override
+  String get sliderInnerRadius => 'Bán kính trong';
+
+  @override
+  String get sliderRoundness => 'Độ tròn';
+
+  @override
+  String get sliderRotation => 'Xoay';
+
+  @override
+  String get sliderDotScale => 'Kích thước';
+
+  @override
+  String get labelSymmetric => 'Đối xứng';
+
+  @override
+  String get labelAsymmetric => 'Bất đối xứng';
+
+  @override
+  String get sliderSfM => 'Đối xứng (m)';
+
+  @override
+  String get sliderSfN1 => 'Độ cong 1';
+
+  @override
+  String get sliderSfN2 => 'Độ cong 2';
+
+  @override
+  String get sliderSfN3 => 'Độ cong 3';
+
+  @override
+  String get sliderSfA => 'Tỷ lệ X';
+
+  @override
+  String get sliderSfB => 'Tỷ lệ Y';
+
+  @override
+  String get sliderOuterN => 'Hình ngoài';
+
+  @override
+  String get sliderInnerN => 'Hình trong';
+
+  @override
+  String get sliderInnerScale => 'Kích thước trong';
+
+  @override
+  String get labelBoundaryType => 'Loại viền';
+
+  @override
+  String get sliderSuperellipseN => 'Hình N';
+
+  @override
+  String get sliderStarVertices => 'Cánh sao';
+
+  @override
+  String get sliderStarInnerRadius => 'Độ sâu sao';
+
+  @override
+  String get sliderPadding => 'Khoảng đệm';
+
+  @override
+  String get sliderSpeed => 'Tốc độ';
+
+  @override
+  String get sliderAmplitude => 'Biên độ';
+
+  @override
+  String get sliderFrequency => 'Tần số';
 }

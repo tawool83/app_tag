@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui' show Color, Offset, Paint, PaintingStyle, Path, Rect;
 import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'qr_shape_params.dart';
+import '../../utils/polar_polygon.dart';
 
 /// QR 도트 모양 프리셋
 enum QrDotStyle {
@@ -19,6 +21,17 @@ const kQrDotStyleLabels = {
   QrDotStyle.star:     '★',
 };
 
+/// 기존 QrDotStyle enum → DotShapeParams 매핑 (하위 호환).
+extension QrDotStyleToParams on QrDotStyle {
+  DotShapeParams toDotShapeParams() => switch (this) {
+    QrDotStyle.square  => DotShapeParams.square,
+    QrDotStyle.circle  => DotShapeParams.circle,
+    QrDotStyle.diamond => DotShapeParams.diamond,
+    QrDotStyle.heart   => DotShapeParams.sfHeart,
+    QrDotStyle.star    => DotShapeParams.star,
+  };
+}
+
 /// [QrDotStyle] → [PrettyQrShape] 빌더
 PrettyQrShape buildDotShape(QrDotStyle style, Color color) {
   switch (style) {
@@ -29,6 +42,48 @@ PrettyQrShape buildDotShape(QrDotStyle style, Color color) {
     default:
       return _CustomDotSymbol(style: style, color: color);
   }
+}
+
+/// [DotShapeParams] → [PrettyQrShape] 빌더 (맞춤 도트용).
+///
+/// PrettyQrView 내부에서 렌더링되므로 finder pattern·timing·alignment 등
+/// QR 스펙이 자동으로 보존됩니다. 기본 제공 도트(■●◆♥★)와 동일한 원리.
+PrettyQrShape buildCustomDotShape(DotShapeParams params, Color color) {
+  return _PolarDotSymbol(params: params, color: color);
+}
+
+/// PolarPolygon 기반 맞춤 도트를 PrettyQrShape 로 렌더링.
+class _PolarDotSymbol extends PrettyQrShape {
+  final DotShapeParams params;
+  final Color color;
+
+  const _PolarDotSymbol({required this.params, required this.color});
+
+  @override
+  void paint(PrettyQrPaintingContext context) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+
+    for (final module in context.matrix) {
+      if (!module.isDark) continue;
+      final rect = module.resolveRect(context);
+      final center = rect.center;
+      final radius = rect.width / 2;
+      final path = PolarPolygon.buildPath(center, radius, params);
+      context.canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is _PolarDotSymbol &&
+      params == other.params &&
+      color == other.color;
+
+  @override
+  int get hashCode => Object.hash(params, color);
 }
 
 // ── 커스텀 도트 심볼 ───────────────────────────────────────────────────────────
