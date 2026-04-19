@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-04-13T06:36:27.923Z",
+  "timestamp": "2026-04-18T08:01:36.593Z",
   "reason": "compaction",
   "status": {
     "version": "3.0",
-    "lastUpdated": "2026-04-12T02:13:04.303Z",
+    "lastUpdated": "2026-04-17T00:00:00.000Z",
     "activeFeatures": [
-      "home-tile-visibility",
-      "imagegallerysaver"
+      "color-tab-redesign",
+      "user-management"
     ],
-    "primaryFeature": "home-tile-visibility",
+    "primaryFeature": "user-management",
     "features": {
       "AppTag-Flutter": {
         "phase": "archived",
@@ -59,17 +59,13 @@
         "archivedTo": "docs/archive/2026-04/location-map-picker/"
       },
       "imagegallerysaver": {
-        "phase": "do",
-        "phaseNumber": 3,
+        "phase": "archived",
         "matchRate": null,
         "iterationCount": 0,
-        "requirements": [],
-        "documents": {},
-        "timestamps": {
-          "started": "2026-04-10T04:15:21.469Z",
-          "lastUpdated": "2026-04-12T02:13:04.303Z"
-        },
-        "lastFile": "/Users/tawool/.pub-cache/hosted/pub.dev/image_gallery_saver-2.0.3/android/src/main/kotlin/com/example/imagegallerysaver/ImageGallerySaverPlugin.kt"
+        "startedAt": "2026-04-10T04:15:21.469Z",
+        "archivedAt": "2026-04-17T00:00:00.000Z",
+        "archivedTo": null,
+        "notes": "AGP 8.x 빌드 호환성 hotfix (commit 9a3e79a). PDCA 문서 없이 진행된 긴급 패치."
       },
       "direct-output": {
         "phase": "archived",
@@ -78,6 +74,72 @@
         "startedAt": "2026-04-12T00:00:00.000Z",
         "archivedAt": "2026-04-12T00:00:00.000Z",
         "archivedTo": "docs/archive/2026-04/direct-output/"
+      },
+      "qr-layer-editor": {
+        "phase": "archived",
+        "matchRate": 96,
+        "iterationCount": 1,
+        "startedAt": "2026-04-13T00:00:00.000Z",
+        "archivedAt": "2026-04-14T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/qr-layer-editor/"
+      },
+      "qr-task-json-storage": {
+        "phase": "archived",
+        "matchRate": 95,
+        "iterationCount": 0,
+        "startedAt": "2026-04-15T00:00:00.000Z",
+        "archivedAt": "2026-04-16T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/qr-task-json-storage/"
+      },
+      "color-tab-redesign": {
+        "phase": "completed",
+        "phaseNumber": 5,
+        "matchRate": 92,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {
+          "plan": "docs/01-plan/features/color-tab-redesign.plan.md",
+          "design": "docs/02-design/features/color-tab-redesign.design.md",
+          "analysis": "docs/03-analysis/color-tab-redesign.analysis.md",
+          "report": "docs/04-report/color-tab-redesign.report.md"
+        },
+        "timestamps": {
+          "started": "2026-04-17T00:00:00.000Z",
+          "lastUpdated": "2026-04-17T00:00:00.000Z"
+        }
+      },
+      "clean-architecture-refactor": {
+        "phase": "archived",
+        "matchRate": 97,
+        "iterationCount": 2,
+        "startedAt": "2026-04-15T00:00:00.000Z",
+        "archivedAt": "2026-04-17T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/clean-architecture-refactor/"
+      },
+      "user-management": {
+        "phase": "check",
+        "phaseNumber": 4,
+        "matchRate": 91,
+        "iterationCount": 0,
+        "requirements": [
+          "FR-01",
+          "FR-02",
+          "FR-03",
+          "FR-04",
+          "FR-05",
+          "FR-06",
+          "FR-07",
+          "FR-08"
+        ],
+        "documents": {
+          "plan": "docs/01-plan/features/user-management.plan.md",
+          "design": "docs/02-design/features/user-management.design.md",
+          "analysis": "docs/03-analysis/user-management.analysis.md"
+        },
+        "timestamps": {
+          "started": "2026-04-17T00:00:00.000Z",
+          "lastUpdated": "2026-04-17T00:00:00.000Z"
+        }
       }
     },
     "pipeline": {
@@ -108,6 +170,18 @@
         "feature": "imagegallerysaver",
         "phase": "do",
         "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-16T09:00:00.000Z",
+        "feature": "qr-task-json-storage",
+        "phase": "do",
+        "action": "registered (P0-P2 완료, P3 진행 중)"
+      },
+      {
+        "timestamp": "2026-04-16T09:00:00.000Z",
+        "feature": "clean-architecture-refactor",
+        "phase": "design",
+        "action": "registered (Plan+Design 완료)"
       }
     ],
     "stateMachine": {

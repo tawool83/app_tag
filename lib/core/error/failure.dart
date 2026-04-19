@@ -30,6 +30,19 @@ class ValidationFailure extends Failure {
   const ValidationFailure(super.message, {this.fields = const {}});
 }
 
+/// 인증 실패 (로그인, 회원가입, 토큰 등).
+class AuthFailure extends Failure {
+  final String? code;
+  const AuthFailure(super.message, {this.code});
+}
+
+/// 동기화 실패.
+class SyncFailure extends Failure {
+  final int pulled;
+  final int pushed;
+  const SyncFailure(super.message, {this.pulled = 0, this.pushed = 0});
+}
+
 /// 예기치 못한 실패. 가능하면 구체 타입으로 대체.
 class UnexpectedFailure extends Failure {
   final Object? cause;

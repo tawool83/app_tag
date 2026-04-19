@@ -1,5 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../features/color_palette/data/datasources/hive_color_palette_datasource.dart';
+import '../../features/color_palette/data/models/user_color_palette_model.dart';
 import '../../features/qr_result/data/datasources/hive_user_template_datasource.dart';
 import '../../features/qr_result/data/models/user_qr_template_model.dart';
 import '../../features/qr_task/data/datasources/hive_qr_task_datasource.dart';
@@ -12,6 +14,11 @@ import '../../features/qr_task/data/models/qr_task_model.dart';
 /// - typeId 2: QrTaskModel          (qr-task-json-storage)
 ///
 /// ⚠ typeId/fieldId 는 절대 변경 금지 (기존 저장 데이터 호환성).
+///
+/// - typeId 0: (폐기됨 — 구 TagHistoryModel)
+/// - typeId 1: UserQrTemplateModel
+/// - typeId 2: QrTaskModel
+/// - typeId 3: UserColorPaletteModel
 Future<void> initHive() async {
   await Hive.initFlutter();
 
@@ -24,6 +31,9 @@ Future<void> initHive() async {
   if (!Hive.isAdapterRegistered(2)) {
     Hive.registerAdapter(QrTaskModelAdapter());
   }
+  if (!Hive.isAdapterRegistered(3)) {
+    Hive.registerAdapter(UserColorPaletteModelAdapter());
+  }
 
   if (!Hive.isBoxOpen(HiveUserTemplateDataSource.boxName)) {
     await Hive.openBox<UserQrTemplateModel>(
@@ -31,5 +41,9 @@ Future<void> initHive() async {
   }
   if (!Hive.isBoxOpen(HiveQrTaskDataSource.boxName)) {
     await Hive.openBox<QrTaskModel>(HiveQrTaskDataSource.boxName);
+  }
+  if (!Hive.isBoxOpen(HiveColorPaletteDataSource.boxName)) {
+    await Hive.openBox<UserColorPaletteModel>(
+        HiveColorPaletteDataSource.boxName);
   }
 }

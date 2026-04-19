@@ -20,6 +20,9 @@ import '../../features/location_tag/location_tag_screen.dart';
 import '../../features/event_tag/event_tag_screen.dart';
 import '../../features/email_tag/email_tag_screen.dart';
 import '../../features/sms_tag/sms_tag_screen.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/signup_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
 
 /// 향후 외부 deep link 수신 시 라우트 리다이렉션 처리.
@@ -59,6 +62,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/email-tag', builder: (_, _) => const EmailTagScreen()),
       GoRoute(path: '/sms-tag', builder: (_, _) => const SmsTagScreen()),
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+      GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(path: '/signup', builder: (_, _) => const SignUpScreen()),
+      GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen()),
     ],
     errorBuilder: (_, _) => const Scaffold(
       body: Center(child: Text('페이지를 찾을 수 없습니다.')),

@@ -1,18 +1,20 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/settings_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/presentation/providers/auth_providers.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _editMode = false;
   Set<String> _hiddenKeys = {};
   bool _showHiddenSection = false;
@@ -138,10 +140,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (_editMode) {
       return AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Image.asset('assets/img/logo.png', width: 32),
-        ),
         title: Text(l10n.screenHomeEditModeTitle),
         actions: [
           TextButton(
@@ -151,23 +149,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       );
     }
+    final isLoggedIn = ref.watch(authProvider).user != null;
     return AppBar(
-      leadingWidth: 56,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: Image.asset('assets/img/logo.png'),
-      ),
-      title: Text(
-        l10n.screenHomeTitle,
-        style: const TextStyle(
-            fontFamily: 'BitcountGridDouble', fontWeight: FontWeight.bold),
-      ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          tooltip: l10n.screenSettingsTitle,
-          onPressed: () => context.push('/settings'),
-        ),
         IconButton(
           icon: const Icon(Icons.help_outline),
           tooltip: l10n.tooltipHelp,
@@ -178,7 +162,50 @@ class _HomeScreenState extends State<HomeScreen> {
           tooltip: l10n.tooltipHistory,
           onPressed: () => context.push('/history'),
         ),
+        IconButton(
+          icon: Icon(isLoggedIn ? Icons.account_circle : Icons.account_circle_outlined),
+          tooltip: isLoggedIn ? l10n.profileTitle : l10n.loginPrompt,
+          onPressed: () => context.push(isLoggedIn ? '/profile' : '/login'),
+        ),
       ],
+    );
+  }
+
+  Widget _buildDrawer() {
+    final l10n = AppLocalizations.of(context)!;
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Image.asset('assets/img/logo.png', width: 48),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.appTitle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings_outlined),
+            title: Text(l10n.screenSettingsTitle),
+            onTap: () {
+              Navigator.pop(context);
+              context.push('/settings');
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -187,6 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!_initialized) {
       return Scaffold(
         appBar: _buildAppBar(),
+        drawer: _buildDrawer(),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -199,7 +227,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
+      drawer: _editMode ? null : _buildDrawer(),
+      body: Stack(
+        children: [
+          // 고정 배경 로고
+          Positioned.fill(
+            child: Center(
+              child: Opacity(
+                opacity: 0.06,
+                child: Image.asset(
+                  'assets/img/logo.png',
+                  width: 240,
+                  height: 240,
+                ),
+              ),
+            ),
+          ),
+          // 스크롤 가능한 콘텐츠
+          SingleChildScrollView(
         child: Column(
           children: [
             // 메인 그리드
@@ -221,6 +266,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildHiddenSection(hiddenTiles),
           ],
         ),
+      ),
+        ],
       ),
     );
   }

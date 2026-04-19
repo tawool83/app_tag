@@ -1,0 +1,238 @@
+{
+  "timestamp": "2026-04-18T09:49:53.066Z",
+  "reason": "compaction",
+  "status": {
+    "version": "3.0",
+    "lastUpdated": "2026-04-17T00:00:00.000Z",
+    "activeFeatures": [
+      "color-tab-redesign",
+      "user-management",
+      "qr-custom-shape"
+    ],
+    "primaryFeature": "qr-custom-shape",
+    "lastPhaseTransition": "design → do (2026-04-18)",
+    "features": {
+      "AppTag-Flutter": {
+        "phase": "archived",
+        "matchRate": 97,
+        "iterationCount": 0,
+        "startedAt": "2026-04-09T06:58:13.308Z",
+        "archivedAt": "2026-04-10T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/apptag-flutter/"
+      },
+      "nfc-cross-platform": {
+        "phase": "archived",
+        "matchRate": 92,
+        "iterationCount": 0,
+        "startedAt": "2026-04-10T00:00:00.000Z",
+        "archivedAt": "2026-04-10T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/nfc-cross-platform/"
+      },
+      "contact-picker": {
+        "phase": "archived",
+        "matchRate": 98,
+        "iterationCount": 0,
+        "startedAt": "2026-04-12T00:00:00.000Z",
+        "archivedAt": "2026-04-12T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/contact-picker/"
+      },
+      "home-tile-visibility": {
+        "phase": "archived",
+        "matchRate": 99,
+        "iterationCount": 0,
+        "startedAt": "2026-04-11T00:00:00.000Z",
+        "archivedAt": "2026-04-12T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/home-tile-visibility/"
+      },
+      "home-tile-menu": {
+        "phase": "archived",
+        "matchRate": 99,
+        "iterationCount": 1,
+        "startedAt": "2026-04-10T04:00:00.000Z",
+        "archivedAt": "2026-04-11T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/home-tile-menu/"
+      },
+      "location-map-picker": {
+        "phase": "archived",
+        "matchRate": 97,
+        "iterationCount": 0,
+        "startedAt": "2026-04-12T00:00:00.000Z",
+        "archivedAt": "2026-04-12T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/location-map-picker/"
+      },
+      "imagegallerysaver": {
+        "phase": "archived",
+        "matchRate": null,
+        "iterationCount": 0,
+        "startedAt": "2026-04-10T04:15:21.469Z",
+        "archivedAt": "2026-04-17T00:00:00.000Z",
+        "archivedTo": null,
+        "notes": "AGP 8.x 빌드 호환성 hotfix (commit 9a3e79a). PDCA 문서 없이 진행된 긴급 패치."
+      },
+      "direct-output": {
+        "phase": "archived",
+        "matchRate": 100,
+        "iterationCount": 0,
+        "startedAt": "2026-04-12T00:00:00.000Z",
+        "archivedAt": "2026-04-12T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/direct-output/"
+      },
+      "qr-layer-editor": {
+        "phase": "archived",
+        "matchRate": 96,
+        "iterationCount": 1,
+        "startedAt": "2026-04-13T00:00:00.000Z",
+        "archivedAt": "2026-04-14T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/qr-layer-editor/"
+      },
+      "qr-task-json-storage": {
+        "phase": "archived",
+        "matchRate": 95,
+        "iterationCount": 0,
+        "startedAt": "2026-04-15T00:00:00.000Z",
+        "archivedAt": "2026-04-16T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/qr-task-json-storage/"
+      },
+      "color-tab-redesign": {
+        "phase": "completed",
+        "phaseNumber": 5,
+        "matchRate": 92,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {
+          "plan": "docs/01-plan/features/color-tab-redesign.plan.md",
+          "design": "docs/02-design/features/color-tab-redesign.design.md",
+          "analysis": "docs/03-analysis/color-tab-redesign.analysis.md",
+          "report": "docs/04-report/color-tab-redesign.report.md"
+        },
+        "timestamps": {
+          "started": "2026-04-17T00:00:00.000Z",
+          "lastUpdated": "2026-04-17T00:00:00.000Z"
+        }
+      },
+      "clean-architecture-refactor": {
+        "phase": "archived",
+        "matchRate": 97,
+        "iterationCount": 2,
+        "startedAt": "2026-04-15T00:00:00.000Z",
+        "archivedAt": "2026-04-17T00:00:00.000Z",
+        "archivedTo": "docs/archive/2026-04/clean-architecture-refactor/"
+      },
+      "qr-custom-shape": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [
+          "FR-01",
+          "FR-02",
+          "FR-03",
+          "FR-04",
+          "FR-05",
+          "FR-06",
+          "FR-07",
+          "FR-08",
+          "FR-09",
+          "FR-10",
+          "FR-11",
+          "FR-12",
+          "FR-13",
+          "FR-14",
+          "FR-15",
+          "FR-16"
+        ],
+        "documents": {
+          "plan": "docs/01-plan/features/qr-custom-shape.plan.md",
+          "design": "docs/02-design/features/qr-custom-shape.design.md"
+        },
+        "timestamps": {
+          "started": "2026-04-18T00:00:00.000Z",
+          "lastUpdated": "2026-04-18T00:00:00.000Z"
+        }
+      },
+      "user-management": {
+        "phase": "check",
+        "phaseNumber": 4,
+        "matchRate": 91,
+        "iterationCount": 0,
+        "requirements": [
+          "FR-01",
+          "FR-02",
+          "FR-03",
+          "FR-04",
+          "FR-05",
+          "FR-06",
+          "FR-07",
+          "FR-08"
+        ],
+        "documents": {
+          "plan": "docs/01-plan/features/user-management.plan.md",
+          "design": "docs/02-design/features/user-management.design.md",
+          "analysis": "docs/03-analysis/user-management.analysis.md"
+        },
+        "timestamps": {
+          "started": "2026-04-17T00:00:00.000Z",
+          "lastUpdated": "2026-04-17T00:00:00.000Z"
+        }
+      }
+    },
+    "pipeline": {
+      "currentPhase": 1,
+      "level": "Dynamic",
+      "phaseHistory": []
+    },
+    "session": {
+      "startedAt": "2026-04-09T06:11:12.207Z",
+      "onboardingCompleted": false,
+      "lastActivity": "2026-04-12T02:13:04.303Z"
+    },
+    "history": [
+      {
+        "timestamp": "2026-04-09T06:58:13.309Z",
+        "feature": "AppTag-Flutter",
+        "phase": "act",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-10T04:15:21.469Z",
+        "feature": "imagegallerysaver",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-12T02:13:04.303Z",
+        "feature": "imagegallerysaver",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-16T09:00:00.000Z",
+        "feature": "qr-task-json-storage",
+        "phase": "do",
+        "action": "registered (P0-P2 완료, P3 진행 중)"
+      },
+      {
+        "timestamp": "2026-04-16T09:00:00.000Z",
+        "feature": "clean-architecture-refactor",
+        "phase": "design",
+        "action": "registered (Plan+Design 완료)"
+      }
+    ],
+    "stateMachine": {
+      "defaultWorkflow": "default",
+      "activeWorkflows": {},
+      "totalTransitions": 0
+    },
+    "automation": {
+      "globalLevel": 2,
+      "trustScore": 40,
+      "pendingApprovals": 0,
+      "lastGateResult": null
+    },
+    "team": {
+      "enabled": true,
+      "stateFile": ".bkit/runtime/agent-state.json",
+      "eventsFile": ".bkit/runtime/agent-events.jsonl"
+    }
+  }
+}

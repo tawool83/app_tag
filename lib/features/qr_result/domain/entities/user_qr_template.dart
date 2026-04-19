@@ -39,6 +39,9 @@ class UserQrTemplate {
 
   // 메타
   final Uint8List? thumbnailBytes;
+  final DateTime updatedAt;
+
+  // 동기화 메타
   final String? remoteId;
   final bool syncedToCloud;
 
@@ -70,7 +73,8 @@ class UserQrTemplate {
     this.bottomTextFont,
     this.bottomTextSize,
     this.thumbnailBytes,
+    DateTime? updatedAt,
     this.remoteId,
     this.syncedToCloud = false,
-  });
+  }) : updatedAt = updatedAt ?? createdAt;
 }

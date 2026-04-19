@@ -96,6 +96,9 @@ class UserQrTemplateModel extends HiveObject {
   @HiveField(28)
   double backgroundAlignY;
 
+  @HiveField(29)
+  DateTime? updatedAt;
+
   UserQrTemplateModel({
     required this.id,
     required this.name,
@@ -126,6 +129,7 @@ class UserQrTemplateModel extends HiveObject {
     this.eyeOuterIndex = 0,
     this.eyeInnerIndex = 0,
     this.randomEyeSeed,
+    this.updatedAt,
   });
 
   UserQrTemplate toEntity() => UserQrTemplate(
@@ -156,6 +160,7 @@ class UserQrTemplateModel extends HiveObject {
         bottomTextFont: bottomTextFont,
         bottomTextSize: bottomTextSize,
         thumbnailBytes: thumbnailBytes,
+        updatedAt: updatedAt,
         remoteId: remoteId,
         syncedToCloud: syncedToCloud,
       );
@@ -189,6 +194,7 @@ class UserQrTemplateModel extends HiveObject {
         bottomTextFont: e.bottomTextFont,
         bottomTextSize: e.bottomTextSize,
         thumbnailBytes: e.thumbnailBytes,
+        updatedAt: e.updatedAt,
         remoteId: e.remoteId,
         syncedToCloud: e.syncedToCloud,
       );

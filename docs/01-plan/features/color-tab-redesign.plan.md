@@ -47,35 +47,34 @@ project: app_tag
 │   └── [+ 직접 선택] 버튼 → 맞춤 그라디언트 편집기
 │
 └── ─── 맞춤 그라디언트 편집기 ────────── (직접 선택 시 표시)
-    ├── 유형: [선형 ▾] [방사형 ▾]  (SegmentedButton)
-    ├── 각도: [0] [45] [90] [135] [180] [225] [270] [315]  (Wrap 칩)
+    │   ※ 편집기 진입 시 단색/그라디언트 팔레트 숨김
+    │   ※ 하단 액션 버튼(갤러리저장 등) → 확인/취소 버튼으로 교체
+    ├── [유형 ▾] [각도 ▾ 또는 가운데 ▾]  (드롭다운 한 행)
     ├── 색 지점 목록
     │   ├── 지점 1: [●색상] [삭제]
     │   ├── 지점 2: [●색상] [삭제]
     │   └── [+ 추가] 버튼
-    └── 그라디언트 미리보기 + 드래그 슬라이더
-        └── [────●────────●────] 색 지점 위치 드래그
+    └── 그라디언트 미리보기 + 드래그 슬라이더 (통합 컴포넌트)
+        └── [██●██████████████●██] 바 위에 핸들 직접 배치
 ```
 
 ## 3. 맞춤 그라디언트 편집기 상세
 
-### 3.1 유형 선택
-- SegmentedButton: 선형(linear) / 방사형(radial)
-- 각도는 선형(linear) 선택시 표시
-- 가운대는 방사형(radial) 선택시 표시 
+### 3.1 유형 + 옵션 드롭다운 (한 행)
+- `DropdownButtonFormField` 으로 한 행에 배치
+- 왼쪽: 유형 (선형/방사형)
+- 오른쪽: 선형 → 각도 드롭다운 (0~315, 기본 45) / 방사형 → 가운데 드롭다운 (5개, 기본 중앙)
 
-### 3.2 각도 선택
-- 8개 프리셋: 0, 45, 90, 135, 180, 225, 270, 315
-- 45 기본값
-- ChoiceChip Wrap으로 표시
-- 선형(linear)일 때만 표시
+### 3.2 편집기 모드 격리
+- 편집기 진입 시 단색/그라디언트 기본 팔레트 숨김
+- 하단 갤러리저장/템플릿저장/공유 버튼 → 확인/취소 버튼으로 교체
+- `onEditorModeChanged` 콜백으로 부모(QrResultScreen)에 알림
+- 취소 시 편집 전 그라디언트로 복원 (`_gradientBeforeEdit` 백업)
 
-### 3.3 가운대 선택
-- 5개 프리셋: 중앙, 왼쪽 상단, 오른쪽 상단, 왼쪽 하단, 오른쪽 하단.
-- 중앙이 기본값 
-- ChoiceChip Wrap으로 표시
-- 방사형(radial) 때만 표시
-
+### 3.3 탭 전환 자동 확인
+- 편집기가 열린 상태에서 다른 탭(템플릿/모양/로고/텍스트)으로 이동 시 자동 확인 처리
+- `TabController.addListener` + `GlobalKey<QrColorTabState>` 패턴
+- 부모에서 `confirmAndCloseEditor()` 호출
 
 ### 3.4 색 지점 관리
 - 기본 2개 지점 (시작색 + 끝색)
@@ -83,26 +82,39 @@ project: app_tag
 - 각 지점: 색상 원형 버튼(탭 → HSV 피커) + 삭제 버튼
 - 최소 2개 보호 (삭제 버튼 비활성)
 
-### 3.5 그라디언트 미리보기 + 드래그 슬라이더
-- 가로 바: 현재 그라디언트를 LinearGradient/RadialGradient로 미리보기
-- 각 색 지점 위치를 드래그 가능한 핸들(thumb)로 표시
-- 드래그로 stop 비율(0.0~1.0) 조절
+### 3.5 그라디언트 미리보기 + 드래그 슬라이더 (통합)
+- 그라디언트 바 위에 핸들이 직접 배치된 단일 컴포넌트 (`_GradientSliderBar`)
+- 핸들은 바 하단 경계에 위치, 흰색 배경 + 색상 원 + 테두리
+- 드래그 시 핸들 확대 + 파란 테두리 활성화
+- 첫/마지막 핸들 고정, 중간 핸들만 이웃 사이에서 드래그 가능
 - 실시간 미리보기 갱신
 
 ## 4. 변경 파일
 
 | 파일 | 변경 |
 |------|------|
-| `lib/features/qr_result/tabs/qr_color_tab.dart` | 전면 재작성 |
-| `lib/l10n/app_*.arb` | 새 키 추가 (유형, 각도, 추가, 삭제 등) |
+| `lib/features/qr_result/tabs/qr_color_tab.dart` | 전면 재작성 (편집기 모드 격리, 통합 슬라이더 등) |
+| `lib/features/qr_result/qr_result_screen.dart` | 편집기 모드 상태 관리, 탭 전환 자동 확인, GlobalKey 연동 |
+| `lib/features/qr_result/domain/entities/qr_template.dart` | QrGradient에 `center` 필드 추가 |
+| `lib/features/qr_task/domain/entities/qr_gradient_data.dart` | QrGradientData에 `center` 필드 추가 |
+| `lib/features/qr_result/utils/customization_mapper.dart` | center 필드 양방향 매핑 |
+| `lib/features/qr_result/widgets/qr_preview_section.dart` | 방사형 center 정렬 + 비중앙 radius 1.4 보정 |
+| `lib/features/qr_result/data/datasources/local_default_template_datasource.dart` | center JSON 직렬화 |
+| `lib/l10n/app_*.arb` (10개) | 14개 새 키 추가 + 기존 2개 재사용 |
 
 ## 5. 새 ARB 키
 
 | 키 | 한국어 | 용도 |
 |---|--------|------|
-| `labelSolidColor` | 단색 | 섹션 헤더 |
-| `labelGradient` | 그라디언트 | 섹션 헤더 |
+| `tabColorSolid` | 단색 | 섹션 헤더 (기존 키 재사용) |
+| `tabColorGradient` | 그라디언트 | 섹션 헤더 (기존 키 재사용) |
 | `labelCustomGradient` | 맞춤 그라디언트 | 편집기 헤더 |
+| `labelCenter` | 가운데 | 가운데 선택 라벨 |
+| `optionCenterCenter` | 중앙 | 가운데 옵션 |
+| `optionCenterTopLeft` | 왼쪽 상단 | 가운데 옵션 |
+| `optionCenterTopRight` | 오른쪽 상단 | 가운데 옵션 |
+| `optionCenterBottomLeft` | 왼쪽 하단 | 가운데 옵션 |
+| `optionCenterBottomRight` | 오른쪽 하단 | 가운데 옵션 |
 | `labelGradientType` | 유형 | 유형 선택 라벨 |
 | `optionLinear` | 선형 | 유형 옵션 |
 | `optionRadial` | 방사형 | 유형 옵션 |

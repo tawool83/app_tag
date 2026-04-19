@@ -46,13 +46,14 @@ class UserQrTemplateModelAdapter extends TypeAdapter<UserQrTemplateModel> {
       eyeOuterIndex: fields[24] as int,
       eyeInnerIndex: fields[25] as int,
       randomEyeSeed: fields[26] as int?,
+      updatedAt: fields[29] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserQrTemplateModel obj) {
     writer
-      ..writeByte(29)
+      ..writeByte(30)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -110,7 +111,9 @@ class UserQrTemplateModelAdapter extends TypeAdapter<UserQrTemplateModel> {
       ..writeByte(27)
       ..write(obj.backgroundAlignX)
       ..writeByte(28)
-      ..write(obj.backgroundAlignY);
+      ..write(obj.backgroundAlignY)
+      ..writeByte(29)
+      ..write(obj.updatedAt);
   }
 
   @override
