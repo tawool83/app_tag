@@ -1752,12 +1752,6 @@ abstract class AppLocalizations {
   /// **'내부 형태'**
   String get sliderInnerN;
 
-  /// No description provided for @sliderInnerScale.
-  ///
-  /// In ko, this message translates to:
-  /// **'내부 크기'**
-  String get sliderInnerScale;
-
   /// No description provided for @labelBoundaryType.
   ///
   /// In ko, this message translates to:

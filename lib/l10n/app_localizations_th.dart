@@ -856,9 +856,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String get sliderInnerN => 'รูปทรงใน';
 
   @override
-  String get sliderInnerScale => 'ขนาดด้านใน';
-
-  @override
   String get labelBoundaryType => 'ประเภทกรอบ';
 
   @override

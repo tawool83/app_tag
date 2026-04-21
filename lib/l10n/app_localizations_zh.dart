@@ -847,9 +847,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get sliderInnerN => '内部形状';
 
   @override
-  String get sliderInnerScale => '内部大小';
-
-  @override
   String get labelBoundaryType => '外框类型';
 
   @override

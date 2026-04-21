@@ -336,7 +336,6 @@
   "sliderSfB": "Y スケール",
   "sliderOuterN": "外枠形状",
   "sliderInnerN": "内部形状",
-  "sliderInnerScale": "内部サイズ",
   "labelBoundaryType": "外枠タイプ",
   "sliderSuperellipseN": "形状N値",
   "sliderStarVertices": "星の頂点",

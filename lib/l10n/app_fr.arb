@@ -336,7 +336,6 @@
   "sliderSfB": "Échelle Y",
   "sliderOuterN": "Forme extérieure",
   "sliderInnerN": "Forme intérieure",
-  "sliderInnerScale": "Taille interne",
   "labelBoundaryType": "Type de contour",
   "sliderSuperellipseN": "Forme N",
   "sliderStarVertices": "Pointes d'étoile",

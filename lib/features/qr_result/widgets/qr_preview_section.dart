@@ -47,7 +47,7 @@ class QrPreviewSection extends ConsumerWidget {
       ShapePreviewMode.fullQr || ShapePreviewMode.dedicatedAnim =>
         QrLayerStack(deepLink: deepLink, size: 160),
       ShapePreviewMode.dedicatedDot => _DotShapePreview(
-          params: state.style.customDotParams ?? const DotShapeParams(),
+          params: state.style.customDotParams ?? state.style.dotStyle.toDotShapeParams(),
           color: state.style.qrColor,
         ),
       ShapePreviewMode.dedicatedEye => _EyeShapePreview(

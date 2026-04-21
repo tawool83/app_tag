@@ -862,9 +862,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sliderInnerN => 'Forma interna';
 
   @override
-  String get sliderInnerScale => 'Tamanho interno';
-
-  @override
   String get labelBoundaryType => 'Tipo de contorno';
 
   @override

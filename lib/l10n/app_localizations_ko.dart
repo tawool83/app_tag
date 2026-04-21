@@ -847,9 +847,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sliderInnerN => '내부 형태';
 
   @override
-  String get sliderInnerScale => '내부 크기';
-
-  @override
   String get labelBoundaryType => '외곽 종류';
 
   @override

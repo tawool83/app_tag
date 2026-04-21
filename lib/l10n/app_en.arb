@@ -336,7 +336,6 @@
   "sliderSfB": "Y Scale",
   "sliderOuterN": "Outer Shape",
   "sliderInnerN": "Inner Shape",
-  "sliderInnerScale": "Inner Size",
   "labelBoundaryType": "Outline Type",
   "sliderSuperellipseN": "Shape N",
   "sliderStarVertices": "Star Points",

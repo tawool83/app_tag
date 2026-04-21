@@ -869,9 +869,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sliderInnerN => 'Innenform';
 
   @override
-  String get sliderInnerScale => 'Innengröße';
-
-  @override
   String get labelBoundaryType => 'Rahmentyp';
 
   @override

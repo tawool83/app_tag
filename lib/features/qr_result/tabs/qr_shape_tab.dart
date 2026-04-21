@@ -52,7 +52,11 @@ class QrShapeTab extends ConsumerStatefulWidget {
   ConsumerState<QrShapeTab> createState() => QrShapeTabState();
 }
 
-class QrShapeTabState extends ConsumerState<QrShapeTab> {
+class QrShapeTabState extends ConsumerState<QrShapeTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   /// 현재 열린 편집기 (null = 닫힘).
   _EditorType? _activeEditor;
 
@@ -333,6 +337,7 @@ class QrShapeTabState extends ConsumerState<QrShapeTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // AutomaticKeepAliveClientMixin 요구
     final state = ref.watch(qrResultProvider);
     final isRandom = state.style.randomEyeSeed != null;
     final l10n = AppLocalizations.of(context)!;

@@ -43,28 +43,6 @@ class _EyeEditor extends StatelessWidget {
           },
           onChangeEnd: (v) => onDragEnd(params.copyWith(innerN: v)),
         ),
-        _SliderRow(
-          label: l10n.sliderRotation,
-          value: params.rotation,
-          min: 0, max: 360,
-          valueLabel: '${params.rotation.round()}°',
-          onChanged: (v) {
-            onDragStart();
-            onChanged(params.copyWith(rotation: v));
-          },
-          onChangeEnd: (v) => onDragEnd(params.copyWith(rotation: v)),
-        ),
-        _SliderRow(
-          label: l10n.sliderInnerScale,
-          value: params.innerScale,
-          min: 0.3, max: 0.8,
-          valueLabel: params.innerScale.toStringAsFixed(2),
-          onChanged: (v) {
-            onDragStart();
-            onChanged(params.copyWith(innerScale: v));
-          },
-          onChangeEnd: (v) => onDragEnd(params.copyWith(innerScale: v)),
-        ),
       ],
     );
   }

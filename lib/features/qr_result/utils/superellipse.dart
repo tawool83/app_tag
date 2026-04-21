@@ -41,6 +41,8 @@ class SuperellipsePath {
   }
 
   /// 눈 프레임 렌더링: 외곽 링(evenOdd) + 내부 채움.
+  /// QR 스펙 고정: 외곽 7모듈, 내부 finder 3모듈 (3/7 비율).
+  /// 회전·내부 크기 커스터마이즈는 인식률 저하로 제거됨 (2026-04-21).
   static void paintEye(
     Canvas canvas,
     Rect bounds,
@@ -52,27 +54,12 @@ class SuperellipsePath {
     // 외곽 링: 전체 bounds → 1모듈 안쪽 구멍 (evenOdd fill)
     final holeRect = bounds.deflate(m);
     final ringPath = Path()..fillType = PathFillType.evenOdd;
-    ringPath.addPath(
-      buildPath(bounds, params.outerN, rotation: params.rotation),
-      Offset.zero,
-    );
-    ringPath.addPath(
-      buildPath(holeRect, params.outerN, rotation: params.rotation),
-      Offset.zero,
-    );
+    ringPath.addPath(buildPath(bounds, params.outerN), Offset.zero);
+    ringPath.addPath(buildPath(holeRect, params.outerN), Offset.zero);
     canvas.drawPath(ringPath, paint);
 
-    // 내부 채움 (3/7 비율 기본, innerScale로 조절)
+    // 내부 채움: 3/7 비율 고정 (bounds에서 2모듈 안쪽)
     final innerRect = bounds.deflate(m * 2);
-    final scaleFactor = params.innerScale / 0.43; // 기본 비율 대비 스케일
-    final innerScaled = Rect.fromCenter(
-      center: innerRect.center,
-      width: innerRect.width * scaleFactor,
-      height: innerRect.height * scaleFactor,
-    );
-    canvas.drawPath(
-      buildPath(innerScaled, params.innerN, rotation: params.rotation),
-      paint,
-    );
+    canvas.drawPath(buildPath(innerRect, params.innerN), paint);
   }
 }

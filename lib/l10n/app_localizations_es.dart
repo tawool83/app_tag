@@ -864,9 +864,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get sliderInnerN => 'Forma interior';
 
   @override
-  String get sliderInnerScale => 'Tamaño interior';
-
-  @override
   String get labelBoundaryType => 'Tipo de contorno';
 
   @override

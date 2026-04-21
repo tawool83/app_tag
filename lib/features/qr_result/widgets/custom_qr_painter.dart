@@ -96,7 +96,8 @@ class CustomQrPainter extends CustomPainter {
       SuperellipsePath.paintEye(canvas, bounds, eyeParams, basePaint);
     }
 
-    // 2a. 구조(timing/alignment/formatInfo/versionInfo) 모듈 — 애니메이션 없음, 단일 Paint 재사용.
+    // 2a. 구조(timing/alignment/formatInfo/versionInfo) 모듈 — dotParams 모양 사용, 애니메이션 미적용.
+    // 사용자 기대: 도트 모양은 일관되게 렌더 (timing/alignment도 도트 커스텀 반영).
     if (_structuralCells.isNotEmpty) {
       final structPaint = Paint()
         ..style = PaintingStyle.fill
@@ -106,16 +107,15 @@ class CustomQrPainter extends CustomPainter {
       } else {
         structPaint.color = color;
       }
+      final structRadius = m / 2 * dotParams.scale;
       for (final cell in _structuralCells) {
         final center = Offset(cell.col * m + m / 2, cell.row * m + m / 2);
-        canvas.drawRect(
-          Rect.fromCenter(center: center, width: m, height: m),
-          structPaint,
-        );
+        final path = PolarPolygon.buildPath(center, structRadius, dotParams);
+        canvas.drawPath(path, structPaint);
       }
     }
 
-    // 2b. 데이터 모듈 — 애니메이션/회전/hueShift 적용.
+    // 2b. 데이터 모듈 — dotParams 모양 + 애니메이션/회전/hueShift 적용.
     final radius = m / 2;
     for (final cell in _dataCells) {
       final center = Offset(cell.col * m + m / 2, cell.row * m + m / 2);

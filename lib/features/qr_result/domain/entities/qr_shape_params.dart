@@ -43,10 +43,13 @@ class DotShapeParams {
   });
 
   // ── 대칭 프리셋 ──
+  // vertices=4, rotation=0 → PolarPolygon이 꼭짓점을 상/우/하/좌에 배치(마름모).
+  // 사각형을 원하면 rotation=45로 꼭짓점을 모서리로 이동시킨다.
   static const square = DotShapeParams(
     vertices: 4,
     innerRadius: 1.0,
     roundness: 0.0,
+    rotation: 45.0,
   );
   static const circle = DotShapeParams(
     vertices: 12,
@@ -57,7 +60,6 @@ class DotShapeParams {
     vertices: 4,
     innerRadius: 1.0,
     roundness: 0.0,
-    rotation: 45.0,
   );
   static const star = DotShapeParams(
     vertices: 5,
@@ -187,17 +189,16 @@ class DotShapeParams {
 ///
 /// |x/a|^n + |y/b|^n = 1 에서 n 값으로 형태 결정:
 /// n=2 → 원, n≈4 → squircle (iOS), n→∞ → 사각형.
+///
+/// 회전·내부 크기 필드는 QR 인식률 저하 원인이 되어 제거됨 (2026-04-21).
+/// 내부 finder 패턴은 항상 QR 스펙 3/7 비율 고정 렌더.
 class EyeShapeParams {
   final double outerN; // 외곽 superellipse n: 2.0(원)~20.0(사각)
   final double innerN; // 내부 superellipse n: 2.0(원)~20.0(사각)
-  final double rotation; // 회전: 0.0~360.0
-  final double innerScale; // 내부 크기 비율: 0.3~0.8
 
   const EyeShapeParams({
     this.outerN = 20.0,
     this.innerN = 20.0,
-    this.rotation = 0.0,
-    this.innerScale = 0.43, // QR 스펙 3/7 ≈ 0.43
   });
 
   // ── 기존 프리셋 매핑 ──
@@ -210,28 +211,20 @@ class EyeShapeParams {
   EyeShapeParams copyWith({
     double? outerN,
     double? innerN,
-    double? rotation,
-    double? innerScale,
   }) =>
       EyeShapeParams(
         outerN: outerN ?? this.outerN,
         innerN: innerN ?? this.innerN,
-        rotation: rotation ?? this.rotation,
-        innerScale: innerScale ?? this.innerScale,
       );
 
   Map<String, dynamic> toJson() => {
         'outerN': outerN,
         'innerN': innerN,
-        'rotation': rotation,
-        'innerScale': innerScale,
       };
 
   factory EyeShapeParams.fromJson(Map<String, dynamic> json) => EyeShapeParams(
         outerN: (json['outerN'] as num?)?.toDouble() ?? 20.0,
         innerN: (json['innerN'] as num?)?.toDouble() ?? 20.0,
-        rotation: (json['rotation'] as num?)?.toDouble() ?? 0.0,
-        innerScale: (json['innerScale'] as num?)?.toDouble() ?? 0.43,
       );
 
   @override
@@ -239,14 +232,11 @@ class EyeShapeParams {
       identical(this, other) ||
       other is EyeShapeParams &&
           outerN == other.outerN &&
-          innerN == other.innerN &&
-          rotation == other.rotation &&
-          innerScale == other.innerScale;
+          innerN == other.innerN;
 
   @override
-  int get hashCode => Object.hash(outerN, innerN, rotation, innerScale);
+  int get hashCode => Object.hash(outerN, innerN);
 
   @override
-  String toString() =>
-      'EyeShapeParams(outerN:$outerN, innerN:$innerN, rot:$rotation, scale:$innerScale)';
+  String toString() => 'EyeShapeParams(outerN:$outerN, innerN:$innerN)';
 }

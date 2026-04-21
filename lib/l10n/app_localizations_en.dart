@@ -858,9 +858,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sliderInnerN => 'Inner Shape';
 
   @override
-  String get sliderInnerScale => 'Inner Size';
-
-  @override
   String get labelBoundaryType => 'Outline Type';
 
   @override

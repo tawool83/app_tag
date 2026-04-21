@@ -856,9 +856,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get sliderInnerN => 'Hình trong';
 
   @override
-  String get sliderInnerScale => 'Kích thước trong';
-
-  @override
   String get labelBoundaryType => 'Loại viền';
 
   @override

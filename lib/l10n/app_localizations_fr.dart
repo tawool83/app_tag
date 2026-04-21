@@ -866,9 +866,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sliderInnerN => 'Forme intérieure';
 
   @override
-  String get sliderInnerScale => 'Taille interne';
-
-  @override
   String get labelBoundaryType => 'Type de contour';
 
   @override

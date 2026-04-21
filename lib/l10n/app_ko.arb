@@ -336,7 +336,6 @@
   "sliderSfB": "Y 비율",
   "sliderOuterN": "외곽 형태",
   "sliderInnerN": "내부 형태",
-  "sliderInnerScale": "내부 크기",
   "labelBoundaryType": "외곽 종류",
   "sliderSuperellipseN": "형태 N값",
   "sliderStarVertices": "별 꼭짓점",

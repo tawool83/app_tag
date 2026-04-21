@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr/qr.dart';
 import '../domain/entities/logo_source.dart' show LogoType;
+import '../domain/entities/qr_dot_style.dart' show QrDotStyleToParams;
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/sticker_config.dart';
 import '../qr_result_provider.dart';
@@ -178,7 +179,7 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
           painter: CustomQrPainter(
             qrImage: qrImage,
             color: color,
-            dotParams: state.style.customDotParams ?? const DotShapeParams(),
+            dotParams: state.style.customDotParams ?? state.style.dotStyle.toDotShapeParams(),
             eyeParams: state.style.customEyeParams ?? const EyeShapeParams(),
             boundaryParams: state.style.boundaryParams,
             animParams: state.style.animationParams,
@@ -192,7 +193,7 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
         painter: CustomQrPainter(
           qrImage: qrImage,
           color: color,
-          dotParams: state.style.customDotParams ?? const DotShapeParams(),
+          dotParams: state.style.customDotParams ?? state.style.dotStyle.toDotShapeParams(),
           eyeParams: state.style.customEyeParams ?? const EyeShapeParams(),
           boundaryParams: state.style.boundaryParams,
           animParams: state.style.animationParams,
