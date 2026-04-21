@@ -77,6 +77,9 @@ dependencies:
   image_cropper: ^8.0.2
   image: ^4.2.0
 
+  # SVG 렌더링 (로고 라이브러리)
+  flutter_svg: ^2.0.10+1
+
   # Supabase
   supabase_flutter: ^2.5.0
 
@@ -123,6 +126,11 @@ flutter:
   assets:
     - assets/default_templates.json
     - assets/img/
+    - assets/logos/manifest.json
+    - assets/logos/social/
+    - assets/logos/coin/
+    - assets/logos/brand/
+    - assets/logos/emoji/
 
   fonts:
     - family: BitcountGridDouble

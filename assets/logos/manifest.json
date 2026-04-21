@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "social",
+      "name_ko": "소셜",
+      "icons": [
+        { "id": "twitter",   "file": "twitter.svg" },
+        { "id": "facebook",  "file": "facebook.svg" },
+        { "id": "instagram", "file": "instagram.svg" },
+        { "id": "tiktok",    "file": "tiktok.svg" },
+        { "id": "youtube",   "file": "youtube.svg" },
+        { "id": "linkedin",  "file": "linkedin.svg" },
+        { "id": "github",    "file": "github.svg" },
+        { "id": "discord",   "file": "discord.svg" },
+        { "id": "whatsapp",  "file": "whatsapp.svg" },
+        { "id": "telegram",  "file": "telegram.svg" }
+      ]
+    },
+    {
+      "id": "coin",
+      "name_ko": "코인",
+      "icons": [
+        { "id": "btc",   "file": "btc.svg" },
+        { "id": "eth",   "file": "eth.svg" },
+        { "id": "sol",   "file": "sol.svg" },
+        { "id": "xrp",   "file": "xrp.svg" },
+        { "id": "ada",   "file": "ada.svg" },
+        { "id": "doge",  "file": "doge.svg" },
+        { "id": "usdt",  "file": "usdt.svg" },
+        { "id": "bnb",   "file": "bnb.svg" }
+      ]
+    },
+    {
+      "id": "brand",
+      "name_ko": "브랜드",
+      "icons": [
+        { "id": "apple",      "file": "apple.svg" },
+        { "id": "android",    "file": "android.svg" },
+        { "id": "google",     "file": "google.svg" },
+        { "id": "microsoft",  "file": "microsoft.svg" },
+        { "id": "amazon",     "file": "amazon.svg" },
+        { "id": "paypal",     "file": "paypal.svg" },
+        { "id": "visa",       "file": "visa.svg" },
+        { "id": "mastercard", "file": "mastercard.svg" }
+      ]
+    },
+    {
+      "id": "emoji",
+      "name_ko": "이모지",
+      "icons": [
+        { "id": "smile",     "file": "smile.svg" },
+        { "id": "heart",     "file": "heart.svg" },
+        { "id": "star",      "file": "star.svg" },
+        { "id": "fire",      "file": "fire.svg" },
+        { "id": "check",     "file": "check.svg" },
+        { "id": "warning",   "file": "warning.svg" },
+        { "id": "info",      "file": "info.svg" },
+        { "id": "celebrate", "file": "celebrate.svg" },
+        { "id": "cake",      "file": "cake.svg" },
+        { "id": "gift",      "file": "gift.svg" },
+        { "id": "rocket",    "file": "rocket.svg" },
+        { "id": "leaf",      "file": "leaf.svg" },
+        { "id": "sun",       "file": "sun.svg" },
+        { "id": "moon",      "file": "moon.svg" },
+        { "id": "music",     "file": "music.svg" },
+        { "id": "camera",    "file": "camera.svg" },
+        { "id": "phone",     "file": "phone.svg" },
+        { "id": "mail",      "file": "mail.svg" },
+        { "id": "home",      "file": "home.svg" },
+        { "id": "bookmark",  "file": "bookmark.svg" }
+      ]
+    }
+  ]
+}

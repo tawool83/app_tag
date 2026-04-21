@@ -19,7 +19,13 @@
   "actionDelete": "Supprimer",
   "actionEdit": "Modifier",
   "actionDeleteCount": "Supprimer {count}",
-  "@actionDeleteCount": { "placeholders": { "count": { "type": "int" } } },
+  "@actionDeleteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "actionSave": "Enregistrer",
   "actionShare": "Partager",
   "actionRetry": "Réessayer",
@@ -30,7 +36,13 @@
   "tooltipDeleteAll": "Tout supprimer",
   "actionCollapseHidden": "Réduire le menu masqué",
   "actionShowHidden": "Voir le menu masqué ({count})",
-  "@actionShowHidden": { "placeholders": { "count": { "type": "int" } } },
+  "@actionShowHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "screenHelpTitle": "Guide d'utilisation",
   "screenHistoryTitle": "Historique",
   "screenHistoryEmpty": "Aucun historique.",
@@ -40,7 +52,13 @@
   "dialogClearAllContent": "Voulez-vous supprimer tout l'historique ?",
   "dialogDeleteHistoryTitle": "Supprimer l'historique",
   "dialogDeleteHistoryContent": "Voulez-vous supprimer l'historique de « {name} » ?",
-  "@dialogDeleteHistoryContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteHistoryContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "screenWebsiteTitle": "Tag Site Web",
   "labelUrl": "URL",
   "hintUrl": "https://example.com",
@@ -146,26 +164,56 @@
   "actionSaveTemplate": "Enregistrer le Modèle",
   "dialogLowReadabilityTitle": "Lisibilité faible",
   "dialogLowReadabilityScore": "Lisibilité actuelle : {score}%",
-  "@dialogLowReadabilityScore": { "placeholders": { "score": { "type": "int" } } },
+  "@dialogLowReadabilityScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "dialogLowReadabilityWarning": "Le code QR pourrait ne pas être reconnu\npar certains scanners.",
   "dialogLowReadabilityCause": "Cause principale : {issue}",
-  "@dialogLowReadabilityCause": { "placeholders": { "issue": { "type": "String" } } },
+  "@dialogLowReadabilityCause": {
+    "placeholders": {
+      "issue": {
+        "type": "String"
+      }
+    }
+  },
   "actionSaveAnyway": "Enregistrer quand même",
   "dialogSaveTemplateTitle": "Enregistrer le Modèle",
   "labelTemplateName": "Nom du modèle",
   "hintTemplateName": "Ex : QR fond bleu",
   "msgTemplateSaved": "Modèle « {name} » enregistré.",
-  "@msgTemplateSaved": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgSaveFailed": "Échec de l'enregistrement de l'image.",
   "msgPrintFailed": "Échec de l'impression. Vérifiez la connexion de l'imprimante.",
   "labelReadability": "Lisibilité",
   "screenTemplateMyTemplates": "Mes Modèles",
   "actionNoStyle": "Sans style",
   "msgTemplateApplied": "Modèle « {name} » appliqué.",
-  "@msgTemplateApplied": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dialogDeleteTemplateTitle": "Supprimer le Modèle",
   "dialogDeleteTemplateContent": "Voulez-vous supprimer « {name} » ?",
-  "@dialogDeleteTemplateContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteTemplateContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgNoSavedTemplates": "Aucun modèle enregistré.",
   "msgNoSavedTemplatesHint": "Enregistrez le style actuel avec le bouton [Enregistrer le Modèle] ci-dessous.",
   "tabColorSolid": "Uni",
@@ -203,8 +251,14 @@
   "settingsLanguage": "Langue",
   "settingsLanguageSystem": "Par défaut du système",
   "msgCopiedToClipboard": "« {text} » copié dans le presse-papiers",
-  "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
-    "settingsReadabilityAlert": "Alerte de lisibilité",
+  "@msgCopiedToClipboard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsReadabilityAlert": "Alerte de lisibilité",
   "platformAndroid": "Android",
   "platformIos": "iOS",
   "labelCustomGradient": "Dégradé personnalisé",
@@ -258,7 +312,6 @@
   "loginPrompt": "Se connecter",
   "cloudSync": "Synchronisation cloud",
   "cancel": "Annuler",
-
   "labelSavePreset": "Enregistrer le preset",
   "hintPresetName": "Nom du preset",
   "labelBoundaryShape": "Forme du contour QR",
@@ -291,5 +344,26 @@
   "sliderPadding": "Marge",
   "sliderSpeed": "Vitesse",
   "sliderAmplitude": "Amplitude",
-  "sliderFrequency": "Fréquence"
+  "sliderFrequency": "Fréquence",
+  "optionLogoTypeLogo": "Logo",
+  "optionLogoTypeImage": "Image",
+  "optionLogoTypeText": "Texte",
+  "labelLogoTabPosition": "Position",
+  "labelLogoTabBackground": "Fond",
+  "labelLogoCategory": "Catégorie",
+  "labelLogoGallery": "Choisir depuis la galerie",
+  "labelLogoRecrop": "Recadrer",
+  "labelLogoTextContent": "Texte",
+  "hintLogoTextContent": "Texte du logo",
+  "categorySocial": "Social",
+  "categoryCoin": "Pièce",
+  "categoryBrand": "Marque",
+  "categoryEmoji": "Emoji",
+  "msgLogoLoadFailed": "Impossible de charger l'icône",
+  "msgLogoCropFailed": "Échec du traitement d'image",
+  "labelLogoBackgroundColor": "Couleur",
+  "actionLogoBackgroundReset": "Défaut",
+  "optionRectangle": "Carré",
+  "optionRoundedRectangle": "Cercle",
+  "labelLogoType": "Type"
 }

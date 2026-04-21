@@ -19,7 +19,13 @@
   "actionDelete": "削除",
   "actionEdit": "編集",
   "actionDeleteCount": "{count}件削除",
-  "@actionDeleteCount": { "placeholders": { "count": { "type": "int" } } },
+  "@actionDeleteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "actionSave": "保存",
   "actionShare": "共有",
   "actionRetry": "再試行",
@@ -30,7 +36,13 @@
   "tooltipDeleteAll": "すべて削除",
   "actionCollapseHidden": "非表示メニューを閉じる",
   "actionShowHidden": "非表示メニューを見る ({count})",
-  "@actionShowHidden": { "placeholders": { "count": { "type": "int" } } },
+  "@actionShowHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "screenHelpTitle": "使い方ガイド",
   "screenHistoryTitle": "作成履歴",
   "screenHistoryEmpty": "履歴がありません。",
@@ -40,7 +52,13 @@
   "dialogClearAllContent": "すべての履歴を削除しますか？",
   "dialogDeleteHistoryTitle": "履歴を削除",
   "dialogDeleteHistoryContent": "「{name}」の履歴を削除しますか？",
-  "@dialogDeleteHistoryContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteHistoryContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "screenWebsiteTitle": "ウェブサイトタグ",
   "labelUrl": "URL",
   "hintUrl": "https://example.com",
@@ -146,26 +164,56 @@
   "actionSaveTemplate": "テンプレート保存",
   "dialogLowReadabilityTitle": "認識率が低い状態です",
   "dialogLowReadabilityScore": "現在の認識率: {score}%",
-  "@dialogLowReadabilityScore": { "placeholders": { "score": { "type": "int" } } },
+  "@dialogLowReadabilityScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "dialogLowReadabilityWarning": "QRコードが一部のスキャナーで\n認識されない場合があります。",
   "dialogLowReadabilityCause": "主な原因: {issue}",
-  "@dialogLowReadabilityCause": { "placeholders": { "issue": { "type": "String" } } },
+  "@dialogLowReadabilityCause": {
+    "placeholders": {
+      "issue": {
+        "type": "String"
+      }
+    }
+  },
   "actionSaveAnyway": "それでも保存",
   "dialogSaveTemplateTitle": "テンプレート保存",
   "labelTemplateName": "テンプレート名",
   "hintTemplateName": "例: 青い背景のQR",
   "msgTemplateSaved": "「{name}」テンプレートが保存されました。",
-  "@msgTemplateSaved": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgSaveFailed": "画像の保存に失敗しました。",
   "msgPrintFailed": "印刷に失敗しました。プリンター接続を確認してください。",
   "labelReadability": "認識率",
   "screenTemplateMyTemplates": "マイテンプレート",
   "actionNoStyle": "スタイルなし",
   "msgTemplateApplied": "「{name}」テンプレートが適用されました。",
-  "@msgTemplateApplied": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dialogDeleteTemplateTitle": "テンプレート削除",
   "dialogDeleteTemplateContent": "「{name}」を削除しますか？",
-  "@dialogDeleteTemplateContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteTemplateContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgNoSavedTemplates": "保存されたテンプレートがありません。",
   "msgNoSavedTemplatesHint": "下の「テンプレート保存」ボタンで現在のスタイルを保存してください。",
   "tabColorSolid": "単色",
@@ -203,8 +251,14 @@
   "settingsLanguage": "言語",
   "settingsLanguageSystem": "システムデフォルト",
   "msgCopiedToClipboard": "「{text}」をクリップボードにコピーしました",
-  "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
-    "settingsReadabilityAlert": "認識率アラート",
+  "@msgCopiedToClipboard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsReadabilityAlert": "認識率アラート",
   "platformAndroid": "Android",
   "platformIos": "iOS",
   "labelCustomGradient": "カスタムグラデーション",
@@ -258,7 +312,6 @@
   "loginPrompt": "ログイン",
   "cloudSync": "クラウド同期",
   "cancel": "キャンセル",
-
   "labelSavePreset": "プリセット保存",
   "hintPresetName": "プリセット名",
   "labelBoundaryShape": "QR外枠",
@@ -291,5 +344,26 @@
   "sliderPadding": "パディング",
   "sliderSpeed": "速度",
   "sliderAmplitude": "振幅",
-  "sliderFrequency": "周波数"
+  "sliderFrequency": "周波数",
+  "optionLogoTypeLogo": "ロゴ",
+  "optionLogoTypeImage": "画像",
+  "optionLogoTypeText": "テキスト",
+  "labelLogoTabPosition": "位置",
+  "labelLogoTabBackground": "背景",
+  "labelLogoCategory": "カテゴリ",
+  "labelLogoGallery": "ギャラリーから選択",
+  "labelLogoRecrop": "再切り抜き",
+  "labelLogoTextContent": "文字",
+  "hintLogoTextContent": "ロゴの文字",
+  "categorySocial": "ソーシャル",
+  "categoryCoin": "コイン",
+  "categoryBrand": "ブランド",
+  "categoryEmoji": "絵文字",
+  "msgLogoLoadFailed": "アイコンを読み込めません",
+  "msgLogoCropFailed": "画像処理に失敗しました",
+  "labelLogoBackgroundColor": "色",
+  "actionLogoBackgroundReset": "デフォルト",
+  "optionRectangle": "四角",
+  "optionRoundedRectangle": "丸",
+  "labelLogoType": "種類"
 }

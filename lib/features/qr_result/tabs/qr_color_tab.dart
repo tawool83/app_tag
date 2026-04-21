@@ -2,10 +2,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/color_hex.dart' as app_color_hex;
 import '../domain/entities/qr_template.dart' show QrGradient;
 import '../../../l10n/app_localizations.dart';
-import '../qr_result_provider.dart'
-    show qrResultProvider, qrSafeColors, kQrPresetGradients;
+import '../domain/entities/qr_color_presets.dart';
+import '../qr_result_provider.dart' show qrResultProvider;
 
 /// [색상] 탭: 단색 팔레트 + 그라디언트 프리셋 + 맞춤 그라디언트 편집기.
 class QrColorTab extends ConsumerStatefulWidget {
@@ -60,7 +61,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
 
   void _openEditor() {
     final state = ref.read(qrResultProvider);
-    _gradientBeforeEdit = state.customGradient;
+    _gradientBeforeEdit = state.style.customGradient;
     setState(() => _showCustomEditor = true);
     _emitGradient();
     widget.onEditorModeChanged?.call(true);
@@ -123,8 +124,8 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(qrResultProvider);
-    final selectedColor = state.qrColor;
-    final customGradient = state.customGradient;
+    final selectedColor = state.style.qrColor;
+    final customGradient = state.style.customGradient;
     final l10n = AppLocalizations.of(context)!;
 
     // 맞춤 편집기 모드일 때: 팔레트 숨기고 편집기 + 하단 추가/취소 표시
@@ -349,7 +350,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '#${stop.color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
+                  app_color_hex.colorToHex(stop.color),
                   style: TextStyle(
                       fontSize: 12,
                       fontFamily: 'monospace',
@@ -807,5 +808,16 @@ class _GradientSliderBarPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _GradientSliderBarPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _GradientSliderBarPainter oldDelegate) =>
+      activeIndex != oldDelegate.activeIndex ||
+      !_stopsEqual(stops, oldDelegate.stops);
+
+  static bool _stopsEqual(List<_ColorStop> a, List<_ColorStop> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].color != b[i].color || a[i].position != b[i].position) return false;
+    }
+    return true;
+  }
 }

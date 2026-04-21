@@ -872,4 +872,67 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sliderFrequency => '周波数';
+
+  @override
+  String get optionLogoTypeLogo => 'ロゴ';
+
+  @override
+  String get optionLogoTypeImage => '画像';
+
+  @override
+  String get optionLogoTypeText => 'テキスト';
+
+  @override
+  String get labelLogoTabPosition => '位置';
+
+  @override
+  String get labelLogoTabBackground => '背景';
+
+  @override
+  String get labelLogoCategory => 'カテゴリ';
+
+  @override
+  String get labelLogoGallery => 'ギャラリーから選択';
+
+  @override
+  String get labelLogoRecrop => '再切り抜き';
+
+  @override
+  String get labelLogoTextContent => '文字';
+
+  @override
+  String get hintLogoTextContent => 'ロゴの文字';
+
+  @override
+  String get categorySocial => 'ソーシャル';
+
+  @override
+  String get categoryCoin => 'コイン';
+
+  @override
+  String get categoryBrand => 'ブランド';
+
+  @override
+  String get categoryEmoji => '絵文字';
+
+  @override
+  String get msgLogoLoadFailed => 'アイコンを読み込めません';
+
+  @override
+  String get msgLogoCropFailed => '画像処理に失敗しました';
+
+  @override
+  String get labelLogoBackgroundColor => '色';
+
+  @override
+  String get actionLogoBackgroundReset => 'デフォルト';
+
+  @override
+  String get optionRectangle => '四角';
+
+  @override
+  String get optionRoundedRectangle => '丸';
+
+  @override
+  String get labelLogoType => '種類';
 }

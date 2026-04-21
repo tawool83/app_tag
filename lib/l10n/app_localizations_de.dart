@@ -894,4 +894,67 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sliderFrequency => 'Frequenz';
+
+  @override
+  String get optionLogoTypeLogo => 'Logo';
+
+  @override
+  String get optionLogoTypeImage => 'Bild';
+
+  @override
+  String get optionLogoTypeText => 'Text';
+
+  @override
+  String get labelLogoTabPosition => 'Position';
+
+  @override
+  String get labelLogoTabBackground => 'Hintergrund';
+
+  @override
+  String get labelLogoCategory => 'Kategorie';
+
+  @override
+  String get labelLogoGallery => 'Aus Galerie wählen';
+
+  @override
+  String get labelLogoRecrop => 'Neu zuschneiden';
+
+  @override
+  String get labelLogoTextContent => 'Text';
+
+  @override
+  String get hintLogoTextContent => 'Logo-Text';
+
+  @override
+  String get categorySocial => 'Social';
+
+  @override
+  String get categoryCoin => 'Krypto';
+
+  @override
+  String get categoryBrand => 'Marke';
+
+  @override
+  String get categoryEmoji => 'Emoji';
+
+  @override
+  String get msgLogoLoadFailed => 'Symbol konnte nicht geladen werden';
+
+  @override
+  String get msgLogoCropFailed => 'Bild konnte nicht verarbeitet werden';
+
+  @override
+  String get labelLogoBackgroundColor => 'Farbe';
+
+  @override
+  String get actionLogoBackgroundReset => 'Standard';
+
+  @override
+  String get optionRectangle => 'Quadrat';
+
+  @override
+  String get optionRoundedRectangle => 'Kreis';
+
+  @override
+  String get labelLogoType => 'Typ';
 }

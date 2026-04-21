@@ -47,13 +47,21 @@ class UserQrTemplateModelAdapter extends TypeAdapter<UserQrTemplateModel> {
       eyeInnerIndex: fields[25] as int,
       randomEyeSeed: fields[26] as int?,
       updatedAt: fields[29] as DateTime?,
+      logoType: fields[30] as String?,
+      logoAssetId: fields[31] as String?,
+      logoImageBytes: fields[32] as Uint8List?,
+      logoTextContent: fields[33] as String?,
+      logoTextColorValue: fields[34] as int?,
+      logoTextFont: fields[35] as String?,
+      logoTextSize: fields[36] as double?,
+      logoBackgroundColorValue: fields[37] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserQrTemplateModel obj) {
     writer
-      ..writeByte(30)
+      ..writeByte(38)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -113,7 +121,23 @@ class UserQrTemplateModelAdapter extends TypeAdapter<UserQrTemplateModel> {
       ..writeByte(28)
       ..write(obj.backgroundAlignY)
       ..writeByte(29)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(30)
+      ..write(obj.logoType)
+      ..writeByte(31)
+      ..write(obj.logoAssetId)
+      ..writeByte(32)
+      ..write(obj.logoImageBytes)
+      ..writeByte(33)
+      ..write(obj.logoTextContent)
+      ..writeByte(34)
+      ..write(obj.logoTextColorValue)
+      ..writeByte(35)
+      ..write(obj.logoTextFont)
+      ..writeByte(36)
+      ..write(obj.logoTextSize)
+      ..writeByte(37)
+      ..write(obj.logoBackgroundColorValue);
   }
 
   @override

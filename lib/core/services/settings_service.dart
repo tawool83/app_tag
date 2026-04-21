@@ -12,107 +12,75 @@ const _kLocaleCode = 'app_locale';
 const _kReadabilityAlert = 'readability_alert';
 
 class SettingsService {
-  static Future<String?> getLocaleCode() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_kLocaleCode);
-  }
+  // 앱 생명주기 동안 SharedPreferences Future 를 재사용 — 매 호출 getInstance() 반복 제거.
+  // SharedPreferences 자체도 내부 캐시가 있지만 Future round-trip 을 아예 회피.
+  static Future<SharedPreferences>? _cached;
+  static Future<SharedPreferences> get _prefs =>
+      _cached ??= SharedPreferences.getInstance();
 
-  static Future<void> saveLocaleCode(String? code) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (code == null) {
-      await prefs.remove(_kLocaleCode);
+  // ── 내부 헬퍼: null 이면 키 제거, 아니면 set ──
+  static Future<void> _setStringOrRemove(String key, String? value) async {
+    final p = await _prefs;
+    if (value == null) {
+      await p.remove(key);
     } else {
-      await prefs.setString(_kLocaleCode, code);
+      await p.setString(key, value);
     }
   }
 
-  static Future<bool> getReadabilityAlert() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_kReadabilityAlert) ?? false;
-  }
+  // ── Locale ──
+  static Future<String?> getLocaleCode() async =>
+      (await _prefs).getString(_kLocaleCode);
+  static Future<void> saveLocaleCode(String? code) =>
+      _setStringOrRemove(_kLocaleCode, code);
 
-  static Future<void> saveReadabilityAlert(bool enabled) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kReadabilityAlert, enabled);
-  }
+  // ── Readability alert ──
+  static Future<bool> getReadabilityAlert() async =>
+      (await _prefs).getBool(_kReadabilityAlert) ?? false;
+  static Future<void> saveReadabilityAlert(bool enabled) async =>
+      (await _prefs).setBool(_kReadabilityAlert, enabled);
 
-  static Future<double> getLastPrintSizeCm() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getDouble(_kPrintSizeCm) ?? _kDefaultPrintSizeCm;
-  }
+  // ── Print size ──
+  static Future<double> getLastPrintSizeCm() async =>
+      (await _prefs).getDouble(_kPrintSizeCm) ?? _kDefaultPrintSizeCm;
+  static Future<void> saveLastPrintSizeCm(double sizeCm) async =>
+      (await _prefs).setDouble(_kPrintSizeCm, sizeCm);
 
-  static Future<void> saveLastPrintSizeCm(double sizeCm) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_kPrintSizeCm, sizeCm);
-  }
-
+  // ── Hidden tile keys ──
   static Future<Set<String>> getHiddenTileKeys() async {
-    final prefs = await SharedPreferences.getInstance();
-    final csv = prefs.getString(_kHiddenTileKeys) ?? '';
+    final csv = (await _prefs).getString(_kHiddenTileKeys) ?? '';
     if (csv.isEmpty) return {};
     return csv.split(',').toSet();
   }
 
-  static Future<void> saveHiddenTileKeys(Set<String> keys) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kHiddenTileKeys, keys.join(','));
-  }
+  static Future<void> saveHiddenTileKeys(Set<String> keys) async =>
+      (await _prefs).setString(_kHiddenTileKeys, keys.join(','));
 
-  static Future<String> getQrEyeShape() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_kQrEyeShape) ?? 'square';
-  }
+  // ── QR shape/style ──
+  static Future<String> getQrEyeShape() async =>
+      (await _prefs).getString(_kQrEyeShape) ?? 'square';
+  static Future<void> saveQrEyeShape(String shape) async =>
+      (await _prefs).setString(_kQrEyeShape, shape);
 
-  static Future<void> saveQrEyeShape(String shape) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kQrEyeShape, shape);
-  }
+  static Future<String> getQrDataModuleShape() async =>
+      (await _prefs).getString(_kQrDataModuleShape) ?? 'square';
+  static Future<void> saveQrDataModuleShape(String shape) async =>
+      (await _prefs).setString(_kQrDataModuleShape, shape);
 
-  static Future<String> getQrDataModuleShape() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_kQrDataModuleShape) ?? 'square';
-  }
+  static Future<bool> getQrEmbedIcon() async =>
+      (await _prefs).getBool(_kQrEmbedIcon) ?? false;
+  static Future<void> saveQrEmbedIcon(bool embed) async =>
+      (await _prefs).setBool(_kQrEmbedIcon, embed);
 
-  static Future<void> saveQrDataModuleShape(String shape) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kQrDataModuleShape, shape);
-  }
+  // ── Center emoji (nullable) ──
+  static Future<String?> getQrCenterEmoji() async =>
+      (await _prefs).getString(_kQrCenterEmoji);
+  static Future<void> saveQrCenterEmoji(String? emoji) =>
+      _setStringOrRemove(_kQrCenterEmoji, emoji);
 
-  static Future<bool> getQrEmbedIcon() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_kQrEmbedIcon) ?? false;
-  }
-
-  static Future<void> saveQrEmbedIcon(bool embed) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kQrEmbedIcon, embed);
-  }
-
-  static Future<String?> getQrCenterEmoji() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_kQrCenterEmoji);
-  }
-
-  static Future<void> saveQrCenterEmoji(String? emoji) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (emoji == null) {
-      await prefs.remove(_kQrCenterEmoji);
-    } else {
-      await prefs.setString(_kQrCenterEmoji, emoji);
-    }
-  }
-
-  static Future<String?> getActiveTemplateId() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_kActiveTemplateId);
-  }
-
-  static Future<void> saveActiveTemplateId(String? id) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (id == null) {
-      await prefs.remove(_kActiveTemplateId);
-    } else {
-      await prefs.setString(_kActiveTemplateId, id);
-    }
-  }
+  // ── Active template (nullable) ──
+  static Future<String?> getActiveTemplateId() async =>
+      (await _prefs).getString(_kActiveTemplateId);
+  static Future<void> saveActiveTemplateId(String? id) =>
+      _setStringOrRemove(_kActiveTemplateId, id);
 }

@@ -872,4 +872,67 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sliderFrequency => '频率';
+
+  @override
+  String get optionLogoTypeLogo => '徽标';
+
+  @override
+  String get optionLogoTypeImage => '图片';
+
+  @override
+  String get optionLogoTypeText => '文本';
+
+  @override
+  String get labelLogoTabPosition => '位置';
+
+  @override
+  String get labelLogoTabBackground => '背景';
+
+  @override
+  String get labelLogoCategory => '类别';
+
+  @override
+  String get labelLogoGallery => '从相册选择';
+
+  @override
+  String get labelLogoRecrop => '重新裁剪';
+
+  @override
+  String get labelLogoTextContent => '文字';
+
+  @override
+  String get hintLogoTextContent => '徽标文字';
+
+  @override
+  String get categorySocial => '社交';
+
+  @override
+  String get categoryCoin => '币种';
+
+  @override
+  String get categoryBrand => '品牌';
+
+  @override
+  String get categoryEmoji => '表情';
+
+  @override
+  String get msgLogoLoadFailed => '无法加载图标';
+
+  @override
+  String get msgLogoCropFailed => '图像处理失败';
+
+  @override
+  String get labelLogoBackgroundColor => '颜色';
+
+  @override
+  String get actionLogoBackgroundReset => '默认';
+
+  @override
+  String get optionRectangle => '方形';
+
+  @override
+  String get optionRoundedRectangle => '圆形';
+
+  @override
+  String get labelLogoType => '类型';
 }

@@ -881,4 +881,67 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get sliderFrequency => 'Tần số';
+
+  @override
+  String get optionLogoTypeLogo => 'Logo';
+
+  @override
+  String get optionLogoTypeImage => 'Hình ảnh';
+
+  @override
+  String get optionLogoTypeText => 'Văn bản';
+
+  @override
+  String get labelLogoTabPosition => 'Vị trí';
+
+  @override
+  String get labelLogoTabBackground => 'Nền';
+
+  @override
+  String get labelLogoCategory => 'Danh mục';
+
+  @override
+  String get labelLogoGallery => 'Chọn từ thư viện';
+
+  @override
+  String get labelLogoRecrop => 'Cắt lại';
+
+  @override
+  String get labelLogoTextContent => 'Văn bản';
+
+  @override
+  String get hintLogoTextContent => 'Văn bản cho logo';
+
+  @override
+  String get categorySocial => 'Xã hội';
+
+  @override
+  String get categoryCoin => 'Tiền điện tử';
+
+  @override
+  String get categoryBrand => 'Thương hiệu';
+
+  @override
+  String get categoryEmoji => 'Biểu tượng';
+
+  @override
+  String get msgLogoLoadFailed => 'Không thể tải biểu tượng';
+
+  @override
+  String get msgLogoCropFailed => 'Xử lý hình ảnh thất bại';
+
+  @override
+  String get labelLogoBackgroundColor => 'Màu';
+
+  @override
+  String get actionLogoBackgroundReset => 'Mặc định';
+
+  @override
+  String get optionRectangle => 'Vuông';
+
+  @override
+  String get optionRoundedRectangle => 'Tròn';
+
+  @override
+  String get labelLogoType => 'Loại';
 }

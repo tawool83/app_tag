@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/error/result.dart';
+import '../../../core/extensions/context_extensions.dart';
 import '../domain/entities/user_qr_template.dart';
 import '../presentation/providers/qr_result_providers.dart';
 import '../qr_result_provider.dart';
@@ -37,12 +38,7 @@ class _MyTemplatesTabState extends ConsumerState<MyTemplatesTab> {
     ref.read(qrResultProvider.notifier).applyUserTemplate(t);
     widget.onChanged();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('「${t.name}」 템플릿이 적용되었습니다.'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      context.showSnack('「${t.name}」 템플릿이 적용되었습니다.');
     }
   }
 

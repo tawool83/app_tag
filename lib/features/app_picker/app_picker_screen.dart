@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/deep_link_constants.dart';
+import '../../core/extensions/context_extensions.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/widgets/output_action_buttons.dart';
 import 'domain/entities/app_info.dart';
@@ -27,9 +28,7 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
 
   void _onQr() {
     if (_selectedApp == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.msgSelectApp)),
-      );
+      context.showSnack(AppLocalizations.of(context)!.msgSelectApp);
       return;
     }
     context.push('/qr-result', extra: _buildArgs());
@@ -37,9 +36,7 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
 
   void _onNfc() {
     if (_selectedApp == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.msgSelectApp)),
-      );
+      context.showSnack(AppLocalizations.of(context)!.msgSelectApp);
       return;
     }
     context.push('/nfc-writer', extra: _buildArgs());

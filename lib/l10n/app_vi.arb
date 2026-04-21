@@ -19,7 +19,13 @@
   "actionDelete": "Xóa",
   "actionEdit": "Chỉnh sửa",
   "actionDeleteCount": "Xóa {count}",
-  "@actionDeleteCount": { "placeholders": { "count": { "type": "int" } } },
+  "@actionDeleteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "actionSave": "Lưu",
   "actionShare": "Chia sẻ",
   "actionRetry": "Thử lại",
@@ -30,7 +36,13 @@
   "tooltipDeleteAll": "Xóa tất cả",
   "actionCollapseHidden": "Thu gọn menu ẩn",
   "actionShowHidden": "Xem menu ẩn ({count})",
-  "@actionShowHidden": { "placeholders": { "count": { "type": "int" } } },
+  "@actionShowHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "screenHelpTitle": "Hướng dẫn",
   "screenHistoryTitle": "Lịch sử",
   "screenHistoryEmpty": "Chưa có lịch sử.",
@@ -40,7 +52,13 @@
   "dialogClearAllContent": "Bạn có muốn xóa tất cả lịch sử không?",
   "dialogDeleteHistoryTitle": "Xóa lịch sử",
   "dialogDeleteHistoryContent": "Bạn có muốn xóa lịch sử của \"{name}\" không?",
-  "@dialogDeleteHistoryContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteHistoryContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "screenWebsiteTitle": "Thẻ trang web",
   "labelUrl": "URL",
   "hintUrl": "https://example.com",
@@ -146,26 +164,56 @@
   "actionSaveTemplate": "Lưu mẫu",
   "dialogLowReadabilityTitle": "Khả năng đọc thấp",
   "dialogLowReadabilityScore": "Khả năng đọc hiện tại: {score}%",
-  "@dialogLowReadabilityScore": { "placeholders": { "score": { "type": "int" } } },
+  "@dialogLowReadabilityScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "dialogLowReadabilityWarning": "Mã QR có thể không được nhận dạng\nbởi một số máy quét.",
   "dialogLowReadabilityCause": "Nguyên nhân chính: {issue}",
-  "@dialogLowReadabilityCause": { "placeholders": { "issue": { "type": "String" } } },
+  "@dialogLowReadabilityCause": {
+    "placeholders": {
+      "issue": {
+        "type": "String"
+      }
+    }
+  },
   "actionSaveAnyway": "Vẫn lưu",
   "dialogSaveTemplateTitle": "Lưu mẫu",
   "labelTemplateName": "Tên mẫu",
   "hintTemplateName": "VD: QR nền xanh",
   "msgTemplateSaved": "Mẫu \"{name}\" đã được lưu.",
-  "@msgTemplateSaved": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgSaveFailed": "Lưu ảnh thất bại.",
   "msgPrintFailed": "In thất bại. Vui lòng kiểm tra kết nối máy in.",
   "labelReadability": "Khả năng đọc",
   "screenTemplateMyTemplates": "Mẫu của tôi",
   "actionNoStyle": "Không có kiểu",
   "msgTemplateApplied": "Mẫu \"{name}\" đã được áp dụng.",
-  "@msgTemplateApplied": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dialogDeleteTemplateTitle": "Xóa mẫu",
   "dialogDeleteTemplateContent": "Bạn có muốn xóa \"{name}\" không?",
-  "@dialogDeleteTemplateContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteTemplateContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgNoSavedTemplates": "Chưa có mẫu đã lưu.",
   "msgNoSavedTemplatesHint": "Lưu kiểu hiện tại bằng nút [Lưu mẫu] bên dưới.",
   "tabColorSolid": "Đơn sắc",
@@ -203,8 +251,14 @@
   "settingsLanguage": "Ngôn ngữ",
   "settingsLanguageSystem": "Mặc định hệ thống",
   "msgCopiedToClipboard": "\"{text}\" đã sao chép vào bộ nhớ tạm",
-  "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
-    "settingsReadabilityAlert": "Cảnh báo tỷ lệ nhận dạng",
+  "@msgCopiedToClipboard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsReadabilityAlert": "Cảnh báo tỷ lệ nhận dạng",
   "platformAndroid": "Android",
   "platformIos": "iOS",
   "labelCustomGradient": "Chuyển màu tùy chỉnh",
@@ -258,7 +312,6 @@
   "loginPrompt": "Đăng nhập",
   "cloudSync": "Đồng bộ đám mây",
   "cancel": "Hủy",
-
   "labelSavePreset": "Lưu preset",
   "hintPresetName": "Tên preset",
   "labelBoundaryShape": "Hình dạng viền QR",
@@ -291,5 +344,26 @@
   "sliderPadding": "Khoảng đệm",
   "sliderSpeed": "Tốc độ",
   "sliderAmplitude": "Biên độ",
-  "sliderFrequency": "Tần số"
+  "sliderFrequency": "Tần số",
+  "optionLogoTypeLogo": "Logo",
+  "optionLogoTypeImage": "Hình ảnh",
+  "optionLogoTypeText": "Văn bản",
+  "labelLogoTabPosition": "Vị trí",
+  "labelLogoTabBackground": "Nền",
+  "labelLogoCategory": "Danh mục",
+  "labelLogoGallery": "Chọn từ thư viện",
+  "labelLogoRecrop": "Cắt lại",
+  "labelLogoTextContent": "Văn bản",
+  "hintLogoTextContent": "Văn bản cho logo",
+  "categorySocial": "Xã hội",
+  "categoryCoin": "Tiền điện tử",
+  "categoryBrand": "Thương hiệu",
+  "categoryEmoji": "Biểu tượng",
+  "msgLogoLoadFailed": "Không thể tải biểu tượng",
+  "msgLogoCropFailed": "Xử lý hình ảnh thất bại",
+  "labelLogoBackgroundColor": "Màu",
+  "actionLogoBackgroundReset": "Mặc định",
+  "optionRectangle": "Vuông",
+  "optionRoundedRectangle": "Tròn",
+  "labelLogoType": "Loại"
 }

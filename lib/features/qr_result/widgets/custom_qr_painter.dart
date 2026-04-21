@@ -27,6 +27,11 @@ class CustomQrPainter extends CustomPainter {
 
   late final QrMatrixHelper _helper;
 
+  // 애니메이션과 무관한 dark 모듈을 구조(structural)/데이터(data) 두 그룹으로 분류 →
+  // 구조 모듈은 매 paint 마다 classify 반복하지 않고 사전 계산한 좌표를 재사용.
+  late final List<_ModuleCell> _structuralCells;
+  late final List<_ModuleCell> _dataCells;
+
   CustomQrPainter({
     required this.qrImage,
     required this.color,
@@ -41,6 +46,31 @@ class CustomQrPainter extends CustomPainter {
       moduleCount: qrImage.moduleCount,
       typeNumber: qrImage.typeNumber,
     );
+    final structural = <_ModuleCell>[];
+    final data = <_ModuleCell>[];
+    final n = qrImage.moduleCount;
+    for (int row = 0; row < n; row++) {
+      for (int col = 0; col < n; col++) {
+        if (!qrImage.isDark(row, col)) continue;
+        final moduleType = _helper.classify(row, col);
+        if (moduleType == QrModuleType.finder ||
+            moduleType == QrModuleType.separator) {
+          continue;
+        }
+        final isStructural = moduleType == QrModuleType.timing ||
+            moduleType == QrModuleType.alignment ||
+            moduleType == QrModuleType.formatInfo ||
+            moduleType == QrModuleType.versionInfo;
+        final cell = _ModuleCell(row, col);
+        if (isStructural) {
+          structural.add(cell);
+        } else {
+          data.add(cell);
+        }
+      }
+    }
+    _structuralCells = structural;
+    _dataCells = data;
   }
 
   @override
@@ -66,72 +96,60 @@ class CustomQrPainter extends CustomPainter {
       SuperellipsePath.paintEye(canvas, bounds, eyeParams, basePaint);
     }
 
-    // 2. 데이터 + timing + alignment 도트
-    for (int row = 0; row < n; row++) {
-      for (int col = 0; col < n; col++) {
-        if (!qrImage.isDark(row, col)) continue;
-
-        final moduleType = _helper.classify(row, col);
-        // finder는 위에서 렌더링, separator는 항상 white(isDark=false이므로 도달 안 함)
-        if (moduleType == QrModuleType.finder ||
-            moduleType == QrModuleType.separator) {
-          continue;
-        }
-
-        final center = Offset(col * m + m / 2, row * m + m / 2);
-        final radius = m / 2;
-
-        // 타이밍/정렬/포맷/버전 패턴은 QR 스펙 유지를 위해 표준 사각형으로 렌더링
-        final isStructural = moduleType == QrModuleType.timing ||
-            moduleType == QrModuleType.alignment ||
-            moduleType == QrModuleType.formatInfo ||
-            moduleType == QrModuleType.versionInfo;
-
-        // 애니메이션 (데이터 영역만)
-        final frame = !isStructural && _helper.isAnimatable(row, col)
-            ? QrAnimationEngine.compute(animParams, animValue, row, col, n)
-            : DotAnimFrame.identity;
-
-        canvas.save();
-
-        // 회전 변형
-        if (frame.rotationRad != 0) {
-          canvas.translate(center.dx, center.dy);
-          canvas.rotate(frame.rotationRad);
-          canvas.translate(-center.dx, -center.dy);
-        }
-
-        // 페인트 (hueShift, opacity)
-        final dotPaint = Paint()
-          ..style = PaintingStyle.fill
-          ..isAntiAlias = true;
-
-        if (gradient != null) {
-          dotPaint.shader = gradient;
-          if (frame.opacity < 1.0) {
-            dotPaint.color = ui.Color.fromARGB(
-              (frame.opacity * 255).round(), 255, 255, 255,
-            );
-          }
-        } else {
-          dotPaint.color = _applyHueShift(color, frame.hueShift)
-              .withValues(alpha: frame.opacity);
-        }
-
-        if (isStructural) {
-          // 타이밍/정렬 패턴: 표준 사각형으로 렌더링 (QR 인식률 보장)
-          canvas.drawRect(
-            Rect.fromCenter(center: center, width: m, height: m),
-            dotPaint,
-          );
-        } else {
-          final dotPath = PolarPolygon.buildPath(
-            center, radius * frame.scale, dotParams,
-          );
-          canvas.drawPath(dotPath, dotPaint);
-        }
-        canvas.restore();
+    // 2a. 구조(timing/alignment/formatInfo/versionInfo) 모듈 — 애니메이션 없음, 단일 Paint 재사용.
+    if (_structuralCells.isNotEmpty) {
+      final structPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..isAntiAlias = true;
+      if (gradient != null) {
+        structPaint.shader = gradient;
+      } else {
+        structPaint.color = color;
       }
+      for (final cell in _structuralCells) {
+        final center = Offset(cell.col * m + m / 2, cell.row * m + m / 2);
+        canvas.drawRect(
+          Rect.fromCenter(center: center, width: m, height: m),
+          structPaint,
+        );
+      }
+    }
+
+    // 2b. 데이터 모듈 — 애니메이션/회전/hueShift 적용.
+    final radius = m / 2;
+    for (final cell in _dataCells) {
+      final center = Offset(cell.col * m + m / 2, cell.row * m + m / 2);
+      final frame = _helper.isAnimatable(cell.row, cell.col)
+          ? QrAnimationEngine.compute(animParams, animValue, cell.row, cell.col, n)
+          : DotAnimFrame.identity;
+
+      canvas.save();
+      if (frame.rotationRad != 0) {
+        canvas.translate(center.dx, center.dy);
+        canvas.rotate(frame.rotationRad);
+        canvas.translate(-center.dx, -center.dy);
+      }
+
+      final dotPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..isAntiAlias = true;
+      if (gradient != null) {
+        dotPaint.shader = gradient;
+        if (frame.opacity < 1.0) {
+          dotPaint.color = ui.Color.fromARGB(
+            (frame.opacity * 255).round(), 255, 255, 255,
+          );
+        }
+      } else {
+        dotPaint.color = _applyHueShift(color, frame.hueShift)
+            .withValues(alpha: frame.opacity);
+      }
+
+      final dotPath = PolarPolygon.buildPath(
+        center, radius * frame.scale * dotParams.scale, dotParams,
+      );
+      canvas.drawPath(dotPath, dotPaint);
+      canvas.restore();
     }
 
     // 3. 외곽 클리핑 복원
@@ -154,4 +172,10 @@ class CustomQrPainter extends CustomPainter {
       animParams != old.animParams ||
       animValue != old.animValue ||
       gradient != old.gradient;
+}
+
+class _ModuleCell {
+  final int row;
+  final int col;
+  const _ModuleCell(this.row, this.col);
 }

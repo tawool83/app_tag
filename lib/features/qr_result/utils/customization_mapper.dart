@@ -3,9 +3,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/enum_from_name.dart';
+import '../domain/entities/logo_source.dart' show LogoType;
 import '../domain/entities/qr_animation_params.dart';
 import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_dot_style.dart';
+import '../domain/entities/qr_eye_shapes.dart';
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/qr_template.dart';
 import '../domain/entities/sticker_config.dart';
@@ -27,29 +30,29 @@ class CustomizationMapper {
 
   static QrCustomization fromState(QrResultState state) {
     return QrCustomization(
-      qrColorArgb: state.qrColor.toARGB32(),
-      gradient: _gradientToData(state.customGradient),
-      roundFactor: state.roundFactor,
-      eyeOuter: state.eyeOuter.name,
-      eyeInner: state.eyeInner.name,
-      randomEyeSeed: state.randomEyeSeed,
-      quietZoneColorArgb: state.quietZoneColor.toARGB32(),
-      dotStyle: state.dotStyle.name,
-      embedIcon: state.embedIcon,
-      centerEmoji: state.centerEmoji,
-      centerIconBase64: state.emojiIconBytes != null
-          ? base64Encode(state.emojiIconBytes!)
+      qrColorArgb: state.style.qrColor.toARGB32(),
+      gradient: _gradientToData(state.style.customGradient),
+      roundFactor: state.style.roundFactor,
+      eyeOuter: state.style.eyeOuter.name,
+      eyeInner: state.style.eyeInner.name,
+      randomEyeSeed: state.style.randomEyeSeed,
+      quietZoneColorArgb: state.style.quietZoneColor.toARGB32(),
+      dotStyle: state.style.dotStyle.name,
+      embedIcon: state.logo.embedIcon,
+      centerEmoji: state.logo.centerEmoji,
+      centerIconBase64: state.logo.emojiIconBytes != null
+          ? base64Encode(state.logo.emojiIconBytes!)
           : null,
-      printSizeCm: state.printSizeCm,
+      printSizeCm: state.meta.printSizeCm,
       sticker: _stickerToSpec(state.sticker),
-      activeTemplateId: state.activeTemplateId,
-      customDotParams: state.customDotParams?.toJson(),
-      customEyeParams: state.customEyeParams?.toJson(),
-      boundaryParams: state.boundaryParams.isDefault
+      activeTemplateId: state.template.activeTemplateId,
+      customDotParams: state.style.customDotParams?.toJson(),
+      customEyeParams: state.style.customEyeParams?.toJson(),
+      boundaryParams: state.style.boundaryParams.isDefault
           ? null
-          : state.boundaryParams.toJson(),
-      animationParams: state.animationParams.isAnimated
-          ? state.animationParams.toJson()
+          : state.style.boundaryParams.toJson(),
+      animationParams: state.style.animationParams.isAnimated
+          ? state.style.animationParams.toJson()
           : null,
     );
   }
@@ -70,26 +73,14 @@ class CustomizationMapper {
     );
   }
 
-  static QrEyeOuter eyeOuterFromName(String name) {
-    for (final v in QrEyeOuter.values) {
-      if (v.name == name) return v;
-    }
-    return QrEyeOuter.square;
-  }
+  static QrEyeOuter eyeOuterFromName(String name) =>
+      enumFromName(QrEyeOuter.values, name, QrEyeOuter.square);
 
-  static QrEyeInner eyeInnerFromName(String name) {
-    for (final v in QrEyeInner.values) {
-      if (v.name == name) return v;
-    }
-    return QrEyeInner.square;
-  }
+  static QrEyeInner eyeInnerFromName(String name) =>
+      enumFromName(QrEyeInner.values, name, QrEyeInner.square);
 
-  static QrDotStyle dotStyleFromName(String name) {
-    for (final v in QrDotStyle.values) {
-      if (v.name == name) return v;
-    }
-    return QrDotStyle.square;
-  }
+  static QrDotStyle dotStyleFromName(String name) =>
+      enumFromName(QrDotStyle.values, name, QrDotStyle.square);
 
   static StickerConfig stickerFromSpec(StickerSpec spec) {
     return StickerConfig(
@@ -98,6 +89,15 @@ class CustomizationMapper {
       topText: spec.topText != null ? _stickerTextFromSpec(spec.topText!) : null,
       bottomText:
           spec.bottomText != null ? _stickerTextFromSpec(spec.bottomText!) : null,
+      logoType: _logoTypeFromName(spec.logoType),
+      logoAssetId: spec.logoAssetId,
+      logoImageBytes: bytesFromBase64(spec.logoImageBase64),
+      logoText:
+          spec.logoText != null ? _stickerTextFromSpec(spec.logoText!) : null,
+      logoBackgroundColor: spec.logoBackgroundColorArgb != null
+          ? Color(spec.logoBackgroundColorArgb!)
+          : null,
+      // logoAssetPngBytes 는 영속화 안 됨 — 복원 시 repository.rasterize 로 재생성
     );
   }
 
@@ -150,7 +150,36 @@ class CustomizationMapper {
       topText: s.topText != null ? _stickerTextToSpec(s.topText!) : null,
       bottomText:
           s.bottomText != null ? _stickerTextToSpec(s.bottomText!) : null,
+      logoType: s.logoType?.name,
+      logoAssetId: s.logoAssetId,
+      logoImageBase64: s.logoImageBytes != null
+          ? base64Encode(s.logoImageBytes!)
+          : null,
+      logoText:
+          s.logoText != null ? _stickerTextToSpec(s.logoText!) : null,
+      logoBackgroundColorArgb:
+          s.logoBackgroundColor?.toARGB32(),
     );
+  }
+
+  /// JSON 의 `logoType` 문자열을 `LogoType` 으로 역매핑.
+  ///
+  /// **null vs LogoType.none 의 의미 차이 (중요)**:
+  /// - **return null** — `name` 이 null 또는 알 수 없는 값. 레거시 저장 데이터 경로를
+  ///   의미한다. `centerImageProvider` 의 `case null:` 분기에서
+  ///   `templateCenterIconBytes > emojiIconBytes > defaultIconBytes` fallback 체인으로
+  ///   **기존 아이콘이 렌더**된다.
+  /// - **return LogoType.none** — 사용자가 드롭다운에서 명시적으로 "없음" 선택한 상태.
+  ///   `centerImageProvider` 의 `case LogoType.none: return null` 로 **아이콘 미표시**.
+  ///
+  /// 두 경로의 렌더 결과는 서로 다르다. enumFromName 의 fallback-to-default 모델과 달리
+  /// 이 헬퍼는 null 을 정상 반환값으로 사용해 레거시 호환을 유지한다.
+  static LogoType? _logoTypeFromName(String? name) {
+    if (name == null) return null;
+    for (final v in LogoType.values) {
+      if (v.name == name) return v;
+    }
+    return null;
   }
 
   static StickerTextSpec _stickerTextToSpec(StickerText t) => StickerTextSpec(
@@ -167,17 +196,9 @@ class CustomizationMapper {
         fontSize: s.fontSize,
       );
 
-  static LogoPosition _logoPositionFromName(String name) {
-    for (final v in LogoPosition.values) {
-      if (v.name == name) return v;
-    }
-    return LogoPosition.center;
-  }
+  static LogoPosition _logoPositionFromName(String name) =>
+      enumFromName(LogoPosition.values, name, LogoPosition.center);
 
-  static LogoBackground _logoBackgroundFromName(String name) {
-    for (final v in LogoBackground.values) {
-      if (v.name == name) return v;
-    }
-    return LogoBackground.none;
-  }
+  static LogoBackground _logoBackgroundFromName(String name) =>
+      enumFromName(LogoBackground.values, name, LogoBackground.none);
 }

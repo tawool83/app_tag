@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../providers/auth_providers.dart';
 
@@ -42,9 +43,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       }
       if (next.status == AuthStatus.error && next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.errorMessage!)),
-        );
+        context.showSnack(next.errorMessage!);
         ref.read(authProvider.notifier).clearError();
       }
     });

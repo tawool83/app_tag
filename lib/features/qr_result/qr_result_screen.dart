@@ -1,3 +1,5 @@
+library;
+
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -7,9 +9,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/error/result.dart';
+import '../../core/extensions/context_extensions.dart';
 import '../qr_task/domain/entities/qr_task_kind.dart';
 import '../qr_task/domain/entities/qr_task_meta.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
+import 'domain/entities/qr_action_status.dart';
 import 'domain/entities/qr_template.dart';
 import 'domain/entities/sticker_config.dart' show StickerText;
 import 'data/services/qr_readability_service.dart';
@@ -26,75 +30,9 @@ import 'tabs/sticker_tab.dart';
 import 'tabs/text_tab.dart';
 import 'widgets/qr_preview_section.dart';
 
-// 태그 타입별 아이콘/색상
-(IconData, Color) _tagTypeIconColor(String? tagType) {
-  switch (tagType) {
-    case 'app':       return (Icons.apps, Colors.indigo);
-    case 'clipboard': return (Icons.content_paste, Colors.blueGrey);
-    case 'website':   return (Icons.language, Colors.blue);
-    case 'contact':   return (Icons.contact_phone, Colors.green);
-    case 'wifi':      return (Icons.wifi, Colors.teal);
-    case 'location':  return (Icons.location_on, Colors.red);
-    case 'event':     return (Icons.event, Colors.orange);
-    case 'email':     return (Icons.email, Colors.deepPurple);
-    case 'sms':       return (Icons.sms, Colors.pink);
-    default:          return (Icons.qr_code, Colors.grey);
-  }
-}
-
-// Material 아이콘 → PNG bytes 렌더링
-Future<Uint8List> _renderMaterialIcon(IconData icon, Color color) async {
-  const size = 96.0;
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
-  canvas.drawRect(
-    const Rect.fromLTWH(0, 0, size, size),
-    Paint()..color = Colors.white,
-  );
-  canvas.drawCircle(
-    const Offset(size / 2, size / 2),
-    size / 2 - 4,
-    Paint()..color = color.withValues(alpha: 0.15),
-  );
-  final tp = TextPainter(
-    text: TextSpan(
-      text: String.fromCharCode(icon.codePoint),
-      style: TextStyle(
-        fontFamily: icon.fontFamily,
-        package: icon.fontPackage,
-        fontSize: 56,
-        color: color,
-      ),
-    ),
-    textDirection: TextDirection.ltr,
-  )..layout(maxWidth: size);
-  tp.paint(canvas, Offset((size - tp.width) / 2, (size - tp.height) / 2));
-  final picture = recorder.endRecording();
-  final img = await picture.toImage(size.toInt(), size.toInt());
-  final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
-  return bytes!.buffer.asUint8List();
-}
-
-// 이모지 → PNG bytes 렌더링
-Future<Uint8List> _renderEmoji(String emoji) async {
-  const size = 96.0;
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
-  canvas.drawRect(
-    const Rect.fromLTWH(0, 0, size, size),
-    Paint()..color = Colors.white,
-  );
-  final tp = TextPainter(
-    text: TextSpan(text: emoji, style: const TextStyle(fontSize: 68)),
-    textDirection: TextDirection.ltr,
-  )..layout(maxWidth: size);
-  tp.paint(canvas, Offset((size - tp.width) / 2, (size - tp.height) / 2));
-  final picture = recorder.endRecording();
-  final img = await picture.toImage(size.toInt(), size.toInt());
-  final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
-  return bytes!.buffer.asUint8List();
-}
-
+// ── 파트 분리: qr_result_screen/ 하위로 이동한 헬퍼/위젯 ───────────────────
+part 'qr_result_screen/icon_renderer.dart';
+part 'qr_result_screen/action_buttons.dart';
 
 class QrResultScreen extends ConsumerStatefulWidget {
   const QrResultScreen({super.key});
@@ -311,20 +249,24 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     final alertEnabled = await SettingsService.getReadabilityAlert();
     if (!alertEnabled || !score.shouldWarnOnSave || !mounted) return;
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${l10n.dialogLowReadabilityTitle}: ${score.total}% — ${score.mainIssue}',
-        ),
-        backgroundColor: Colors.orange.shade700,
-        duration: const Duration(seconds: 3),
-      ),
+    context.showSnack(
+      '${l10n.dialogLowReadabilityTitle}: ${score.total}% — ${score.mainIssue}',
+      backgroundColor: Colors.orange.shade700,
+      duration: const Duration(seconds: 3),
     );
   }
 
   Future<void> _showSaveTemplateSheet() async {
     final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController();
+    try {
+      await _runSaveTemplateSheet(l10n, nameCtrl);
+    } finally {
+      nameCtrl.dispose();
+    }
+  }
+
+  Future<void> _runSaveTemplateSheet(AppLocalizations l10n, TextEditingController nameCtrl) async {
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -395,16 +337,16 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       createdAt: DateTime.now(),
       // 배경 레이어 — 배경 이미지 기능 제거됨, Hive 스키마 호환을 위해 기본값만 저장
       // QR 레이어
-      qrColorValue: state.qrColor.toARGB32(),
-      gradientJson: state.customGradient != null
-          ? jsonEncode(state.customGradient!.toJson())
+      qrColorValue: state.style.qrColor.toARGB32(),
+      gradientJson: state.style.customGradient != null
+          ? jsonEncode(state.style.customGradient!.toJson())
           : null,
-      roundFactor: state.roundFactor,
-      dotStyleIndex: state.dotStyle.index,
-      eyeOuterIndex: state.eyeOuter.index,
-      eyeInnerIndex: state.eyeInner.index,
-      randomEyeSeed: state.randomEyeSeed,
-      quietZoneColorValue: state.quietZoneColor.toARGB32(),
+      roundFactor: state.style.roundFactor,
+      dotStyleIndex: state.style.dotStyle.index,
+      eyeOuterIndex: state.style.eyeOuter.index,
+      eyeInnerIndex: state.style.eyeInner.index,
+      randomEyeSeed: state.style.randomEyeSeed,
+      quietZoneColorValue: state.style.quietZoneColor.toARGB32(),
       // 스티커 레이어
       logoPositionIndex: state.sticker.logoPosition.index,
       logoBackgroundIndex: state.sticker.logoBackground.index,
@@ -422,12 +364,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     await ref.read(saveUserTemplateUseCaseProvider)(template);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.msgTemplateSaved(name)),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      context.showSnack(l10n.msgTemplateSaved(name));
       // 템플릿 탭으로 이동 (새 key로 AllTemplatesTab 강제 재빌드)
       setState(() => _myTemplatesVersion++);
       _tabController.animateTo(0);
@@ -536,7 +473,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                 AllTemplatesTab(
                   key: ValueKey(_myTemplatesVersion),
                   manifest: _templateManifest,
-                  activeTemplateId: state.activeTemplateId,
+                  activeTemplateId: state.template.activeTemplateId,
                   onTemplateSelected: _onTemplateSelected,
                   onTemplateClear: _onTemplateClear,
                   onChanged: _recapture,
@@ -608,123 +545,3 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   }
 }
 
-// ── 액션 버튼 영역 ────────────────────────────────────────────────────────────
-
-class _ActionButtons extends StatelessWidget {
-  final QrResultState state;
-  final VoidCallback onSaveGallery;
-  final VoidCallback onSaveTemplate;
-  final VoidCallback onShare;
-
-  const _ActionButtons({
-    required this.state,
-    required this.onSaveGallery,
-    required this.onSaveTemplate,
-    required this.onShare,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2)),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _ActionButton(
-                  icon: Icons.save_alt,
-                  label: l10n.actionSaveGallery,
-                  status: state.saveStatus,
-                  onTap: onSaveGallery,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _ActionButton(
-                  icon: Icons.bookmark_add_outlined,
-                  label: l10n.actionSaveTemplate,
-                  status: QrActionStatus.idle,
-                  onTap: onSaveTemplate,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _ActionButton(
-                  icon: Icons.share,
-                  label: l10n.actionShare,
-                  status: state.shareStatus,
-                  onTap: onShare,
-                ),
-              ),
-            ],
-          ),
-          if (state.errorMessage != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              state.errorMessage!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ── 액션 버튼 단일 항목 ────────────────────────────────────────────────────────
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final QrActionStatus status;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.status,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isLoading = status == QrActionStatus.loading;
-    final isSuccess = status == QrActionStatus.success;
-
-    return ElevatedButton(
-      onPressed: isLoading ? null : onTap,
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-      child: isLoading
-          ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isSuccess ? Icons.check_circle : icon,
-                  size: 20,
-                  color: isSuccess ? Colors.green : null,
-                ),
-                const SizedBox(height: 2),
-                Text(label, style: const TextStyle(fontSize: 11)),
-              ],
-            ),
-    );
-  }
-}

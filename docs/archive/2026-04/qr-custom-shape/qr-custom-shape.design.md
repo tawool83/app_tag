@@ -132,7 +132,7 @@ class DotShapeParams {
 
   // ── 공통 ──
   final double rotation;        // 회전: 0.0~360.0 (도)
-  final double scale;           // 크기: 0.8~1.15 (QR 인식 범위 내 미세 조정)
+  final double scale;           // 크기: 0.5~2.0 (슬라이더 -100%~+100%, 중앙 0%=1.0x, 테스트 후 조정 예정)
 
   const DotShapeParams({
     this.mode = DotShapeMode.symmetric,
@@ -155,16 +155,16 @@ class DotShapeParams {
   static const diamond = DotShapeParams(vertices: 4, innerRadius: 1.0, roundness: 0.0, rotation: 45.0);
   static const star = DotShapeParams(vertices: 5, innerRadius: 0.45, roundness: 0.0);
 
-  /// 비대칭 프리셋 (Superformula 파라미터 조합)
-  static const sfCircle   = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 0,  sfN1: 1,   sfN2: 1,   sfN3: 1);
-  static const sfSquare   = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 4,  sfN1: 100, sfN2: 100, sfN3: 100);
-  static const sfStar     = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 5,  sfN1: 0.3, sfN2: 0.3, sfN3: 0.3);
-  static const sfFlower   = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 6,  sfN1: 1,   sfN2: 1,   sfN3: 8);
-  static const sfLeaf     = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 1,  sfN1: 0.5, sfN2: 0.5, sfN3: 0.5);
-  static const sfHeart    = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 1,  sfN1: 1,   sfN2: 0.8, sfN3: -0.5);
-  static const sfButterfly= DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 3,  sfN1: 1,   sfN2: 6,   sfN3: 1);
-  static const sfDiamond  = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 4,  sfN1: 2,   sfN2: 1,   sfN3: 1);
-  static const sfTeardrop = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 1,  sfN1: 0.5, sfN2: 1,   sfN3: 0.3, sfA: 0.8, sfB: 1.2);
+  /// 비대칭 프리셋 (Superformula 파라미터 조합) — 총 5종
+  ///
+  /// NOTE: 실제 프로덕션 값은 채움률 ≥ 50% 및 시각적 구분성 확보를 위해 재튜닝됨.
+  /// 실제 사용 값은 `lib/features/qr_result/domain/entities/qr_shape_params.dart:77~91` 참조.
+  /// (Leaf/Butterfly/Diamond/Teardrop 등 추가 프리셋은 폐기됨 — v0.8 결정)
+  static const sfCircle = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 0,  sfN1: 1,   sfN2: 1,   sfN3: 1);
+  static const sfSquare = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 4,  sfN1: 100, sfN2: 100, sfN3: 100);
+  static const sfStar   = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 5,  sfN1: 0.3, sfN2: 0.3, sfN3: 0.3);  // 수학 모델 기준 (프로덕션 튜닝 값 별도)
+  static const sfFlower = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 6,  sfN1: 1,   sfN2: 1,   sfN3: 8);    // 수학 모델 기준 (프로덕션 튜닝 값 별도)
+  static const sfHeart  = DotShapeParams(mode: DotShapeMode.asymmetric, sfM: 1,  sfN1: 1,   sfN2: 0.8, sfN3: -0.5); // 수학 모델 기준 (프로덕션 튜닝 값 별도)
 
   DotShapeParams copyWith({
     DotShapeMode? mode, int? vertices, double? innerRadius, double? roundness,
@@ -1059,11 +1059,11 @@ Widget build(BuildContext context) {
 │                                                    │
 │ ── [비대칭 모드 선택 시] ────────────────            │
 │                                                    │
-│ Superformula 프리셋:                               │
-│ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐  │
-│ │● │ │■ │ │★ │ │❀ │ │🍃│ │♥ │ │🦋│ │◆ │ │💧│   │
-│ └──┘ └──┘ └──┘ └──┘ └──┘ └──┘ └──┘ └──┘ └──┘  │
-│ 원  사각 별  꽃  잎  하트 나비 다이아 물방울 →스크롤  │
+│ Superformula 프리셋 (5종):                         │
+│ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐                          │
+│ │● │ │■ │ │★ │ │❀ │ │♥ │                          │
+│ └──┘ └──┘ └──┘ └──┘ └──┘                          │
+│ 원  사각 별  꽃  하트                              │
 │                                                    │
 │ m (대칭 차수)                                      │
 │ ──────●───── 5.0                                  │
@@ -1106,8 +1106,9 @@ Widget build(BuildContext context) {
   │   ├─ AppBar: [<] + "도트 모양 편집기" + [저장 FilledButton]
   │   ├─ [대칭/비대칭] 토글 선택
   │   │   ├─ [대칭] → 꼭짓점, 내부 반경 슬라이더
-  │   │   └─ [비대칭] → Superformula 프리셋 9종 + m/n1/n2/n3/a/b 슬라이더 6개
-  │   ├─ 공통 슬라이더: 회전, 크기(Scale 0.8~1.15)
+  │   │   └─ [비대칭] → Superformula 프리셋 5종 + m/n1/n2/n3/a/b 슬라이더 6개
+  │   ├─ 공통 슬라이더: 회전, 크기(Scale 0.5~2.0, 중앙 0%=1.0x, -100%=0.5x, +100%=2.0x)
+  │   │   └─ 슬라이더 내부 범위 -1.0~+1.0 (선형), scale 매핑: s≥0 → 1+s, s<0 → 1+s*0.5
   │   ├─ 슬라이더 드래그 중 → 도트 모양 단독 확대 미리보기
   │   ├─ 슬라이더에서 손 뗌 → 전체 QR 코드에 적용
   │   ├─ [저장 버튼] → 동일 파라미터 프리셋 있으면 기존 선택, 없으면 새로 Hive 저장
@@ -1259,7 +1260,7 @@ if (_activeEditor == _EditorType.dot) {
 | Type | Target | Method |
 |------|--------|--------|
 | Unit | PolarPolygon 대칭 Path | 극좌표 다각형 파라미터 조합별 Path 유효성 |
-| Unit | PolarPolygon Superformula Path | Superformula 9 프리셋(원/사각/별/꽃/잎/하트/나비/다이아/물방울) Path 유효성 |
+| Unit | PolarPolygon Superformula Path | Superformula 5 프리셋(원/사각/별/꽃/하트) Path 유효성 |
 | Unit | PolarPolygon 채움률 | computeFillRatio() 반환값이 도형별 예상 범위 내인지 |
 | Unit | SuperellipsePath 좌표 | n=2(원), n=4(squircle), n=20(≈사각) 비교 |
 | Unit | QrMatrixHelper 영역 분류 | QR v1~v10에서 finder/alignment 영역 정확성 |
@@ -1397,5 +1398,8 @@ lib/features/qr_result/
 | 0.1 | 2026-04-18 | Initial draft | tawool83 |
 | 0.2 | 2026-04-18 | QR 전체 형태(Boundary) 기능 추가: QrBoundaryParams 모델, QrBoundaryClipper 유틸, UI 섹션 | tawool83 |
 | 0.3 | 2026-04-18 | 미리보기 전략: 드래그 중 = 모양 전용 확대 미리보기, 손 뗌 = 전체 QR 적용 (onChanged/onChangeEnd 분리) | tawool83 |
-| 0.4 | 2026-04-18 | squareness 제거 → [대칭/비대칭] 듀얼 모드 + Superformula(Gielis) 도입. DotShapeParams: ParametricShapeType enum 삭제 → sfM/sfN1/sfN2/sfN3/sfA/sfB 6개 파라미터로 교체. PolarPolygon: 개별 매개변수 방정식 5종 → 단일 _superformula() 함수로 통합. 편집기 UI: Superformula 프리셋 9종 + 슬라이더 6개 + 채움률 검증 | tawool83 |
+| 0.4 | 2026-04-18 | squareness 제거 → [대칭/비대칭] 듀얼 모드 + Superformula(Gielis) 도입. DotShapeParams: ParametricShapeType enum 삭제 → sfM/sfN1/sfN2/sfN3/sfA/sfB 6개 파라미터로 교체. PolarPolygon: 개별 매개변수 방정식 5종 → 단일 _superformula() 함수로 통합. 편집기 UI: Superformula 프리셋 5종 + 슬라이더 6개 + 채움률 검증 | tawool83 |
 | 0.5 | 2026-04-20 | 사용자 도트 프리셋 UX 상세 설계 반영: DotShapeParams.scale(0.8~1.15) 추가, UserShapePreset.lastUsedAt 정렬 + withLastUsed(), 편집기 뒤로가기 동작 분기(자동저장/다이얼로그), ID 기반 선택 표시(_selectedDotPresetId), AnimatedSwitcher 전환, 중복 방지, _DotGridModal/\_PresetChip/\_SliderRow 위젯 추가, User Flow 전면 재작성 | tawool83 |
+| 0.6 | 2026-04-20 | 도트 크기 슬라이더 범위 확장: scale 0.8~1.15 → 0.5~2.0. 슬라이더 UX를 -100%~+100%(중앙 0%) 비선형 매핑으로 변경하여 ±100%에서 각각 절반/2배 크기. QR 인식 한계 값은 추후 테스트로 결정. | tawool83 |
+| 0.7 | 2026-04-20 | Gap 분석 결과 반영: (1) Superformula 프리셋 표에 "수학 모델 기준 / 프로덕션 튜닝 값 별도 / 미구현" 주석 추가. (2) scale 렌더링 누락 버그 4곳(qr_dot_style, custom_qr_painter, qr_preview_section, qr_shape_tab) 수정 완료 명시. Match Rate 94%. | tawool83 |
+| 0.8 | 2026-04-20 | 미구현 프리셋 4종(Leaf/Butterfly/Diamond/Teardrop) 완전 폐기 결정. Superformula 프리셋을 Circle/Square/Star/Flower/Heart **5종으로 확정**. 관련 설계 기술(3.1, 4.1, 6.3, Testing) 모두 5종 기준으로 갱신. | tawool83 |

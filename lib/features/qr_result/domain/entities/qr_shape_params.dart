@@ -25,7 +25,7 @@ class DotShapeParams {
 
   // ── 공통 ──
   final double rotation; // 회전: 0.0~360.0 (도)
-  final double scale; // 크기: 0.8~1.15 (QR 인식 한계 고려)
+  final double scale; // 크기: 0.5~2.0 (슬라이더 -100%~+100%, 중앙 1.0, QR 인식 한계는 테스트 후 조정)
 
   const DotShapeParams({
     this.mode = DotShapeMode.symmetric,

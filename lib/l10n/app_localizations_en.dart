@@ -883,4 +883,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sliderFrequency => 'Frequency';
+
+  @override
+  String get optionLogoTypeLogo => 'Logo';
+
+  @override
+  String get optionLogoTypeImage => 'Image';
+
+  @override
+  String get optionLogoTypeText => 'Text';
+
+  @override
+  String get labelLogoTabPosition => 'Position';
+
+  @override
+  String get labelLogoTabBackground => 'Background';
+
+  @override
+  String get labelLogoCategory => 'Category';
+
+  @override
+  String get labelLogoGallery => 'Choose from gallery';
+
+  @override
+  String get labelLogoRecrop => 'Re-crop';
+
+  @override
+  String get labelLogoTextContent => 'Text';
+
+  @override
+  String get hintLogoTextContent => 'Text for logo';
+
+  @override
+  String get categorySocial => 'Social';
+
+  @override
+  String get categoryCoin => 'Coin';
+
+  @override
+  String get categoryBrand => 'Brand';
+
+  @override
+  String get categoryEmoji => 'Emoji';
+
+  @override
+  String get msgLogoLoadFailed => 'Failed to load icon';
+
+  @override
+  String get msgLogoCropFailed => 'Failed to process image';
+
+  @override
+  String get labelLogoBackgroundColor => 'Color';
+
+  @override
+  String get actionLogoBackgroundReset => 'Default';
+
+  @override
+  String get optionRectangle => 'Square';
+
+  @override
+  String get optionRoundedRectangle => 'Circle';
+
+  @override
+  String get labelLogoType => 'Type';
 }

@@ -106,7 +106,7 @@
 | FR-18 | **프리셋 선택 표시**: 현재 선택된 프리셋에 primary 컬러 테두리 + check_circle 아이콘 표시. ID 기반 추적(`_selectedDotPresetId`)으로 동일 파라미터 중복 프리셋 구분 | High | Done |
 | FR-19 | **프리셋 선택-정렬 부드러운 전환**: 선택 표시 → 100ms 딜레이 → 정렬 갱신 (AnimatedSwitcher 300ms crossfade) | Medium | Done |
 | FR-20 | **프리셋 중복 방지**: 새 프리셋 저장 시 동일 파라미터(`DotShapeParams` equality) 기존 프리셋이 있으면 새로 생성하지 않고 기존 프리셋을 선택 | High | Done |
-| FR-21 | **도트 크기(Scale) 미세 조정**: 대칭/비대칭 공통 슬라이더. 범위 0.8~1.15 (80%~115%). QR 포인트 겹침으로 인식률 저하 방지를 위해 의도적으로 좁은 범위 | High | Done |
+| FR-21 | **도트 크기(Scale) 조정**: 대칭/비대칭 공통 슬라이더. 내부 scale 0.5~2.0, 비대칭 슬라이더 매핑(-100%=0.5x, 0%=1.0x, +100%=2.0x). QR 인식 한계값은 실기기 테스트 후 재조정 예정 | High | Done |
 | FR-22 | **뒤로가기 동작 분기**: (1) 기존 프리셋 수정 모드(롱프레스 진입): [<] = 자동 저장(기존 프리셋 덮어쓰기) + 에디터 닫기. (2) 새 프리셋 생성 모드(+ 버튼 진입): [<] = "저장/취소" 다이얼로그 표시 → 저장 선택 시 프리셋 생성, 취소 선택 시 변경 폐기 | High | Done |
 | FR-23 | **편집기 모드 중 탭 스와이프 차단**: `NeverScrollableScrollPhysics()`로 편집기 활성 시 좌우 탭 이동 방지 | Medium | Done |
 | FR-24 | **프리셋 그리드 모달**: 프리셋이 많을 때 전체보기 BottomSheet. 뷰/삭제 모드. 롱프레스로 편집 진입 | Medium | Done |
@@ -268,7 +268,7 @@ Selected Level: Dynamic (Feature-based modules)
 
   공통 슬라이더:
     rotation (회전): 0~360도
-    scale (크기): 0.8~1.15 (QR 인식 범위 내 미세 조정, 포인트 겹침 방지)
+    scale (크기): 0.5~2.0 (슬라이더 -100%~+100% 비대칭 매핑, 중앙 0%=1.0x, QR 인식 한계는 테스트 후 재조정)
 
   생성 알고리즘:
     θ in 0..2π, steps=128:
@@ -547,3 +547,4 @@ class UserAnimationPreset {
 | 0.2 | 2026-04-18 | 애니메이션 QR, "+" 편집기 UI, 사용자 프리셋 저장, 통합 랜덤 추가 | tawool83 |
 | 0.3 | 2026-04-18 | 도트 squareness 제거 → [대칭/비대칭] 듀얼 모드 + Superformula(Gielis) 6파라미터(m,n1,n2,n3,a,b) + 프리셋 9종 + 채움률 검증. UserDotPreset 모델 Superformula 파라미터로 교체 | tawool83 |
 | 0.4 | 2026-04-20 | 사용자 도트 프리셋 UX 요구사항 추가 (FR-17~FR-25): lastUsedAt 정렬, ID 기반 선택 표시, AnimatedSwitcher 전환, 중복 방지, Scale 슬라이더(0.8~1.15), 뒤로가기 동작 분기(자동저장/다이얼로그), 탭 스와이프 차단, 그리드 모달, FilledButton 저장 | tawool83 |
+| 0.5 | 2026-04-20 | FR-21 도트 크기 슬라이더 범위 확장: 0.8~1.15 → 0.5~2.0, 비대칭 매핑(-100%=0.5x, 0%=1.0x, +100%=2.0x). QR 인식 한계값은 실기기 테스트 후 재조정 예정 | tawool83 |

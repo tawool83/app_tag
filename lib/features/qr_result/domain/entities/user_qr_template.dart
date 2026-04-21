@@ -37,6 +37,18 @@ class UserQrTemplate {
   final String? bottomTextFont;
   final double? bottomTextSize;
 
+  // 로고 타입 확장 (logo-tab-redesign)
+  /// 'logo' | 'image' | 'text' — null = 레거시 경로
+  final String? logoType;
+  final String? logoAssetId;
+  final Uint8List? logoImageBytes;
+  final String? logoTextContent;
+  final int? logoTextColorValue;
+  final String? logoTextFont;
+  final double? logoTextSize;
+  /// 배경 fill 색상 ARGB int. null = 기본 흰색
+  final int? logoBackgroundColorValue;
+
   // 메타
   final Uint8List? thumbnailBytes;
   final DateTime updatedAt;
@@ -72,6 +84,14 @@ class UserQrTemplate {
     this.bottomTextColorValue,
     this.bottomTextFont,
     this.bottomTextSize,
+    this.logoType,
+    this.logoAssetId,
+    this.logoImageBytes,
+    this.logoTextContent,
+    this.logoTextColorValue,
+    this.logoTextFont,
+    this.logoTextSize,
+    this.logoBackgroundColorValue,
     this.thumbnailBytes,
     DateTime? updatedAt,
     this.remoteId,

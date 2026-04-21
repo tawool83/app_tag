@@ -881,4 +881,67 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get sliderFrequency => 'ความถี่';
+
+  @override
+  String get optionLogoTypeLogo => 'โลโก้';
+
+  @override
+  String get optionLogoTypeImage => 'รูปภาพ';
+
+  @override
+  String get optionLogoTypeText => 'ข้อความ';
+
+  @override
+  String get labelLogoTabPosition => 'ตำแหน่ง';
+
+  @override
+  String get labelLogoTabBackground => 'พื้นหลัง';
+
+  @override
+  String get labelLogoCategory => 'หมวดหมู่';
+
+  @override
+  String get labelLogoGallery => 'เลือกจากคลัง';
+
+  @override
+  String get labelLogoRecrop => 'ครอบตัดใหม่';
+
+  @override
+  String get labelLogoTextContent => 'ข้อความ';
+
+  @override
+  String get hintLogoTextContent => 'ข้อความสำหรับโลโก้';
+
+  @override
+  String get categorySocial => 'โซเชียล';
+
+  @override
+  String get categoryCoin => 'เหรียญ';
+
+  @override
+  String get categoryBrand => 'แบรนด์';
+
+  @override
+  String get categoryEmoji => 'อิโมจิ';
+
+  @override
+  String get msgLogoLoadFailed => 'โหลดไอคอนไม่ได้';
+
+  @override
+  String get msgLogoCropFailed => 'ประมวลผลภาพล้มเหลว';
+
+  @override
+  String get labelLogoBackgroundColor => 'สี';
+
+  @override
+  String get actionLogoBackgroundReset => 'ค่าเริ่มต้น';
+
+  @override
+  String get optionRectangle => 'สี่เหลี่ยม';
+
+  @override
+  String get optionRoundedRectangle => 'วงกลม';
+
+  @override
+  String get labelLogoType => 'ประเภท';
 }

@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+import '../../core/extensions/context_extensions.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
@@ -177,9 +178,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
 
   void _onQr() {
     if (_selected == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.msgSelectLocation)),
-      );
+      context.showSnack(AppLocalizations.of(context)!.msgSelectLocation);
       return;
     }
     context.push('/qr-result', extra: _buildArgs());
@@ -187,9 +186,7 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
 
   void _onNfc() {
     if (_selected == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.msgSelectLocation)),
-      );
+      context.showSnack(AppLocalizations.of(context)!.msgSelectLocation);
       return;
     }
     context.push('/nfc-writer', extra: _buildArgs());

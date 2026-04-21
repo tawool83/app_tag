@@ -19,7 +19,13 @@
   "actionDelete": "ลบ",
   "actionEdit": "แก้ไข",
   "actionDeleteCount": "ลบ {count} รายการ",
-  "@actionDeleteCount": { "placeholders": { "count": { "type": "int" } } },
+  "@actionDeleteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "actionSave": "บันทึก",
   "actionShare": "แชร์",
   "actionRetry": "ลองอีกครั้ง",
@@ -30,7 +36,13 @@
   "tooltipDeleteAll": "ลบทั้งหมด",
   "actionCollapseHidden": "ยุบเมนูที่ซ่อน",
   "actionShowHidden": "ดูเมนูที่ซ่อน ({count})",
-  "@actionShowHidden": { "placeholders": { "count": { "type": "int" } } },
+  "@actionShowHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "screenHelpTitle": "คู่มือการใช้งาน",
   "screenHistoryTitle": "ประวัติ",
   "screenHistoryEmpty": "ไม่มีประวัติ",
@@ -40,7 +52,13 @@
   "dialogClearAllContent": "คุณต้องการลบประวัติทั้งหมดหรือไม่?",
   "dialogDeleteHistoryTitle": "ลบประวัติ",
   "dialogDeleteHistoryContent": "คุณต้องการลบประวัติของ \"{name}\" หรือไม่?",
-  "@dialogDeleteHistoryContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteHistoryContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "screenWebsiteTitle": "แท็กเว็บไซต์",
   "labelUrl": "URL",
   "hintUrl": "https://example.com",
@@ -146,26 +164,56 @@
   "actionSaveTemplate": "บันทึกเทมเพลต",
   "dialogLowReadabilityTitle": "อัตราการอ่านต่ำ",
   "dialogLowReadabilityScore": "อัตราการอ่านปัจจุบัน: {score}%",
-  "@dialogLowReadabilityScore": { "placeholders": { "score": { "type": "int" } } },
+  "@dialogLowReadabilityScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "dialogLowReadabilityWarning": "QR โค้ดอาจไม่สามารถอ่านได้\nโดยเครื่องสแกนบางตัว",
   "dialogLowReadabilityCause": "สาเหตุหลัก: {issue}",
-  "@dialogLowReadabilityCause": { "placeholders": { "issue": { "type": "String" } } },
+  "@dialogLowReadabilityCause": {
+    "placeholders": {
+      "issue": {
+        "type": "String"
+      }
+    }
+  },
   "actionSaveAnyway": "บันทึกอยู่ดี",
   "dialogSaveTemplateTitle": "บันทึกเทมเพลต",
   "labelTemplateName": "ชื่อเทมเพลต",
   "hintTemplateName": "เช่น: QR พื้นหลังสีฟ้า",
   "msgTemplateSaved": "เทมเพลต \"{name}\" ถูกบันทึกแล้ว",
-  "@msgTemplateSaved": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgSaveFailed": "บันทึกรูปภาพล้มเหลว",
   "msgPrintFailed": "พิมพ์ล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครื่องพิมพ์",
   "labelReadability": "อัตราการอ่าน",
   "screenTemplateMyTemplates": "เทมเพลตของฉัน",
   "actionNoStyle": "ไม่มีสไตล์",
   "msgTemplateApplied": "เทมเพลต \"{name}\" ถูกนำไปใช้แล้ว",
-  "@msgTemplateApplied": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dialogDeleteTemplateTitle": "ลบเทมเพลต",
   "dialogDeleteTemplateContent": "คุณต้องการลบ \"{name}\" หรือไม่?",
-  "@dialogDeleteTemplateContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteTemplateContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgNoSavedTemplates": "ไม่มีเทมเพลตที่บันทึกไว้",
   "msgNoSavedTemplatesHint": "บันทึกสไตล์ปัจจุบันด้วยปุ่ม [บันทึกเทมเพลต] ด้านล่าง",
   "tabColorSolid": "สีเดียว",
@@ -203,8 +251,14 @@
   "settingsLanguage": "ภาษา",
   "settingsLanguageSystem": "ค่าเริ่มต้นของระบบ",
   "msgCopiedToClipboard": "\"{text}\" คัดลอกไปยังคลิปบอร์ดแล้ว",
-  "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
-    "settingsReadabilityAlert": "แจ้งเตือนอัตราการอ่าน",
+  "@msgCopiedToClipboard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsReadabilityAlert": "แจ้งเตือนอัตราการอ่าน",
   "platformAndroid": "Android",
   "platformIos": "iOS",
   "labelCustomGradient": "ไล่สีกำหนดเอง",
@@ -258,7 +312,6 @@
   "loginPrompt": "เข้าสู่ระบบ",
   "cloudSync": "ซิงค์คลาวด์",
   "cancel": "ยกเลิก",
-
   "labelSavePreset": "บันทึกพรีเซ็ต",
   "hintPresetName": "ชื่อพรีเซ็ต",
   "labelBoundaryShape": "รูปทรงกรอบ QR",
@@ -291,5 +344,26 @@
   "sliderPadding": "ระยะขอบ",
   "sliderSpeed": "ความเร็ว",
   "sliderAmplitude": "แอมพลิจูด",
-  "sliderFrequency": "ความถี่"
+  "sliderFrequency": "ความถี่",
+  "optionLogoTypeLogo": "โลโก้",
+  "optionLogoTypeImage": "รูปภาพ",
+  "optionLogoTypeText": "ข้อความ",
+  "labelLogoTabPosition": "ตำแหน่ง",
+  "labelLogoTabBackground": "พื้นหลัง",
+  "labelLogoCategory": "หมวดหมู่",
+  "labelLogoGallery": "เลือกจากคลัง",
+  "labelLogoRecrop": "ครอบตัดใหม่",
+  "labelLogoTextContent": "ข้อความ",
+  "hintLogoTextContent": "ข้อความสำหรับโลโก้",
+  "categorySocial": "โซเชียล",
+  "categoryCoin": "เหรียญ",
+  "categoryBrand": "แบรนด์",
+  "categoryEmoji": "อิโมจิ",
+  "msgLogoLoadFailed": "โหลดไอคอนไม่ได้",
+  "msgLogoCropFailed": "ประมวลผลภาพล้มเหลว",
+  "labelLogoBackgroundColor": "สี",
+  "actionLogoBackgroundReset": "ค่าเริ่มต้น",
+  "optionRectangle": "สี่เหลี่ยม",
+  "optionRoundedRectangle": "วงกลม",
+  "labelLogoType": "ประเภท"
 }

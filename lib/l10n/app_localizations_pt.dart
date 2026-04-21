@@ -887,4 +887,67 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sliderFrequency => 'Frequência';
+
+  @override
+  String get optionLogoTypeLogo => 'Logo';
+
+  @override
+  String get optionLogoTypeImage => 'Imagem';
+
+  @override
+  String get optionLogoTypeText => 'Texto';
+
+  @override
+  String get labelLogoTabPosition => 'Posição';
+
+  @override
+  String get labelLogoTabBackground => 'Fundo';
+
+  @override
+  String get labelLogoCategory => 'Categoria';
+
+  @override
+  String get labelLogoGallery => 'Escolher da galeria';
+
+  @override
+  String get labelLogoRecrop => 'Recortar';
+
+  @override
+  String get labelLogoTextContent => 'Texto';
+
+  @override
+  String get hintLogoTextContent => 'Texto do logotipo';
+
+  @override
+  String get categorySocial => 'Social';
+
+  @override
+  String get categoryCoin => 'Moeda';
+
+  @override
+  String get categoryBrand => 'Marca';
+
+  @override
+  String get categoryEmoji => 'Emoji';
+
+  @override
+  String get msgLogoLoadFailed => 'Não foi possível carregar o ícone';
+
+  @override
+  String get msgLogoCropFailed => 'Falha ao processar imagem';
+
+  @override
+  String get labelLogoBackgroundColor => 'Cor';
+
+  @override
+  String get actionLogoBackgroundReset => 'Padrão';
+
+  @override
+  String get optionRectangle => 'Quadrado';
+
+  @override
+  String get optionRoundedRectangle => 'Círculo';
+
+  @override
+  String get labelLogoType => 'Tipo';
 }

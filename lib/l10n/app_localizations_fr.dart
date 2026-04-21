@@ -891,4 +891,67 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get sliderFrequency => 'Fréquence';
+
+  @override
+  String get optionLogoTypeLogo => 'Logo';
+
+  @override
+  String get optionLogoTypeImage => 'Image';
+
+  @override
+  String get optionLogoTypeText => 'Texte';
+
+  @override
+  String get labelLogoTabPosition => 'Position';
+
+  @override
+  String get labelLogoTabBackground => 'Fond';
+
+  @override
+  String get labelLogoCategory => 'Catégorie';
+
+  @override
+  String get labelLogoGallery => 'Choisir depuis la galerie';
+
+  @override
+  String get labelLogoRecrop => 'Recadrer';
+
+  @override
+  String get labelLogoTextContent => 'Texte';
+
+  @override
+  String get hintLogoTextContent => 'Texte du logo';
+
+  @override
+  String get categorySocial => 'Social';
+
+  @override
+  String get categoryCoin => 'Pièce';
+
+  @override
+  String get categoryBrand => 'Marque';
+
+  @override
+  String get categoryEmoji => 'Emoji';
+
+  @override
+  String get msgLogoLoadFailed => 'Impossible de charger l\'icône';
+
+  @override
+  String get msgLogoCropFailed => 'Échec du traitement d\'image';
+
+  @override
+  String get labelLogoBackgroundColor => 'Couleur';
+
+  @override
+  String get actionLogoBackgroundReset => 'Défaut';
+
+  @override
+  String get optionRectangle => 'Carré';
+
+  @override
+  String get optionRoundedRectangle => 'Cercle';
+
+  @override
+  String get labelLogoType => 'Type';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/error/result.dart';
+import '../../../core/extensions/context_extensions.dart';
 import '../domain/entities/qr_template.dart';
 import '../domain/entities/user_qr_template.dart';
 import '../presentation/providers/qr_result_providers.dart';
@@ -52,12 +53,7 @@ class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
     ref.read(qrResultProvider.notifier).applyUserTemplate(t);
     widget.onChanged();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.msgTemplateApplied(t.name)),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      context.showSnack(AppLocalizations.of(context)!.msgTemplateApplied(t.name));
     }
   }
 

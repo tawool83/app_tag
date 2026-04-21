@@ -23,3 +23,7 @@
 | app-branding | 2026-04-17 | 100% | [app-branding/](app-branding/) (Plan+Design, 구현 완료) |
 | i18n-localization | 2026-04-17 | 95% | [i18n-localization/](i18n-localization/) (Plan+Design, 10개 언어 구현 완료) |
 | readability-ui-simplify | 2026-04-17 | 100% | [readability-ui-simplify/](readability-ui-simplify/) (Plan, 구현 완료) |
+| qr-custom-shape | 2026-04-20 | 94% | [qr-custom-shape/](qr-custom-shape/) (Plan v0.5 + Design v0.7 + Analysis + Report, 25 FR 완료) |
+| logo-tab-redesign | 2026-04-21 | 96% | [logo-tab-redesign/](logo-tab-redesign/) (Plan+Design v1.3+Analysis+Report, 6 Act iterations — 로고/이미지/텍스트 3타입 + 배경 fill + 2행 레이아웃) |
+| refactor-qr-result-state | 2026-04-21 | 97% | [refactor-qr-result-state/](refactor-qr-result-state/) (Plan+Design+Analysis v3+Report v2, R2 — QrResultState 26→6 composite, 5 sub-state + 4 entity, `_sentinel` 제거, flat getter 0개 완전 제거, ~115 call-site 마이그레이션 완료) |
+| refactor-qr-notifier-split | 2026-04-21 | 95.5% | [refactor-qr-notifier-split/](refactor-qr-notifier-split/) (Plan+Analysis+Report, R-series 최종 — QrResultNotifier 576→234줄 main + 5 mixin(`part of` + `on StateNotifier<QrResultState>`), 40 setter 관심사별 분산, public API 100% 유지, external migration 0) |

@@ -19,7 +19,13 @@
   "actionDelete": "Delete",
   "actionEdit": "Edit",
   "actionDeleteCount": "Delete {count}",
-  "@actionDeleteCount": { "placeholders": { "count": { "type": "int" } } },
+  "@actionDeleteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "actionSave": "Save",
   "actionShare": "Share",
   "actionRetry": "Retry",
@@ -30,7 +36,13 @@
   "tooltipDeleteAll": "Delete All",
   "actionCollapseHidden": "Collapse hidden menu",
   "actionShowHidden": "Show hidden menu ({count})",
-  "@actionShowHidden": { "placeholders": { "count": { "type": "int" } } },
+  "@actionShowHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "screenHelpTitle": "Help",
   "screenHistoryTitle": "History",
   "screenHistoryEmpty": "No history yet.",
@@ -40,7 +52,13 @@
   "dialogClearAllContent": "Are you sure you want to delete all history?",
   "dialogDeleteHistoryTitle": "Delete History",
   "dialogDeleteHistoryContent": "Are you sure you want to delete \"{name}\"?",
-  "@dialogDeleteHistoryContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteHistoryContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "screenWebsiteTitle": "Website Tag",
   "labelUrl": "URL",
   "hintUrl": "https://example.com",
@@ -146,26 +164,56 @@
   "actionSaveTemplate": "Save Template",
   "dialogLowReadabilityTitle": "Low Readability",
   "dialogLowReadabilityScore": "Current readability: {score}%",
-  "@dialogLowReadabilityScore": { "placeholders": { "score": { "type": "int" } } },
+  "@dialogLowReadabilityScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "dialogLowReadabilityWarning": "The QR code may not be recognized\nby some scanners.",
   "dialogLowReadabilityCause": "Main cause: {issue}",
-  "@dialogLowReadabilityCause": { "placeholders": { "issue": { "type": "String" } } },
+  "@dialogLowReadabilityCause": {
+    "placeholders": {
+      "issue": {
+        "type": "String"
+      }
+    }
+  },
   "actionSaveAnyway": "Save Anyway",
   "dialogSaveTemplateTitle": "Save Template",
   "labelTemplateName": "Template Name",
   "hintTemplateName": "e.g.: Blue Background QR",
   "msgTemplateSaved": "Template \"{name}\" has been saved.",
-  "@msgTemplateSaved": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgSaveFailed": "Failed to save image.",
   "msgPrintFailed": "Print failed. Please check the printer connection.",
   "labelReadability": "Readability",
   "screenTemplateMyTemplates": "My Templates",
   "actionNoStyle": "No Style",
   "msgTemplateApplied": "Template \"{name}\" has been applied.",
-  "@msgTemplateApplied": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dialogDeleteTemplateTitle": "Delete Template",
   "dialogDeleteTemplateContent": "Are you sure you want to delete \"{name}\"?",
-  "@dialogDeleteTemplateContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteTemplateContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgNoSavedTemplates": "No saved templates.",
   "msgNoSavedTemplatesHint": "Save your current style using the [Save Template] button below.",
   "tabColorSolid": "Solid",
@@ -203,8 +251,14 @@
   "settingsLanguage": "Language",
   "settingsLanguageSystem": "System Default",
   "msgCopiedToClipboard": "\"{text}\" copied to clipboard",
-  "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
-    "settingsReadabilityAlert": "Readability alert",
+  "@msgCopiedToClipboard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsReadabilityAlert": "Readability alert",
   "platformAndroid": "Android",
   "platformIos": "iOS",
   "labelCustomGradient": "Custom Gradient",
@@ -258,7 +312,6 @@
   "loginPrompt": "Log In",
   "cloudSync": "Cloud Sync",
   "cancel": "Cancel",
-
   "labelSavePreset": "Save Preset",
   "hintPresetName": "Preset name",
   "labelBoundaryShape": "QR Outline Shape",
@@ -291,5 +344,26 @@
   "sliderPadding": "Padding",
   "sliderSpeed": "Speed",
   "sliderAmplitude": "Amplitude",
-  "sliderFrequency": "Frequency"
+  "sliderFrequency": "Frequency",
+  "optionLogoTypeLogo": "Logo",
+  "optionLogoTypeImage": "Image",
+  "optionLogoTypeText": "Text",
+  "labelLogoTabPosition": "Position",
+  "labelLogoTabBackground": "Background",
+  "labelLogoCategory": "Category",
+  "labelLogoGallery": "Choose from gallery",
+  "labelLogoRecrop": "Re-crop",
+  "labelLogoTextContent": "Text",
+  "hintLogoTextContent": "Text for logo",
+  "categorySocial": "Social",
+  "categoryCoin": "Coin",
+  "categoryBrand": "Brand",
+  "categoryEmoji": "Emoji",
+  "msgLogoLoadFailed": "Failed to load icon",
+  "msgLogoCropFailed": "Failed to process image",
+  "labelLogoBackgroundColor": "Color",
+  "actionLogoBackgroundReset": "Default",
+  "optionRectangle": "Square",
+  "optionRoundedRectangle": "Circle",
+  "labelLogoType": "Type"
 }

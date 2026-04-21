@@ -70,7 +70,7 @@ class _PolarDotSymbol extends PrettyQrShape {
       if (!module.isDark) continue;
       final rect = module.resolveRect(context);
       final center = rect.center;
-      final radius = rect.width / 2;
+      final radius = rect.width / 2 * params.scale;
       final path = PolarPolygon.buildPath(center, radius, params);
       context.canvas.drawPath(path, paint);
     }

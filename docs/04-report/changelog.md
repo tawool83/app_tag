@@ -2,6 +2,47 @@
 
 모든 주요 변경사항을 기록합니다.
 
+## [2026-04-21] - QrResultNotifier 분할 리팩터 완료 (R-Series 종료)
+
+### Changed
+- **QrResultNotifier 모놀리식 구조 해체**: 576줄 god-class를 part of + mixin 패턴으로 분할
+  - 메인 파일 (`qr_result_provider.dart`): 576 → 234줄 (59% 축소, lifecycle 전용)
+  - 5개 mixin 파일 (`notifier/` 아래): action/style/logo/template/meta 관심사별 분리
+  - 각 mixin: 29~109줄 (목표 ≤150 달성)
+
+- **파일 탐색성 극대화**: 
+  - 스타일 setter 수정 시 `style_setters.dart` (109줄)만 로드 (원본 576줄 → 19% 축소)
+  - IDE outline: mixin당 4~13 항목 (원본 40개 → 5배 정리)
+  - Grep 노이즈 제거: `void set` 검색 시 관련 결과만 표시
+
+### Design
+- **구조**: Dart `part of` + `mixin on StateNotifier<QrResultState>`
+  - Lifecycle methods (ctor, setCurrentTaskId, loadFromCustomization, _schedulePush, dispose)는 main 유지
+  - 40개 setter → 5개 mixin 파일로 위임 (public API 100% 유지)
+  - Private 멤버 (_ref, _suppressPush, _debounceTimer) part of로 직접 접근
+
+### Quality Metrics
+- **Design Match Rate**: 95.5% (10/11 FRs @ 100%, 1 FR @50% justified overrun)
+- **FR-03 미달 분석**: main 234줄 (목표 ≤200, +34줄)
+  - Root cause: `loadFromCustomization` + `_rehydrateLogoAssetIfNeeded`의 원자성 필요 (분할 불가)
+  - 수용 사유: NFR-02 (파일 탐색성) 주목표 완전 달성, 234줄은 context window 수용 가능
+  - 향후: lifecycle helper 클래스 도입으로 해소 가능 (지금은 권고 안 함)
+
+- **Flutter analyze**: 0 errors
+- **외부 마이그레이션**: 0줄 (mixin auto-inherit, public API 불변)
+- **Hive 스키마**: 불변
+
+### R-Series 시리즈 종료
+1. **R1** (qr_shape_tab split): Shape 로직 분리
+2. **R2** (QrResultState composite): Sub-state 토폴로지
+3. **R3** (qr_result_screen split): Screen 컴포저빌리티
+4. **R4** (SettingsService cache): Persistence 성능
+5. **R5** (refactor-qr-notifier-split): Setter 국소성
+
+**시리즈 성과**: 699줄 monolithic provider → 234줄 main + 5 mixin + R2's 5 sub-state 구조 (Clean Architecture)
+
+---
+
 ## [2026-04-16] - QR 결과 화면 텍스트 탭 분리 완료
 
 ### Added

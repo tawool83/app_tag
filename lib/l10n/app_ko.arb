@@ -19,7 +19,13 @@
   "actionDelete": "삭제",
   "actionEdit": "편집",
   "actionDeleteCount": "{count}개 삭제",
-  "@actionDeleteCount": { "placeholders": { "count": { "type": "int" } } },
+  "@actionDeleteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "actionSave": "저장",
   "actionShare": "공유",
   "actionRetry": "다시 시도",
@@ -30,7 +36,13 @@
   "tooltipDeleteAll": "전체 삭제",
   "actionCollapseHidden": "숨긴 메뉴 접기",
   "actionShowHidden": "숨긴 메뉴 보기 ({count})",
-  "@actionShowHidden": { "placeholders": { "count": { "type": "int" } } },
+  "@actionShowHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "screenHelpTitle": "사용 안내",
   "screenHistoryTitle": "생성 이력",
   "screenHistoryEmpty": "이력이 없습니다.",
@@ -40,7 +52,13 @@
   "dialogClearAllContent": "모든 이력을 삭제하시겠습니까?",
   "dialogDeleteHistoryTitle": "이력 삭제",
   "dialogDeleteHistoryContent": "\"{name}\" 이력을 삭제하시겠습니까?",
-  "@dialogDeleteHistoryContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteHistoryContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "screenWebsiteTitle": "웹 사이트 태그",
   "labelUrl": "URL",
   "hintUrl": "https://example.com",
@@ -146,26 +164,56 @@
   "actionSaveTemplate": "템플릿 저장",
   "dialogLowReadabilityTitle": "인식률이 낮습니다",
   "dialogLowReadabilityScore": "현재 인식률: {score}%",
-  "@dialogLowReadabilityScore": { "placeholders": { "score": { "type": "int" } } },
+  "@dialogLowReadabilityScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "dialogLowReadabilityWarning": "QR 코드가 일부 스캐너에서\n인식되지 않을 수 있습니다.",
   "dialogLowReadabilityCause": "주요 원인: {issue}",
-  "@dialogLowReadabilityCause": { "placeholders": { "issue": { "type": "String" } } },
+  "@dialogLowReadabilityCause": {
+    "placeholders": {
+      "issue": {
+        "type": "String"
+      }
+    }
+  },
   "actionSaveAnyway": "그래도 저장",
   "dialogSaveTemplateTitle": "템플릿 저장",
   "labelTemplateName": "템플릿 이름",
   "hintTemplateName": "예: 파란 배경 QR",
   "msgTemplateSaved": "「{name}」 템플릿이 저장되었습니다.",
-  "@msgTemplateSaved": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgSaveFailed": "이미지 저장에 실패했습니다.",
   "msgPrintFailed": "인쇄에 실패했습니다. 프린터 연결을 확인해주세요.",
   "labelReadability": "인식률",
   "screenTemplateMyTemplates": "나의 템플릿",
   "actionNoStyle": "스타일 없음",
   "msgTemplateApplied": "「{name}」 템플릿이 적용되었습니다.",
-  "@msgTemplateApplied": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dialogDeleteTemplateTitle": "템플릿 삭제",
   "dialogDeleteTemplateContent": "「{name}」을(를) 삭제하시겠습니까?",
-  "@dialogDeleteTemplateContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteTemplateContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgNoSavedTemplates": "저장된 템플릿이 없습니다.",
   "msgNoSavedTemplatesHint": "하단 [템플릿 저장] 버튼으로 현재 스타일을 저장하세요.",
   "tabColorSolid": "단색",
@@ -203,8 +251,14 @@
   "settingsLanguage": "언어",
   "settingsLanguageSystem": "시스템 기본",
   "msgCopiedToClipboard": "\"{text}\" 클립보드에 복사됨",
-  "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
-    "settingsReadabilityAlert": "인식률 알림 사용",
+  "@msgCopiedToClipboard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsReadabilityAlert": "인식률 알림 사용",
   "platformAndroid": "Android",
   "platformIos": "iOS",
   "labelCustomGradient": "맞춤 그라디언트",
@@ -258,7 +312,6 @@
   "loginPrompt": "로그인하기",
   "cloudSync": "클라우드 동기화",
   "cancel": "취소",
-
   "labelSavePreset": "프리셋 저장",
   "hintPresetName": "프리셋 이름",
   "labelBoundaryShape": "QR 전체 외곽",
@@ -291,5 +344,26 @@
   "sliderPadding": "패딩",
   "sliderSpeed": "속도",
   "sliderAmplitude": "강도",
-  "sliderFrequency": "빈도"
+  "sliderFrequency": "빈도",
+  "optionLogoTypeLogo": "로고",
+  "optionLogoTypeImage": "이미지",
+  "optionLogoTypeText": "텍스트",
+  "labelLogoTabPosition": "위치",
+  "labelLogoTabBackground": "배경",
+  "labelLogoCategory": "카테고리",
+  "labelLogoGallery": "갤러리에서 선택",
+  "labelLogoRecrop": "다시 자르기",
+  "labelLogoTextContent": "문구",
+  "hintLogoTextContent": "로고에 넣을 글자",
+  "categorySocial": "소셜",
+  "categoryCoin": "코인",
+  "categoryBrand": "브랜드",
+  "categoryEmoji": "이모지",
+  "msgLogoLoadFailed": "아이콘을 불러올 수 없습니다",
+  "msgLogoCropFailed": "이미지 처리에 실패했습니다",
+  "labelLogoBackgroundColor": "색상",
+  "actionLogoBackgroundReset": "기본값",
+  "optionRectangle": "사각",
+  "optionRoundedRectangle": "원형",
+  "labelLogoType": "유형"
 }

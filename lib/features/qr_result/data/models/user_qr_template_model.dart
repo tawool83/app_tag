@@ -99,6 +99,31 @@ class UserQrTemplateModel extends HiveObject {
   @HiveField(29)
   DateTime? updatedAt;
 
+  // ── 로고 타입 확장 (logo-tab-redesign) ─────────────────────────────
+  @HiveField(30)
+  String? logoType;
+
+  @HiveField(31)
+  String? logoAssetId;
+
+  @HiveField(32)
+  Uint8List? logoImageBytes;
+
+  @HiveField(33)
+  String? logoTextContent;
+
+  @HiveField(34)
+  int? logoTextColorValue;
+
+  @HiveField(35)
+  String? logoTextFont;
+
+  @HiveField(36)
+  double? logoTextSize;
+
+  @HiveField(37)
+  int? logoBackgroundColorValue;
+
   UserQrTemplateModel({
     required this.id,
     required this.name,
@@ -130,6 +155,14 @@ class UserQrTemplateModel extends HiveObject {
     this.eyeInnerIndex = 0,
     this.randomEyeSeed,
     this.updatedAt,
+    this.logoType,
+    this.logoAssetId,
+    this.logoImageBytes,
+    this.logoTextContent,
+    this.logoTextColorValue,
+    this.logoTextFont,
+    this.logoTextSize,
+    this.logoBackgroundColorValue,
   });
 
   UserQrTemplate toEntity() => UserQrTemplate(
@@ -163,6 +196,14 @@ class UserQrTemplateModel extends HiveObject {
         updatedAt: updatedAt,
         remoteId: remoteId,
         syncedToCloud: syncedToCloud,
+        logoType: logoType,
+        logoAssetId: logoAssetId,
+        logoImageBytes: logoImageBytes,
+        logoTextContent: logoTextContent,
+        logoTextColorValue: logoTextColorValue,
+        logoTextFont: logoTextFont,
+        logoTextSize: logoTextSize,
+        logoBackgroundColorValue: logoBackgroundColorValue,
       );
 
   factory UserQrTemplateModel.fromEntity(UserQrTemplate e) =>
@@ -197,5 +238,13 @@ class UserQrTemplateModel extends HiveObject {
         updatedAt: e.updatedAt,
         remoteId: e.remoteId,
         syncedToCloud: e.syncedToCloud,
+        logoType: e.logoType,
+        logoAssetId: e.logoAssetId,
+        logoImageBytes: e.logoImageBytes,
+        logoTextContent: e.logoTextContent,
+        logoTextColorValue: e.logoTextColorValue,
+        logoTextFont: e.logoTextFont,
+        logoTextSize: e.logoTextSize,
+        logoBackgroundColorValue: e.logoBackgroundColorValue,
       );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/extensions/context_extensions.dart';
 import '../../core/utils/tag_payload_encoder.dart';
 import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
@@ -78,9 +79,7 @@ class _EventTagScreenState extends State<EventTagScreen> {
     final start = _combine(_startDate, _startTime);
     final end = _combine(_endDate, _endTime);
     if (!end.isAfter(start)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.msgEventEndBeforeStart)),
-      );
+      context.showSnack(AppLocalizations.of(context)!.msgEventEndBeforeStart);
       return null;
     }
     return {

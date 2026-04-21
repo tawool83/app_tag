@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -7,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_config.dart';
+import '../../../../core/utils/color_hex.dart';
 import '../../domain/entities/qr_template.dart';
 import '../../../../core/services/supabase_service.dart';
 import 'default_template_datasource.dart';
@@ -181,8 +181,7 @@ class LocalDefaultTemplateDataSource implements DefaultTemplateDataSource {
   Map<String, dynamic> _styleToJson(QrStyleData style) => {
         'dataModuleShape': style.dataModuleShape,
         'eyeShape': style.eyeShape,
-        'backgroundColor':
-            '#${style.backgroundColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
+        'backgroundColor': colorToHex(style.backgroundColor),
         'foreground': _foregroundToJson(style.foreground),
         'eyeColor':
             style.eyeColor != null ? _foregroundToJson(style.eyeColor!) : null,
@@ -201,10 +200,7 @@ class LocalDefaultTemplateDataSource implements DefaultTemplateDataSource {
         'type': 'gradient',
         'gradient': {
           'type': g.type,
-          'colors': g.colors
-              .map((c) =>
-                  '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}')
-              .toList(),
+          'colors': g.colors.map((c) => colorToHex(c)).toList(),
           'stops': g.stops,
           'angleDegrees': g.angleDegrees,
           if (g.center != null) 'center': g.center,
@@ -214,9 +210,7 @@ class LocalDefaultTemplateDataSource implements DefaultTemplateDataSource {
     final c = fg.solidColor;
     return {
       'type': 'solid',
-      'solidColor': c != null
-          ? '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}'
-          : '#000000',
+      'solidColor': c != null ? colorToHex(c) : '#000000',
     };
   }
 }

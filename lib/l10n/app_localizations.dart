@@ -1805,6 +1805,132 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'빈도'**
   String get sliderFrequency;
+
+  /// No description provided for @optionLogoTypeLogo.
+  ///
+  /// In ko, this message translates to:
+  /// **'로고'**
+  String get optionLogoTypeLogo;
+
+  /// No description provided for @optionLogoTypeImage.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지'**
+  String get optionLogoTypeImage;
+
+  /// No description provided for @optionLogoTypeText.
+  ///
+  /// In ko, this message translates to:
+  /// **'텍스트'**
+  String get optionLogoTypeText;
+
+  /// No description provided for @labelLogoTabPosition.
+  ///
+  /// In ko, this message translates to:
+  /// **'위치'**
+  String get labelLogoTabPosition;
+
+  /// No description provided for @labelLogoTabBackground.
+  ///
+  /// In ko, this message translates to:
+  /// **'배경'**
+  String get labelLogoTabBackground;
+
+  /// No description provided for @labelLogoCategory.
+  ///
+  /// In ko, this message translates to:
+  /// **'카테고리'**
+  String get labelLogoCategory;
+
+  /// No description provided for @labelLogoGallery.
+  ///
+  /// In ko, this message translates to:
+  /// **'갤러리에서 선택'**
+  String get labelLogoGallery;
+
+  /// No description provided for @labelLogoRecrop.
+  ///
+  /// In ko, this message translates to:
+  /// **'다시 자르기'**
+  String get labelLogoRecrop;
+
+  /// No description provided for @labelLogoTextContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'문구'**
+  String get labelLogoTextContent;
+
+  /// No description provided for @hintLogoTextContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'로고에 넣을 글자'**
+  String get hintLogoTextContent;
+
+  /// No description provided for @categorySocial.
+  ///
+  /// In ko, this message translates to:
+  /// **'소셜'**
+  String get categorySocial;
+
+  /// No description provided for @categoryCoin.
+  ///
+  /// In ko, this message translates to:
+  /// **'코인'**
+  String get categoryCoin;
+
+  /// No description provided for @categoryBrand.
+  ///
+  /// In ko, this message translates to:
+  /// **'브랜드'**
+  String get categoryBrand;
+
+  /// No description provided for @categoryEmoji.
+  ///
+  /// In ko, this message translates to:
+  /// **'이모지'**
+  String get categoryEmoji;
+
+  /// No description provided for @msgLogoLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'아이콘을 불러올 수 없습니다'**
+  String get msgLogoLoadFailed;
+
+  /// No description provided for @msgLogoCropFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지 처리에 실패했습니다'**
+  String get msgLogoCropFailed;
+
+  /// No description provided for @labelLogoBackgroundColor.
+  ///
+  /// In ko, this message translates to:
+  /// **'색상'**
+  String get labelLogoBackgroundColor;
+
+  /// No description provided for @actionLogoBackgroundReset.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본값'**
+  String get actionLogoBackgroundReset;
+
+  /// No description provided for @optionRectangle.
+  ///
+  /// In ko, this message translates to:
+  /// **'사각'**
+  String get optionRectangle;
+
+  /// No description provided for @optionRoundedRectangle.
+  ///
+  /// In ko, this message translates to:
+  /// **'원형'**
+  String get optionRoundedRectangle;
+
+  /// No description provided for @labelLogoType.
+  ///
+  /// In ko, this message translates to:
+  /// **'유형'**
+  String get labelLogoType;
 }
 
 class _AppLocalizationsDelegate

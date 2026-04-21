@@ -1,13 +1,10 @@
+import '../../../../core/utils/enum_from_name.dart';
+
 /// QR/NFC 작업 종류.
 enum QrTaskKind {
   qr,
   nfc;
 
-  static QrTaskKind fromName(String? name) {
-    if (name == null) return QrTaskKind.qr;
-    for (final v in QrTaskKind.values) {
-      if (v.name == name) return v;
-    }
-    return QrTaskKind.qr;
-  }
+  static QrTaskKind fromName(String? name) =>
+      enumFromName(QrTaskKind.values, name, QrTaskKind.qr);
 }

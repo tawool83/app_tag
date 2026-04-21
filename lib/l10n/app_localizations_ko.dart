@@ -872,4 +872,67 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get sliderFrequency => '빈도';
+
+  @override
+  String get optionLogoTypeLogo => '로고';
+
+  @override
+  String get optionLogoTypeImage => '이미지';
+
+  @override
+  String get optionLogoTypeText => '텍스트';
+
+  @override
+  String get labelLogoTabPosition => '위치';
+
+  @override
+  String get labelLogoTabBackground => '배경';
+
+  @override
+  String get labelLogoCategory => '카테고리';
+
+  @override
+  String get labelLogoGallery => '갤러리에서 선택';
+
+  @override
+  String get labelLogoRecrop => '다시 자르기';
+
+  @override
+  String get labelLogoTextContent => '문구';
+
+  @override
+  String get hintLogoTextContent => '로고에 넣을 글자';
+
+  @override
+  String get categorySocial => '소셜';
+
+  @override
+  String get categoryCoin => '코인';
+
+  @override
+  String get categoryBrand => '브랜드';
+
+  @override
+  String get categoryEmoji => '이모지';
+
+  @override
+  String get msgLogoLoadFailed => '아이콘을 불러올 수 없습니다';
+
+  @override
+  String get msgLogoCropFailed => '이미지 처리에 실패했습니다';
+
+  @override
+  String get labelLogoBackgroundColor => '색상';
+
+  @override
+  String get actionLogoBackgroundReset => '기본값';
+
+  @override
+  String get optionRectangle => '사각';
+
+  @override
+  String get optionRoundedRectangle => '원형';
+
+  @override
+  String get labelLogoType => '유형';
 }

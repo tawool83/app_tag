@@ -1,14 +1,18 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import '../domain/entities/qr_dot_style.dart';
 import '../domain/entities/qr_template.dart';
+import '../domain/entities/logo_source.dart' show LogoType;
 import '../domain/entities/sticker_config.dart' show LogoPosition;
 import '../data/services/qr_readability_service.dart';
 import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_shape_params.dart';
-import '../qr_result_provider.dart' show QrResultState, qrResultProvider, QrEyeOuter, QrEyeInner, ShapePreviewMode, shapePreviewModeProvider;
+import '../domain/entities/qr_eye_shapes.dart';
+import '../domain/entities/qr_preview_mode.dart';
+import '../qr_result_provider.dart' show QrResultState, qrResultProvider, shapePreviewModeProvider;
 import '../utils/polar_polygon.dart';
 import '../utils/superellipse.dart';
 import '../utils/qr_boundary_clipper.dart';
@@ -43,16 +47,16 @@ class QrPreviewSection extends ConsumerWidget {
       ShapePreviewMode.fullQr || ShapePreviewMode.dedicatedAnim =>
         QrLayerStack(deepLink: deepLink, size: 160),
       ShapePreviewMode.dedicatedDot => _DotShapePreview(
-          params: state.customDotParams ?? const DotShapeParams(),
-          color: state.qrColor,
+          params: state.style.customDotParams ?? const DotShapeParams(),
+          color: state.style.qrColor,
         ),
       ShapePreviewMode.dedicatedEye => _EyeShapePreview(
-          params: state.customEyeParams ?? const EyeShapeParams(),
-          color: state.qrColor,
+          params: state.style.customEyeParams ?? const EyeShapeParams(),
+          color: state.style.qrColor,
         ),
       ShapePreviewMode.dedicatedBoundary => _BoundaryShapePreview(
-          params: state.boundaryParams,
-          color: state.qrColor,
+          params: state.style.boundaryParams,
+          color: state.style.qrColor,
         ),
     };
 
@@ -127,7 +131,7 @@ class _DotPreviewPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.4; // 80%의 절반
+    final radius = size.width * 0.4 * params.scale;
     final path = PolarPolygon.buildPath(center, radius, params);
     canvas.drawPath(path, Paint()..color = color..style = PaintingStyle.fill..isAntiAlias = true);
   }
@@ -325,29 +329,29 @@ Widget buildPrettyQr(
   final embedInQr = centerImage != null &&
       state.sticker.logoPosition == LogoPosition.center;
   // 템플릿 그라디언트 우선, 없으면 사용자 커스텀 그라디언트
-  final activeGradient = state.templateGradient ?? state.customGradient;
+  final activeGradient = state.template.templateGradient ?? state.style.customGradient;
   final hasGradient = activeGradient != null;
   final ecLevel =
       embedInQr ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
-  final dotColor = hasGradient ? Colors.black : state.qrColor;
+  final dotColor = hasGradient ? Colors.black : state.style.qrColor;
 
   // 맞춤 도트가 설정되면 PolarPolygon 기반 PrettyQrShape 사용 (QR 스펙 보존)
   final PrettyQrShape dotShape;
-  if (state.customDotParams != null) {
-    dotShape = buildCustomDotShape(state.customDotParams!, dotColor);
+  if (state.style.customDotParams != null) {
+    dotShape = buildCustomDotShape(state.style.customDotParams!, dotColor);
   } else {
-    dotShape = buildDotShape(state.dotStyle, dotColor);
+    dotShape = buildDotShape(state.style.dotStyle, dotColor);
   }
 
   // finder pattern 결정: 랜덤 시드 우선, 아니면 outer+inner 조합
   // circleRound 외각 선택 시 hole도 원형으로 자동 파생
-  final PrettyQrShape finderPattern = state.randomEyeSeed != null
-      ? _RandomFinderPattern(color: dotColor, seed: state.randomEyeSeed!)
+  final PrettyQrShape finderPattern = state.style.randomEyeSeed != null
+      ? _RandomFinderPattern(color: dotColor, seed: state.style.randomEyeSeed!)
       : _ComboFinderPattern(
           color: dotColor,
-          outer: _outerShapeFrom(state.eyeOuter),
-          inner: _innerShapeFrom(state.eyeInner),
-          hole: _holeFromOuter(state.eyeOuter),
+          outer: _outerShapeFrom(state.style.eyeOuter),
+          inner: _innerShapeFrom(state.style.eyeInner),
+          hole: _holeFromOuter(state.style.eyeOuter),
         );
   final qrShape = PrettyQrShape.custom(dotShape, finderPattern: finderPattern);
 
@@ -357,17 +361,17 @@ Widget buildPrettyQr(
   final qrKey = ValueKey(Object.hash(
     isDialog,
     deepLink,
-    state.dotStyle,
-    state.customDotParams,
-    state.eyeOuter,
-    state.eyeInner,
-    state.randomEyeSeed,
-    state.qrColor,
-    state.embedIcon,
+    state.style.dotStyle,
+    state.style.customDotParams,
+    state.style.eyeOuter,
+    state.style.eyeInner,
+    state.style.randomEyeSeed,
+    state.style.qrColor,
+    state.logo.embedIcon,
     centerImage != null,
-    state.templateGradient,
-    state.customGradient,
-    state.activeTemplateId,
+    state.template.templateGradient,
+    state.style.customGradient,
+    state.template.activeTemplateId,
   ));
 
   // 그라디언트 활성 시 아이콘을 ShaderMask 바깥으로 분리해야 함.
@@ -434,13 +438,45 @@ Widget buildPrettyQr(
   return SizedBox(width: size, height: size, child: qrWidget);
 }
 
+// Uint8List 참조 기준 MemoryImage 캐시. 동일 바이트 참조가 넘어오면 같은 provider 반환 →
+// ImageCache 가 hashCode 충돌 없이 히트해 매 프레임 재디코드를 방지.
+// Expando 는 key 의 GC 와 함께 entry 가 자동 정리됨.
+final Expando<MemoryImage> _memoryImageCache = Expando<MemoryImage>('_memImg');
+
+ImageProvider _memImage(Uint8List bytes) =>
+    _memoryImageCache[bytes] ??= MemoryImage(bytes);
+
 ImageProvider? centerImageProvider(QrResultState state) {
-  if (!state.embedIcon) return null;
-  if (state.templateCenterIconBytes != null) {
-    return MemoryImage(state.templateCenterIconBytes!);
+  if (!state.logo.embedIcon) return null;
+  final sticker = state.sticker;
+  // 신규 로고 타입 경로 (logo-tab-redesign)
+  switch (sticker.logoType) {
+    case LogoType.none:
+      // 사용자가 드롭다운에서 "없음" 명시적 선택 — 아이콘 표시 안 함
+      return null;
+    case LogoType.text:
+      // 텍스트는 Image 가 아닌 Widget 오버레이로 렌더 → null 반환
+      return null;
+    case LogoType.image:
+      if (sticker.logoImageBytes != null) {
+        return _memImage(sticker.logoImageBytes!);
+      }
+      return null;
+    case LogoType.logo:
+      if (sticker.logoAssetPngBytes != null) {
+        return _memImage(sticker.logoAssetPngBytes!);
+      }
+      // 래스터화 결과가 아직 없으면 래거시 fallback 으로 내려감
+      break;
+    case null:
+      break;
   }
-  if (state.emojiIconBytes != null) return MemoryImage(state.emojiIconBytes!);
-  if (state.defaultIconBytes != null) return MemoryImage(state.defaultIconBytes!);
+  // 레거시 경로 (기존 저장 QR 호환)
+  if (state.template.templateCenterIconBytes != null) {
+    return _memImage(state.template.templateCenterIconBytes!);
+  }
+  if (state.logo.emojiIconBytes != null) return _memImage(state.logo.emojiIconBytes!);
+  if (state.logo.defaultIconBytes != null) return _memImage(state.logo.defaultIconBytes!);
   return null;
 }
 

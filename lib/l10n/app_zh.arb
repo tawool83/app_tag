@@ -19,7 +19,13 @@
   "actionDelete": "删除",
   "actionEdit": "编辑",
   "actionDeleteCount": "删除{count}个",
-  "@actionDeleteCount": { "placeholders": { "count": { "type": "int" } } },
+  "@actionDeleteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "actionSave": "保存",
   "actionShare": "分享",
   "actionRetry": "重试",
@@ -30,7 +36,13 @@
   "tooltipDeleteAll": "全部删除",
   "actionCollapseHidden": "收起隐藏菜单",
   "actionShowHidden": "查看隐藏菜单 ({count})",
-  "@actionShowHidden": { "placeholders": { "count": { "type": "int" } } },
+  "@actionShowHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "screenHelpTitle": "使用指南",
   "screenHistoryTitle": "生成记录",
   "screenHistoryEmpty": "暂无记录。",
@@ -40,7 +52,13 @@
   "dialogClearAllContent": "确定要删除所有记录吗？",
   "dialogDeleteHistoryTitle": "删除记录",
   "dialogDeleteHistoryContent": "确定要删除「{name}」的记录吗？",
-  "@dialogDeleteHistoryContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteHistoryContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "screenWebsiteTitle": "网站标签",
   "labelUrl": "URL",
   "hintUrl": "https://example.com",
@@ -146,26 +164,56 @@
   "actionSaveTemplate": "保存模板",
   "dialogLowReadabilityTitle": "识别率较低",
   "dialogLowReadabilityScore": "当前识别率：{score}%",
-  "@dialogLowReadabilityScore": { "placeholders": { "score": { "type": "int" } } },
+  "@dialogLowReadabilityScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "dialogLowReadabilityWarning": "QR码可能无法被\n某些扫描器识别。",
   "dialogLowReadabilityCause": "主要原因：{issue}",
-  "@dialogLowReadabilityCause": { "placeholders": { "issue": { "type": "String" } } },
+  "@dialogLowReadabilityCause": {
+    "placeholders": {
+      "issue": {
+        "type": "String"
+      }
+    }
+  },
   "actionSaveAnyway": "仍然保存",
   "dialogSaveTemplateTitle": "保存模板",
   "labelTemplateName": "模板名称",
   "hintTemplateName": "例：蓝色背景QR",
   "msgTemplateSaved": "模板「{name}」已保存。",
-  "@msgTemplateSaved": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgSaveFailed": "图片保存失败。",
   "msgPrintFailed": "打印失败。请检查打印机连接。",
   "labelReadability": "识别率",
   "screenTemplateMyTemplates": "我的模板",
   "actionNoStyle": "无样式",
   "msgTemplateApplied": "模板「{name}」已应用。",
-  "@msgTemplateApplied": { "placeholders": { "name": { "type": "String" } } },
+  "@msgTemplateApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dialogDeleteTemplateTitle": "删除模板",
   "dialogDeleteTemplateContent": "确定要删除「{name}」吗？",
-  "@dialogDeleteTemplateContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteTemplateContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgNoSavedTemplates": "没有已保存的模板。",
   "msgNoSavedTemplatesHint": "使用下方的「保存模板」按钮保存当前样式。",
   "tabColorSolid": "纯色",
@@ -203,8 +251,14 @@
   "settingsLanguage": "语言",
   "settingsLanguageSystem": "跟随系统",
   "msgCopiedToClipboard": "「{text}」已复制到剪贴板",
-  "@msgCopiedToClipboard": { "placeholders": { "text": { "type": "String" } } },
-    "settingsReadabilityAlert": "识别率提醒",
+  "@msgCopiedToClipboard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsReadabilityAlert": "识别率提醒",
   "platformAndroid": "Android",
   "platformIos": "iOS",
   "labelCustomGradient": "自定义渐变",
@@ -258,7 +312,6 @@
   "loginPrompt": "登录",
   "cloudSync": "云同步",
   "cancel": "取消",
-
   "labelSavePreset": "保存预设",
   "hintPresetName": "预设名称",
   "labelBoundaryShape": "QR外框形状",
@@ -291,5 +344,26 @@
   "sliderPadding": "内边距",
   "sliderSpeed": "速度",
   "sliderAmplitude": "振幅",
-  "sliderFrequency": "频率"
+  "sliderFrequency": "频率",
+  "optionLogoTypeLogo": "徽标",
+  "optionLogoTypeImage": "图片",
+  "optionLogoTypeText": "文本",
+  "labelLogoTabPosition": "位置",
+  "labelLogoTabBackground": "背景",
+  "labelLogoCategory": "类别",
+  "labelLogoGallery": "从相册选择",
+  "labelLogoRecrop": "重新裁剪",
+  "labelLogoTextContent": "文字",
+  "hintLogoTextContent": "徽标文字",
+  "categorySocial": "社交",
+  "categoryCoin": "币种",
+  "categoryBrand": "品牌",
+  "categoryEmoji": "表情",
+  "msgLogoLoadFailed": "无法加载图标",
+  "msgLogoCropFailed": "图像处理失败",
+  "labelLogoBackgroundColor": "颜色",
+  "actionLogoBackgroundReset": "默认",
+  "optionRectangle": "方形",
+  "optionRoundedRectangle": "圆形",
+  "labelLogoType": "类型"
 }

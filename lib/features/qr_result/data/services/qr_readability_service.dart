@@ -73,8 +73,8 @@ class QrReadabilityService {
   // ── 색상 대비 점수 (0~40) ─────────────────────────────────────────────────
 
   static int _contrastScore(QrResultState state) {
-    final bgColor = state.quietZoneColor;
-    final activeGradient = state.templateGradient ?? state.customGradient;
+    final bgColor = state.style.quietZoneColor;
+    final activeGradient = state.template.templateGradient ?? state.style.customGradient;
 
     if (activeGradient != null) {
       // 그라디언트: 시작색·끝색 중 낮은 대비 사용
@@ -83,7 +83,7 @@ class QrReadabilityService {
       return _ratioToScore(min(r1, r2));
     }
 
-    return _ratioToScore(_contrastRatio(state.qrColor, bgColor));
+    return _ratioToScore(_contrastRatio(state.style.qrColor, bgColor));
   }
 
   static double _contrastRatio(Color fg, Color bg) {
@@ -126,7 +126,7 @@ class QrReadabilityService {
   // ── 로고 점유 점수 (0~20) ────────────────────────────────────────────────
 
   static int _logoScore(QrResultState state) {
-    if (!state.embedIcon) return 20;
+    if (!state.logo.embedIcon) return 20;
     switch (state.sticker.logoPosition) {
       case LogoPosition.center:
         // ECC H 자동 적용: 30% 복원 가능 → 패널티 소폭
@@ -140,7 +140,7 @@ class QrReadabilityService {
   // ── 도트 모양 점수 (0~15) ────────────────────────────────────────────────
 
   static int _dotScore(QrResultState state) {
-    switch (state.dotStyle) {
+    switch (state.style.dotStyle) {
       case QrDotStyle.square:
         return 15;
       case QrDotStyle.circle:

@@ -1,16 +1,6 @@
 import 'dart:ui' show Color;
 
-// ── 헬퍼 ──────────────────────────────────────────────────────────────────────
-
-Color _hexToColor(String? hex) {
-  if (hex == null || hex.isEmpty) return const Color(0xFF000000);
-  final clean = hex.replaceFirst('#', '');
-  final argb = clean.length == 6 ? 'FF$clean' : clean;
-  return Color(int.parse(argb, radix: 16));
-}
-
-String _colorToHex(Color c) =>
-    '#${c.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
+import '../../../../core/utils/color_hex.dart';
 
 // ── QrGradient ────────────────────────────────────────────────────────────────
 
@@ -32,7 +22,7 @@ class QrGradient {
   factory QrGradient.fromJson(Map<String, dynamic> json) => QrGradient(
         type: json['type'] as String? ?? 'linear',
         colors: (json['colors'] as List<dynamic>)
-            .map((e) => _hexToColor(e as String?))
+            .map((e) => colorFromHex(e as String?))
             .toList(),
         stops: (json['stops'] as List<dynamic>?)
             ?.map((e) => (e as num).toDouble())
@@ -43,7 +33,7 @@ class QrGradient {
 
   Map<String, dynamic> toJson() => {
         'type': type,
-        'colors': colors.map(_colorToHex).toList(),
+        'colors': colors.map(colorToHex).toList(),
         if (stops != null) 'stops': stops,
         'angleDegrees': angleDegrees,
         if (center != null) 'center': center,
@@ -76,7 +66,7 @@ class QrForeground {
 
   factory QrForeground.fromJson(Map<String, dynamic> json) => QrForeground(
         type: json['type'] as String? ?? 'solid',
-        solidColor: _hexToColor(json['solidColor'] as String?),
+        solidColor: colorFromHex(json['solidColor'] as String?),
         gradient: json['gradient'] != null
             ? QrGradient.fromJson(json['gradient'] as Map<String, dynamic>)
             : null,
@@ -132,7 +122,7 @@ class QrStyleData {
         dataModuleShape: json['dataModuleShape'] as String? ?? 'square',
         eyeShape: json['eyeShape'] as String? ?? 'square',
         backgroundColor:
-            _hexToColor(json['backgroundColor'] as String? ?? '#FFFFFF'),
+            colorFromHex(json['backgroundColor'] as String? ?? '#FFFFFF'),
         foreground: QrForeground.fromJson(
             json['foreground'] as Map<String, dynamic>? ??
                 {'type': 'solid', 'solidColor': '#000000'}),

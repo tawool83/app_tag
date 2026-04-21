@@ -21,7 +21,11 @@ class LocalUserShapePresetDatasource {
 
   final Map<ShapePresetType, Box<String>> _boxes;
 
-  const LocalUserShapePresetDatasource(this._boxes);
+  // 디코드된 프리셋 목록 캐시. 탭 재진입마다 N개 jsonDecode 반복하지 않도록
+  // 타입별 첫 readAll() 결과를 보관하고 save/delete/clear 시 무효화한다.
+  final Map<ShapePresetType, List<UserShapePreset>> _cache = {};
+
+  LocalUserShapePresetDatasource(this._boxes);
 
   /// 모든 박스를 열고 인스턴스를 반환.
   static Future<LocalUserShapePresetDatasource> init() async {
@@ -32,8 +36,12 @@ class LocalUserShapePresetDatasource {
     return LocalUserShapePresetDatasource(boxes);
   }
 
-  /// 특정 타입의 프리셋 전체 조회 (생성일 내림차순).
+  /// 특정 타입의 프리셋 전체 조회 (lastUsedAt 내림차순).
   List<UserShapePreset> readAll(ShapePresetType type) {
+    return _cache[type] ??= _decodeBox(type);
+  }
+
+  List<UserShapePreset> _decodeBox(ShapePresetType type) {
     final box = _boxes[type]!;
     final presets = box.values
         .map((jsonStr) {
@@ -49,6 +57,7 @@ class LocalUserShapePresetDatasource {
   Future<void> save(UserShapePreset preset) async {
     final box = _boxes[preset.type]!;
     await box.put(preset.id, jsonEncode(preset.toJson()));
+    _cache.remove(preset.type);
   }
 
   /// lastUsedAt 갱신.
@@ -66,10 +75,12 @@ class LocalUserShapePresetDatasource {
   Future<void> delete(ShapePresetType type, String id) async {
     final box = _boxes[type]!;
     await box.delete(id);
+    _cache.remove(type);
   }
 
   /// 특정 타입의 프리셋 전체 삭제.
   Future<void> clearAll(ShapePresetType type) async {
     await _boxes[type]!.clear();
+    _cache.remove(type);
   }
 }

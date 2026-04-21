@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/extensions/context_extensions.dart';
+
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
@@ -309,12 +311,9 @@ class _NfcTagCard extends StatelessWidget {
 
   void _copyToClipboard(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('"$text" 클립보드에 복사됨'),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
+    context.showSnack(
+      '"$text" 클립보드에 복사됨',
+      behavior: SnackBarBehavior.floating,
     );
   }
 }
