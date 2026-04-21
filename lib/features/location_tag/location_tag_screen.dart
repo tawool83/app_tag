@@ -11,7 +11,8 @@ import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class LocationTagScreen extends StatefulWidget {
-  const LocationTagScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const LocationTagScreen({super.key, this.prefill});
 
   @override
   State<LocationTagScreen> createState() => _LocationTagScreenState();
@@ -36,6 +37,19 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.prefill != null) {
+      final lat = widget.prefill!['lat'] as double?;
+      final lng = widget.prefill!['lng'] as double?;
+      final label = widget.prefill!['label'] as String?;
+      if (lat != null && lng != null) {
+        _selected = LatLng(lat, lng);
+        _pendingMove = _selected;
+      }
+      if (label != null && label.isNotEmpty) {
+        _labelController.text = label;
+        _buildingName = label;
+      }
+    }
     _moveToCurrentLocation();
   }
 

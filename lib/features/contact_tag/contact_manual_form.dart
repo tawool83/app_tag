@@ -5,7 +5,8 @@ import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class ContactManualFormScreen extends StatefulWidget {
-  const ContactManualFormScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const ContactManualFormScreen({super.key, this.prefill});
 
   @override
   State<ContactManualFormScreen> createState() =>
@@ -17,6 +18,16 @@ class _ContactManualFormScreenState extends State<ContactManualFormScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.prefill != null) {
+      _nameController.text = widget.prefill!['name'] as String? ?? '';
+      _phoneController.text = widget.prefill!['phone'] as String? ?? '';
+      _emailController.text = widget.prefill!['email'] as String? ?? '';
+    }
+  }
 
   @override
   void dispose() {

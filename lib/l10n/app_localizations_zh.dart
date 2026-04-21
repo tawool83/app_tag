@@ -932,4 +932,76 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelLogoType => '类型';
+
+  @override
+  String get tileScanner => 'QR 스캐너';
+
+  @override
+  String get scannerPermissionTitle => '카메라 권한 필요';
+
+  @override
+  String get scannerPermissionDesc => 'QR 코드를 스캔하려면 카메라 접근 권한이 필요합니다.';
+
+  @override
+  String get scannerPermissionOpenSettings => '설정으로 이동';
+
+  @override
+  String get scannerPermissionGalleryFallback => '갤러리에서 선택';
+
+  @override
+  String get scannerFlashOn => '플래시 켜기';
+
+  @override
+  String get scannerFlashOff => '플래시 끄기';
+
+  @override
+  String get scannerGalleryImport => '갤러리에서 QR 코드 불러오기';
+
+  @override
+  String get scannerGalleryFail => '이미지에서 QR 코드를 인식할 수 없습니다.';
+
+  @override
+  String get scanResultTitle => '스캔 결과';
+
+  @override
+  String get scanActionOpenBrowser => '열기';
+
+  @override
+  String get scanActionCopyLink => '링크 복사';
+
+  @override
+  String get scanActionCopySsid => 'SSID 복사';
+
+  @override
+  String get scanActionCopyPassword => '비밀번호 복사';
+
+  @override
+  String get scanActionCopyAll => '전체 복사';
+
+  @override
+  String get scanActionShare => '공유';
+
+  @override
+  String get scanActionOpenApp => '앱 열기';
+
+  @override
+  String get scanActionCustomize => '꾸미기';
+
+  @override
+  String get historyTabCreated => '생성이력';
+
+  @override
+  String get historyTabScanned => '스캔이력';
+
+  @override
+  String get historySearchHint => '검색...';
+
+  @override
+  String get historyFilterAll => '전체';
+
+  @override
+  String get historyEmpty => '이력이 없습니다.';
+
+  @override
+  String get actionFavorite => '즐겨찾기';
 }

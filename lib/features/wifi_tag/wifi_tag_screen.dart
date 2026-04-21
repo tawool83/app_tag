@@ -5,7 +5,8 @@ import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class WifiTagScreen extends StatefulWidget {
-  const WifiTagScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const WifiTagScreen({super.key, this.prefill});
 
   @override
   State<WifiTagScreen> createState() => _WifiTagScreenState();
@@ -26,6 +27,17 @@ class _WifiTagScreenState extends State<WifiTagScreen> {
       ('WEP', 'WEP'),
       ('nopass', l10n.optionNoSecurity),
     ];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.prefill != null) {
+      _ssidController.text = widget.prefill!['ssid'] as String? ?? '';
+      _passwordController.text = widget.prefill!['password'] as String? ?? '';
+      final sec = widget.prefill!['securityType'] as String?;
+      if (sec != null && sec.isNotEmpty) _securityType = sec;
+    }
   }
 
   @override

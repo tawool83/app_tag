@@ -1,9 +1,9 @@
 {
   "version": "3.0",
-  "lastUpdated": "2026-04-21T06:00:00.000Z",
+  "lastUpdated": "2026-04-21T15:30:00.000Z",
   "activeFeatures": [],
   "primaryFeature": null,
-  "lastPhaseTransition": "check → archived (2026-04-21, user-management matchRate 91, FR-01~08)",
+  "lastPhaseTransition": "report → archived (2026-04-21, qr-scanner-ui-ux matchRate 92, FR 19/20)",
   "features": {},
   "pipeline": {
     "currentPhase": 1,
@@ -13,7 +13,7 @@
   "session": {
     "startedAt": "2026-04-09T06:11:12.207Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-21T06:00:00.000Z"
+    "lastActivity": "2026-04-21T13:07:54.333Z"
   },
   "history": [
     {
@@ -39,6 +39,12 @@
       "feature": "user-management",
       "phase": "archived",
       "action": "Plan+Design+Analysis archived (matchRate 91%, FR-01~08) — Report skipped"
+    },
+    {
+      "timestamp": "2026-04-21T15:30:00.000Z",
+      "feature": "qr-scanner-ui-ux",
+      "phase": "archived",
+      "action": "Plan+Design+Analysis+Report archived (matchRate 92%, 33 new files, R-series 8/8) → docs/archive/2026-04/qr-scanner-ui-ux/"
     }
   ],
   "stateMachine": {

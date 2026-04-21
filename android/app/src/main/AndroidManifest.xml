@@ -6,6 +6,9 @@
     <!-- 앱 목록 조회 (Android 11+) -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
+    <!-- 카메라 (QR 스캐너) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <!-- 연락처 읽기 -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 

@@ -30,3 +30,4 @@
 | color-tab-redesign | 2026-04-21 | 92% | [color-tab-redesign/](color-tab-redesign/) (Plan+Design+Analysis+Report, 색상 탭 UX 개편 — 구현 완료) |
 | refactor-qr-shape-tab | 2026-04-21 | N/A | [refactor-qr-shape-tab/](refactor-qr-shape-tab/) (Plan only, R1 — qr_shape_tab.dart 2101줄 → 10 part 파일 분할, 구현 완료. Plan의 facade/public 승격 조건은 obsolete하여 Dart `part of` 패턴으로 대체 — R-series와 일관) |
 | user-management | 2026-04-21 | 91% | [user-management/](user-management/) (Plan+Design+Analysis, FR-01~08 8개 요구사항, 구현 완료 — Report 없이 종료) |
+| qr-scanner-ui-ux | 2026-04-21 | 92% | [qr-scanner-ui-ux/](qr-scanner-ui-ux/) (Plan+Design+Analysis+Report, QR 스캐너 + 9종 자동 분류 + ScanHistory + History 2탭, 33 신규 파일, R-series 8/8 준수) |

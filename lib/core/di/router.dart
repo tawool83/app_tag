@@ -23,6 +23,7 @@ import '../../features/sms_tag/sms_tag_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/scanner/presentation/screens/scanner_screen.dart';
 import '../../features/settings/settings_screen.dart';
 
 /// 향후 외부 deep link 수신 시 라우트 리다이렉션 처리.
@@ -50,17 +51,63 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/nfc-writer',
         builder: (_, _) => const NfcWriterScreen(),
       ),
+      GoRoute(path: '/scanner', builder: (_, _) => const ScannerScreen()),
       GoRoute(path: '/history', builder: (_, _) => const HistoryScreen()),
       GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
-      GoRoute(path: '/clipboard-tag', builder: (_, _) => const ClipboardTagScreen()),
-      GoRoute(path: '/website-tag', builder: (_, _) => const WebsiteTagScreen()),
-      GoRoute(path: '/contact-tag', builder: (_, _) => const ContactTagScreen()),
-      GoRoute(path: '/contact-manual', builder: (_, _) => const ContactManualFormScreen()),
-      GoRoute(path: '/wifi-tag', builder: (_, _) => const WifiTagScreen()),
-      GoRoute(path: '/location-tag', builder: (_, _) => const LocationTagScreen()),
-      GoRoute(path: '/event-tag', builder: (_, _) => const EventTagScreen()),
-      GoRoute(path: '/email-tag', builder: (_, _) => const EmailTagScreen()),
-      GoRoute(path: '/sms-tag', builder: (_, _) => const SmsTagScreen()),
+      GoRoute(
+        path: '/clipboard-tag',
+        builder: (_, state) => ClipboardTagScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/website-tag',
+        builder: (_, state) => WebsiteTagScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/contact-tag',
+        builder: (_, state) => ContactTagScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/contact-manual',
+        builder: (_, state) => ContactManualFormScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/wifi-tag',
+        builder: (_, state) => WifiTagScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/location-tag',
+        builder: (_, state) => LocationTagScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/event-tag',
+        builder: (_, state) => EventTagScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/email-tag',
+        builder: (_, state) => EmailTagScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/sms-tag',
+        builder: (_, state) => SmsTagScreen(
+          prefill: state.extra as Map<String, dynamic>?,
+        ),
+      ),
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (_, _) => const SignUpScreen()),

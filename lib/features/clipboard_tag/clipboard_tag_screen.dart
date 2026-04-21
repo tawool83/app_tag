@@ -6,7 +6,8 @@ import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class ClipboardTagScreen extends StatefulWidget {
-  const ClipboardTagScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const ClipboardTagScreen({super.key, this.prefill});
 
   @override
   State<ClipboardTagScreen> createState() => _ClipboardTagScreenState();
@@ -20,6 +21,11 @@ class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
   @override
   void initState() {
     super.initState();
+    final prefillText = widget.prefill?['text'] as String?;
+    if (prefillText != null && prefillText.isNotEmpty) {
+      _controller.text = prefillText;
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final data = await Clipboard.getData(Clipboard.kTextPlain);
       if (!mounted) return;

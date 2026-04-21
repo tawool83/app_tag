@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/result.dart';
+import '../../data/models/qr_task_model.dart';
 import '../../domain/entities/qr_task.dart';
 import '../../domain/usecases/clear_qr_tasks_usecase.dart';
 import '../../domain/usecases/delete_qr_task_usecase.dart';
@@ -14,14 +15,17 @@ class QrTaskListNotifier extends StateNotifier<List<QrTask>> {
   final ListQrTasksUseCase _list;
   final DeleteQrTaskUseCase _delete;
   final ClearQrTasksUseCase _clear;
+  final Ref _ref;
 
   QrTaskListNotifier({
     required ListQrTasksUseCase list,
     required DeleteQrTaskUseCase delete,
     required ClearQrTasksUseCase clear,
+    required Ref ref,
   })  : _list = list,
         _delete = delete,
         _clear = clear,
+        _ref = ref,
         super(const []) {
     _load();
   }
@@ -40,6 +44,18 @@ class QrTaskListNotifier extends StateNotifier<List<QrTask>> {
     final result = await _clear();
     result.fold((_) => state = const [], (_) {});
   }
+
+  /// 즐겨찾기 토글 — payloadJson 내 isFavorite 변경 후 Hive 저장.
+  Future<void> toggleFavorite(String id) async {
+    final idx = state.indexWhere((t) => t.id == id);
+    if (idx < 0) return;
+    final task = state[idx];
+    final updated = task.copyWith(isFavorite: !task.isFavorite);
+    // Hive 에 직접 저장 (payloadJson 재직렬화)
+    final box = _ref.read(qrTaskBoxProvider);
+    await box.put(id, QrTaskModel.fromEntity(updated));
+    state = [...state]..[idx] = updated;
+  }
 }
 
 final qrTaskListNotifierProvider =
@@ -48,5 +64,6 @@ final qrTaskListNotifierProvider =
     list: ref.watch(listQrTasksUseCaseProvider),
     delete: ref.watch(deleteQrTaskUseCaseProvider),
     clear: ref.watch(clearQrTasksUseCaseProvider),
+    ref: ref,
   );
 });

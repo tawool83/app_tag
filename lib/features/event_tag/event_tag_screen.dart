@@ -6,7 +6,8 @@ import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class EventTagScreen extends StatefulWidget {
-  const EventTagScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const EventTagScreen({super.key, this.prefill});
 
   @override
   State<EventTagScreen> createState() => _EventTagScreenState();
@@ -26,6 +27,11 @@ class _EventTagScreenState extends State<EventTagScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.prefill != null) {
+      _titleController.text = widget.prefill!['title'] as String? ?? '';
+      _locationController.text = widget.prefill!['location'] as String? ?? '';
+      _descController.text = widget.prefill!['description'] as String? ?? '';
+    }
     final now = DateTime.now();
     _startDate = now;
     _startTime = TimeOfDay.fromDateTime(now);

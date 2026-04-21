@@ -47,6 +47,9 @@ dependencies:
   # QR 생성
   pretty_qr_code: ^3.3.0
 
+  # QR 스캔
+  mobile_scanner: ^6.0.0
+
   # 이미지 캡처/저장/공유/인쇄
   screenshot: ^2.3.0
   share_plus: ^9.0.0

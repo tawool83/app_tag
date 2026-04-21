@@ -5,7 +5,8 @@ import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class EmailTagScreen extends StatefulWidget {
-  const EmailTagScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const EmailTagScreen({super.key, this.prefill});
 
   @override
   State<EmailTagScreen> createState() => _EmailTagScreenState();
@@ -16,6 +17,16 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
   final _addressController = TextEditingController();
   final _subjectController = TextEditingController();
   final _bodyController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.prefill != null) {
+      _addressController.text = widget.prefill!['address'] as String? ?? '';
+      _subjectController.text = widget.prefill!['subject'] as String? ?? '';
+      _bodyController.text = widget.prefill!['body'] as String? ?? '';
+    }
+  }
 
   @override
   void dispose() {

@@ -60,6 +60,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     return [
       _TileItem(
+        key: 'scanner',
+        icon: Icons.qr_code_scanner,
+        label: l10n.tileScanner,
+        iconColor: Colors.white,
+        bgColor: const Color(0xFF00897B),
+        onTap: () => context.push('/scanner'),
+      ),
+      _TileItem(
         key: 'app',
         icon: Platform.isAndroid ? Icons.apps : CupertinoIcons.square_stack_3d_up,
         label: Platform.isAndroid ? l10n.tileAppAndroid : l10n.tileAppIos,

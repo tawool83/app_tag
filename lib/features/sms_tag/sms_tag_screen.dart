@@ -5,7 +5,8 @@ import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class SmsTagScreen extends StatefulWidget {
-  const SmsTagScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const SmsTagScreen({super.key, this.prefill});
 
   @override
   State<SmsTagScreen> createState() => _SmsTagScreenState();
@@ -15,6 +16,15 @@ class _SmsTagScreenState extends State<SmsTagScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _messageController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.prefill != null) {
+      _phoneController.text = widget.prefill!['phone'] as String? ?? '';
+      _messageController.text = widget.prefill!['message'] as String? ?? '';
+    }
+  }
 
   @override
   void dispose() {

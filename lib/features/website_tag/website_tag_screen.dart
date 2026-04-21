@@ -5,7 +5,8 @@ import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class WebsiteTagScreen extends StatefulWidget {
-  const WebsiteTagScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const WebsiteTagScreen({super.key, this.prefill});
 
   @override
   State<WebsiteTagScreen> createState() => _WebsiteTagScreenState();
@@ -14,6 +15,15 @@ class WebsiteTagScreen extends StatefulWidget {
 class _WebsiteTagScreenState extends State<WebsiteTagScreen> {
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    final url = widget.prefill?['url'] as String?;
+    if (url != null && url.isNotEmpty) {
+      _controller.text = url;
+    }
+  }
 
   @override
   void dispose() {

@@ -6,6 +6,7 @@ import '../../features/qr_result/data/datasources/hive_user_template_datasource.
 import '../../features/qr_result/data/models/user_qr_template_model.dart';
 import '../../features/qr_task/data/datasources/hive_qr_task_datasource.dart';
 import '../../features/qr_task/data/models/qr_task_model.dart';
+import '../../features/scan_history/data/models/scan_history_model.dart';
 
 /// Hive 초기화 + 어댑터 등록 + 박스 오픈을 한 곳에서.
 ///
@@ -34,6 +35,9 @@ Future<void> initHive() async {
   if (!Hive.isAdapterRegistered(3)) {
     Hive.registerAdapter(UserColorPaletteModelAdapter());
   }
+  if (!Hive.isAdapterRegistered(4)) {
+    Hive.registerAdapter(ScanHistoryModelAdapter());
+  }
 
   if (!Hive.isBoxOpen(HiveUserTemplateDataSource.boxName)) {
     await Hive.openBox<UserQrTemplateModel>(
@@ -45,5 +49,8 @@ Future<void> initHive() async {
   if (!Hive.isBoxOpen(HiveColorPaletteDataSource.boxName)) {
     await Hive.openBox<UserColorPaletteModel>(
         HiveColorPaletteDataSource.boxName);
+  }
+  if (!Hive.isBoxOpen(ScanHistoryModel.boxName)) {
+    await Hive.openBox<ScanHistoryModel>(ScanHistoryModel.boxName);
   }
 }

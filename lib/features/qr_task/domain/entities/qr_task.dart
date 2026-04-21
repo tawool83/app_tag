@@ -17,6 +17,7 @@ class QrTask {
   final QrTaskKind kind;
   final QrTaskMeta meta;
   final QrCustomization customization;
+  final bool isFavorite;
 
   const QrTask({
     required this.id,
@@ -25,6 +26,7 @@ class QrTask {
     required this.kind,
     required this.meta,
     required this.customization,
+    this.isFavorite = false,
   });
 
   /// 최상위 payload Map (schemaVersion 포함).
@@ -36,6 +38,7 @@ class QrTask {
         'kind': kind.name,
         'meta': meta.toJson(),
         'customization': customization.toJson(),
+        'isFavorite': isFavorite,
       };
 
   String toPayloadJson() => jsonEncode(toPayloadMap());
@@ -59,6 +62,7 @@ class QrTask {
       customization: QrCustomization.fromJson(
         map['customization'] as Map<String, dynamic>? ?? const {},
       ),
+      isFavorite: map['isFavorite'] as bool? ?? false,
     );
   }
 
@@ -66,6 +70,7 @@ class QrTask {
     DateTime? updatedAt,
     QrTaskMeta? meta,
     QrCustomization? customization,
+    bool? isFavorite,
   }) =>
       QrTask(
         id: id,
@@ -74,5 +79,6 @@ class QrTask {
         kind: kind,
         meta: meta ?? this.meta,
         customization: customization ?? this.customization,
+        isFavorite: isFavorite ?? this.isFavorite,
       );
 }

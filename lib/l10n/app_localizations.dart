@@ -1925,6 +1925,150 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'유형'**
   String get labelLogoType;
+
+  /// No description provided for @tileScanner.
+  ///
+  /// In ko, this message translates to:
+  /// **'QR 스캐너'**
+  String get tileScanner;
+
+  /// No description provided for @scannerPermissionTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'카메라 권한 필요'**
+  String get scannerPermissionTitle;
+
+  /// No description provided for @scannerPermissionDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'QR 코드를 스캔하려면 카메라 접근 권한이 필요합니다.'**
+  String get scannerPermissionDesc;
+
+  /// No description provided for @scannerPermissionOpenSettings.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정으로 이동'**
+  String get scannerPermissionOpenSettings;
+
+  /// No description provided for @scannerPermissionGalleryFallback.
+  ///
+  /// In ko, this message translates to:
+  /// **'갤러리에서 선택'**
+  String get scannerPermissionGalleryFallback;
+
+  /// No description provided for @scannerFlashOn.
+  ///
+  /// In ko, this message translates to:
+  /// **'플래시 켜기'**
+  String get scannerFlashOn;
+
+  /// No description provided for @scannerFlashOff.
+  ///
+  /// In ko, this message translates to:
+  /// **'플래시 끄기'**
+  String get scannerFlashOff;
+
+  /// No description provided for @scannerGalleryImport.
+  ///
+  /// In ko, this message translates to:
+  /// **'갤러리에서 QR 코드 불러오기'**
+  String get scannerGalleryImport;
+
+  /// No description provided for @scannerGalleryFail.
+  ///
+  /// In ko, this message translates to:
+  /// **'이미지에서 QR 코드를 인식할 수 없습니다.'**
+  String get scannerGalleryFail;
+
+  /// No description provided for @scanResultTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'스캔 결과'**
+  String get scanResultTitle;
+
+  /// No description provided for @scanActionOpenBrowser.
+  ///
+  /// In ko, this message translates to:
+  /// **'열기'**
+  String get scanActionOpenBrowser;
+
+  /// No description provided for @scanActionCopyLink.
+  ///
+  /// In ko, this message translates to:
+  /// **'링크 복사'**
+  String get scanActionCopyLink;
+
+  /// No description provided for @scanActionCopySsid.
+  ///
+  /// In ko, this message translates to:
+  /// **'SSID 복사'**
+  String get scanActionCopySsid;
+
+  /// No description provided for @scanActionCopyPassword.
+  ///
+  /// In ko, this message translates to:
+  /// **'비밀번호 복사'**
+  String get scanActionCopyPassword;
+
+  /// No description provided for @scanActionCopyAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 복사'**
+  String get scanActionCopyAll;
+
+  /// No description provided for @scanActionShare.
+  ///
+  /// In ko, this message translates to:
+  /// **'공유'**
+  String get scanActionShare;
+
+  /// No description provided for @scanActionOpenApp.
+  ///
+  /// In ko, this message translates to:
+  /// **'앱 열기'**
+  String get scanActionOpenApp;
+
+  /// No description provided for @scanActionCustomize.
+  ///
+  /// In ko, this message translates to:
+  /// **'꾸미기'**
+  String get scanActionCustomize;
+
+  /// No description provided for @historyTabCreated.
+  ///
+  /// In ko, this message translates to:
+  /// **'생성이력'**
+  String get historyTabCreated;
+
+  /// No description provided for @historyTabScanned.
+  ///
+  /// In ko, this message translates to:
+  /// **'스캔이력'**
+  String get historyTabScanned;
+
+  /// No description provided for @historySearchHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'검색...'**
+  String get historySearchHint;
+
+  /// No description provided for @historyFilterAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체'**
+  String get historyFilterAll;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'이력이 없습니다.'**
+  String get historyEmpty;
+
+  /// No description provided for @actionFavorite.
+  ///
+  /// In ko, this message translates to:
+  /// **'즐겨찾기'**
+  String get actionFavorite;
 }
 
 class _AppLocalizationsDelegate

@@ -6,7 +6,8 @@ import '../../core/utils/tag_payload_encoder.dart';
 import '../../l10n/app_localizations.dart';
 
 class ContactTagScreen extends StatefulWidget {
-  const ContactTagScreen({super.key});
+  final Map<String, dynamic>? prefill;
+  const ContactTagScreen({super.key, this.prefill});
 
   @override
   State<ContactTagScreen> createState() => _ContactTagScreenState();
