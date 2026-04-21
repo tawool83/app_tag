@@ -1,130 +1,12 @@
 {
   "version": "3.0",
-  "lastUpdated": "2026-04-21T05:24:44.903Z",
+  "lastUpdated": "2026-04-21T05:45:00.000Z",
   "activeFeatures": [
-    "color-tab-redesign",
-    "user-management",
-    "qr-custom-shape",
-    "scripts",
-    "Temp"
+    "user-management"
   ],
-  "primaryFeature": "qr-custom-shape",
-  "lastPhaseTransition": "check → archived (2026-04-21, logo-tab-redesign matchRate 96, 6 iterations)",
+  "primaryFeature": "user-management",
+  "lastPhaseTransition": "completed → archived (2026-04-21, color-tab-redesign matchRate 92)",
   "features": {
-    "AppTag-Flutter": {
-      "phase": "archived",
-      "matchRate": 97,
-      "iterationCount": 0,
-      "startedAt": "2026-04-09T06:58:13.308Z",
-      "archivedAt": "2026-04-10T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/apptag-flutter/"
-    },
-    "nfc-cross-platform": {
-      "phase": "archived",
-      "matchRate": 92,
-      "iterationCount": 0,
-      "startedAt": "2026-04-10T00:00:00.000Z",
-      "archivedAt": "2026-04-10T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/nfc-cross-platform/"
-    },
-    "contact-picker": {
-      "phase": "archived",
-      "matchRate": 98,
-      "iterationCount": 0,
-      "startedAt": "2026-04-12T00:00:00.000Z",
-      "archivedAt": "2026-04-12T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/contact-picker/"
-    },
-    "home-tile-visibility": {
-      "phase": "archived",
-      "matchRate": 99,
-      "iterationCount": 0,
-      "startedAt": "2026-04-11T00:00:00.000Z",
-      "archivedAt": "2026-04-12T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/home-tile-visibility/"
-    },
-    "home-tile-menu": {
-      "phase": "archived",
-      "matchRate": 99,
-      "iterationCount": 1,
-      "startedAt": "2026-04-10T04:00:00.000Z",
-      "archivedAt": "2026-04-11T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/home-tile-menu/"
-    },
-    "location-map-picker": {
-      "phase": "archived",
-      "matchRate": 97,
-      "iterationCount": 0,
-      "startedAt": "2026-04-12T00:00:00.000Z",
-      "archivedAt": "2026-04-12T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/location-map-picker/"
-    },
-    "imagegallerysaver": {
-      "phase": "archived",
-      "matchRate": null,
-      "iterationCount": 0,
-      "startedAt": "2026-04-10T04:15:21.469Z",
-      "archivedAt": "2026-04-17T00:00:00.000Z",
-      "archivedTo": null,
-      "notes": "AGP 8.x 빌드 호환성 hotfix (commit 9a3e79a). PDCA 문서 없이 진행된 긴급 패치."
-    },
-    "direct-output": {
-      "phase": "archived",
-      "matchRate": 100,
-      "iterationCount": 0,
-      "startedAt": "2026-04-12T00:00:00.000Z",
-      "archivedAt": "2026-04-12T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/direct-output/"
-    },
-    "qr-layer-editor": {
-      "phase": "archived",
-      "matchRate": 96,
-      "iterationCount": 1,
-      "startedAt": "2026-04-13T00:00:00.000Z",
-      "archivedAt": "2026-04-14T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/qr-layer-editor/"
-    },
-    "qr-task-json-storage": {
-      "phase": "archived",
-      "matchRate": 95,
-      "iterationCount": 0,
-      "startedAt": "2026-04-15T00:00:00.000Z",
-      "archivedAt": "2026-04-16T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/qr-task-json-storage/"
-    },
-    "color-tab-redesign": {
-      "phase": "completed",
-      "phaseNumber": 5,
-      "matchRate": 92,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {
-        "plan": "docs/01-plan/features/color-tab-redesign.plan.md",
-        "design": "docs/02-design/features/color-tab-redesign.design.md",
-        "analysis": "docs/03-analysis/color-tab-redesign.analysis.md",
-        "report": "docs/04-report/color-tab-redesign.report.md"
-      },
-      "timestamps": {
-        "started": "2026-04-17T00:00:00.000Z",
-        "lastUpdated": "2026-04-17T00:00:00.000Z"
-      }
-    },
-    "clean-architecture-refactor": {
-      "phase": "archived",
-      "matchRate": 97,
-      "iterationCount": 2,
-      "startedAt": "2026-04-15T00:00:00.000Z",
-      "archivedAt": "2026-04-17T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/clean-architecture-refactor/"
-    },
-    "logo-tab-redesign": {
-      "phase": "archived",
-      "matchRate": 96,
-      "iterationCount": 6,
-      "startedAt": "2026-04-20T00:00:00.000Z",
-      "archivedAt": "2026-04-21T00:00:00.000Z",
-      "archivedTo": "docs/archive/2026-04/logo-tab-redesign/"
-    },
     "user-management": {
       "phase": "check",
       "phaseNumber": 4,
@@ -149,32 +31,6 @@
         "started": "2026-04-17T00:00:00.000Z",
         "lastUpdated": "2026-04-17T00:00:00.000Z"
       }
-    },
-    "scripts": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-20T02:07:26.552Z",
-        "lastUpdated": "2026-04-21T01:18:02.991Z"
-      },
-      "lastFile": "C:\\repository\\app_tag\\scripts\\remove_orphan_arb_keys.py"
-    },
-    "Temp": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-21T05:24:44.902Z",
-        "lastUpdated": "2026-04-21T05:24:44.902Z"
-      },
-      "lastFile": "C:\\Users\\chunjae\\AppData\\Local\\Temp\\migrate_read_sites.py"
     }
   },
   "pipeline": {
@@ -185,86 +41,20 @@
   "session": {
     "startedAt": "2026-04-09T06:11:12.207Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-21T05:24:44.903Z"
+    "lastActivity": "2026-04-21T05:45:00.000Z"
   },
   "history": [
     {
-      "timestamp": "2026-04-09T06:58:13.309Z",
-      "feature": "AppTag-Flutter",
-      "phase": "act",
-      "action": "updated"
+      "timestamp": "2026-04-21T05:40:00.000Z",
+      "feature": "cleanup",
+      "phase": "admin",
+      "action": "removed 14 entries (12 archived + scripts + Temp), reset activeFeatures/primaryFeature"
     },
     {
-      "timestamp": "2026-04-10T04:15:21.469Z",
-      "feature": "imagegallerysaver",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-12T02:13:04.303Z",
-      "feature": "imagegallerysaver",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-16T09:00:00.000Z",
-      "feature": "qr-task-json-storage",
-      "phase": "do",
-      "action": "registered (P0-P2 완료, P3 진행 중)"
-    },
-    {
-      "timestamp": "2026-04-16T09:00:00.000Z",
-      "feature": "clean-architecture-refactor",
-      "phase": "design",
-      "action": "registered (Plan+Design 완료)"
-    },
-    {
-      "timestamp": "2026-04-20T02:07:26.552Z",
-      "feature": "scripts",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-20T02:33:44.922Z",
-      "feature": "logo-tab-redesign",
-      "phase": "report",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-21T00:29:27.564Z",
-      "feature": "scripts",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-21T00:38:07.046Z",
-      "feature": "scripts",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-21T00:48:15.788Z",
-      "feature": "scripts",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-21T01:04:55.593Z",
-      "feature": "scripts",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-21T01:18:02.991Z",
-      "feature": "scripts",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-21T05:24:44.902Z",
-      "feature": "Temp",
-      "phase": "do",
-      "action": "updated"
+      "timestamp": "2026-04-21T05:45:00.000Z",
+      "feature": "color-tab-redesign",
+      "phase": "archived",
+      "action": "moved 4 docs to docs/archive/2026-04/color-tab-redesign/"
     }
   ],
   "stateMachine": {
