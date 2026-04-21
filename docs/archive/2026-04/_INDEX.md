@@ -28,3 +28,5 @@
 | refactor-qr-result-state | 2026-04-21 | 97% | [refactor-qr-result-state/](refactor-qr-result-state/) (Plan+Design+Analysis v3+Report v2, R2 — QrResultState 26→6 composite, 5 sub-state + 4 entity, `_sentinel` 제거, flat getter 0개 완전 제거, ~115 call-site 마이그레이션 완료) |
 | refactor-qr-notifier-split | 2026-04-21 | 95.5% | [refactor-qr-notifier-split/](refactor-qr-notifier-split/) (Plan+Analysis+Report, R-series 최종 — QrResultNotifier 576→234줄 main + 5 mixin(`part of` + `on StateNotifier<QrResultState>`), 40 setter 관심사별 분산, public API 100% 유지, external migration 0) |
 | color-tab-redesign | 2026-04-21 | 92% | [color-tab-redesign/](color-tab-redesign/) (Plan+Design+Analysis+Report, 색상 탭 UX 개편 — 구현 완료) |
+| refactor-qr-shape-tab | 2026-04-21 | N/A | [refactor-qr-shape-tab/](refactor-qr-shape-tab/) (Plan only, R1 — qr_shape_tab.dart 2101줄 → 10 part 파일 분할, 구현 완료. Plan의 facade/public 승격 조건은 obsolete하여 Dart `part of` 패턴으로 대체 — R-series와 일관) |
+| user-management | 2026-04-21 | 91% | [user-management/](user-management/) (Plan+Design+Analysis, FR-01~08 8개 요구사항, 구현 완료 — Report 없이 종료) |
