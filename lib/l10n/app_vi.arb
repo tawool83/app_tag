@@ -232,8 +232,6 @@
   "shapeSmooth": "Mượt",
   "shapeDiamond": "Kim cương",
   "shapeStar": "Ngôi sao",
-  "actionRandomRegenerate": "Tạo ngẫu nhiên",
-  "actionRandomEye": "Mắt ngẫu nhiên",
   "actionClear": "Xóa",
   "labelShowIcon": "Hiển thị biểu tượng",
   "msgIconUnavailable": "Chỉ hiển thị khi đã đặt biểu tượng ứng dụng hoặc emoji.",

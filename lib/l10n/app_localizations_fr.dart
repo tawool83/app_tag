@@ -569,12 +569,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shapeStar => 'Étoile';
 
   @override
-  String get actionRandomRegenerate => 'Regénérer aléatoirement';
-
-  @override
-  String get actionRandomEye => 'Œil aléatoire';
-
-  @override
   String get actionClear => 'Effacer';
 
   @override
@@ -864,6 +858,18 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get sliderInnerN => 'Forme intérieure';
+
+  @override
+  String get sliderCornerQ1 => 'Q1 모서리';
+
+  @override
+  String get sliderCornerQ2 => 'Q2 모서리';
+
+  @override
+  String get sliderCornerQ3 => 'Q3 모서리';
+
+  @override
+  String get sliderCornerQ4 => 'Q4 모서리';
 
   @override
   String get labelBoundaryType => 'Type de contour';

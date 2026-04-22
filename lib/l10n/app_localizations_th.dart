@@ -560,12 +560,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String get shapeStar => 'ดาว';
 
   @override
-  String get actionRandomRegenerate => 'สร้างใหม่แบบสุ่ม';
-
-  @override
-  String get actionRandomEye => 'รูปทรงตาแบบสุ่ม';
-
-  @override
   String get actionClear => 'ล้าง';
 
   @override
@@ -854,6 +848,18 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get sliderInnerN => 'รูปทรงใน';
+
+  @override
+  String get sliderCornerQ1 => 'Q1 모서리';
+
+  @override
+  String get sliderCornerQ2 => 'Q2 모서리';
+
+  @override
+  String get sliderCornerQ3 => 'Q3 모서리';
+
+  @override
+  String get sliderCornerQ4 => 'Q4 모서리';
 
   @override
   String get labelBoundaryType => 'ประเภทกรอบ';

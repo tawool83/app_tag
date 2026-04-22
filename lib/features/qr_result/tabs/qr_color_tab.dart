@@ -1,19 +1,33 @@
+library;
+
+import 'dart:async';
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide PaletteType;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
+
 import '../../../core/utils/color_hex.dart' as app_color_hex;
-import '../domain/entities/qr_template.dart' show QrGradient;
 import '../../../l10n/app_localizations.dart';
+import '../../color_palette/data/datasources/hive_color_palette_datasource.dart';
+import '../../color_palette/data/models/user_color_palette_model.dart';
+import '../../color_palette/domain/entities/user_color_palette.dart';
 import '../domain/entities/qr_color_presets.dart';
+import '../domain/entities/qr_template.dart' show QrGradient;
 import '../qr_result_provider.dart' show qrResultProvider;
 
-/// [색상] 탭: 단색 팔레트 + 그라디언트 프리셋 + 맞춤 그라디언트 편집기.
+part 'qr_color_tab/shared.dart';
+part 'qr_color_tab/solid_row.dart';
+part 'qr_color_tab/gradient_row.dart';
+part 'qr_color_tab/gradient_editor.dart';
+part 'qr_color_tab/color_grid_modal.dart';
+
+/// [색상] 탭: built-in 5개 + 사용자 단색/그라디언트 프리셋 + 그라디언트 편집기.
 class QrColorTab extends ConsumerStatefulWidget {
   final ValueChanged<Color> onColorSelected;
   final ValueChanged<QrGradient?> onGradientChanged;
-
-  /// 편집기 모드 진입/해제 시 부모에게 알림 (하단 버튼 교체용).
   final ValueChanged<bool>? onEditorModeChanged;
 
   const QrColorTab({
@@ -28,67 +42,325 @@ class QrColorTab extends ConsumerStatefulWidget {
 }
 
 class QrColorTabState extends ConsumerState<QrColorTab> {
-  bool _showCustomEditor = false;
+  // ── 프리셋 데이터 ──
+  HiveColorPaletteDataSource? _datasource;
+  List<UserColorPalette> _solidPresets = [];
+  List<UserColorPalette> _gradientPresets = [];
 
-  // editor state
+  // ── 선택 상태 ──
+  String? _selectedSolidPresetId;
+  String? _selectedGradientPresetId;
+
+  // ── 그라디언트 편집기 상태 ──
+  bool _showGradientEditor = false;
+  String? _editingGradientPresetId;
   String _gradientType = 'linear';
   double _angleDegrees = 45;
   String _center = 'center';
-  late List<_ColorStop> _stops;
+  List<_ColorStop> _stops = [
+    _ColorStop(color: const Color(0xFF0066CC), position: 0.0),
+    _ColorStop(color: const Color(0xFF6A0DAD), position: 1.0),
+  ];
 
-  // 편집 시작 전 그라디언트 백업 (취소용)
-  QrGradient? _gradientBeforeEdit;
+  // ── 재정렬 지연 타이머 ──
+  Timer? _reorderTimer;
 
   @override
   void initState() {
     super.initState();
-    _stops = [
-      _ColorStop(color: const Color(0xFF0066CC), position: 0.0),
-      _ColorStop(color: const Color(0xFF6A0DAD), position: 1.0),
-    ];
+    _initDatasource();
   }
 
-  void _emitGradient() {
-    final gradient = QrGradient(
+  @override
+  void dispose() {
+    _reorderTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initDatasource() async {
+    final box = Hive.isBoxOpen(HiveColorPaletteDataSource.boxName)
+        ? Hive.box<UserColorPaletteModel>(HiveColorPaletteDataSource.boxName)
+        : await Hive.openBox<UserColorPaletteModel>(
+            HiveColorPaletteDataSource.boxName);
+    _datasource = HiveColorPaletteDataSource(box);
+    _loadPresets();
+  }
+
+  void _loadPresets() {
+    if (_datasource == null) return;
+    setState(() {
+      _solidPresets = _datasource!.readAllSortedByRecency(PaletteType.solid);
+      _gradientPresets =
+          _datasource!.readAllSortedByRecency(PaletteType.gradient);
+    });
+  }
+
+  /// 선택 하이라이트를 먼저 보여주고 재정렬.
+  void _delayedReloadPresets() {
+    _reorderTimer?.cancel();
+    _reorderTimer = Timer(const Duration(milliseconds: 100), () {
+      if (mounted) _loadPresets();
+    });
+  }
+
+  // ── 편집기 open/close ──────────────────────────────────────────────────
+
+  void _openGradientEditor({String? editingId, UserColorPalette? preset}) {
+    if (preset != null) {
+      _loadGradientIntoEditorState(preset);
+    } else {
+      _resetEditorStateToDefault();
+    }
+    setState(() {
+      _showGradientEditor = true;
+      _editingGradientPresetId = editingId;
+    });
+    _emitGradient();
+    widget.onEditorModeChanged?.call(true);
+  }
+
+  void _closeGradientEditor() {
+    setState(() {
+      _showGradientEditor = false;
+      _editingGradientPresetId = null;
+    });
+    widget.onEditorModeChanged?.call(false);
+  }
+
+  // ── 외부 공개 API ──────────────────────────────────────────────────────
+
+  /// 외부(부모)에서 호출 — AppBar 뒤로가기 시: 현재 편집 값 자동 저장 후 닫기.
+  /// (도트/눈 shape editor 와 동형)
+  Future<bool> cancelAndCloseEditor() async {
+    if (!_showGradientEditor) return true;
+    if (_editingGradientPresetId != null) {
+      await _updateExistingGradientPreset();
+    } else {
+      await _saveCurrentGradientAsPreset();
+    }
+    _closeGradientEditor();
+    return true;
+  }
+
+  /// 외부(부모)에서 호출 — 탭 전환 시 확인 처리.
+  Future<void> confirmAndCloseEditor() async {
+    await cancelAndCloseEditor();
+  }
+
+  String? activeEditorLabel(AppLocalizations l10n) =>
+      _showGradientEditor ? l10n.labelCustomGradient : null;
+
+  // ── Save / Update / Delete ─────────────────────────────────────────────
+
+  Future<void> _saveSolidAsPreset(Color color) async {
+    if (_datasource == null) return;
+    final argb = color.toARGB32();
+
+    final existing =
+        _solidPresets.where((p) => p.solidColorArgb == argb).firstOrNull;
+    if (existing != null) {
+      await _datasource!.touchLastUsed(existing.id);
+      setState(() => _selectedSolidPresetId = existing.id);
+      widget.onGradientChanged(null);
+      widget.onColorSelected(color);
+      _loadPresets();
+      return;
+    }
+
+    final id = const Uuid().v4();
+    final now = DateTime.now();
+    final preset = UserColorPalette(
+      id: id,
+      name: id.substring(0, 8),
+      type: PaletteType.solid,
+      solidColorArgb: argb,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await _datasource!.write(UserColorPaletteModel.fromEntity(preset));
+    setState(() => _selectedSolidPresetId = id);
+    widget.onGradientChanged(null);
+    widget.onColorSelected(color);
+    _loadPresets();
+  }
+
+  Future<void> _saveCurrentGradientAsPreset() async {
+    if (_datasource == null) return;
+    final current = QrGradient(
       type: _gradientType,
       colors: _stops.map((s) => s.color).toList(),
       stops: _stops.map((s) => s.position).toList(),
       angleDegrees: _angleDegrees,
       center: _gradientType == 'radial' ? _center : null,
     );
-    widget.onGradientChanged(gradient);
+
+    final existing = _gradientPresets.where((p) {
+      return _gradientEquals(_qrGradientFromPalette(p), current);
+    }).firstOrNull;
+    if (existing != null) {
+      await _datasource!.touchLastUsed(existing.id);
+      setState(() => _selectedGradientPresetId = existing.id);
+      _loadPresets();
+      return;
+    }
+
+    final id = const Uuid().v4();
+    final now = DateTime.now();
+    final preset = UserColorPalette(
+      id: id,
+      name: id.substring(0, 8),
+      type: PaletteType.gradient,
+      gradientColorArgbs: current.colors.map((c) => c.toARGB32()).toList(),
+      gradientStops: current.stops,
+      gradientType: current.type,
+      gradientAngle: current.angleDegrees.toInt(),
+      createdAt: now,
+      updatedAt: now,
+    );
+    await _datasource!.write(UserColorPaletteModel.fromEntity(preset));
+    setState(() => _selectedGradientPresetId = id);
+    _loadPresets();
   }
 
-  void _openEditor() {
-    final state = ref.read(qrResultProvider);
-    _gradientBeforeEdit = state.style.customGradient;
-    setState(() => _showCustomEditor = true);
-    _emitGradient();
-    widget.onEditorModeChanged?.call(true);
+  Future<void> _updateExistingGradientPreset() async {
+    if (_datasource == null || _editingGradientPresetId == null) return;
+    final existing = _gradientPresets
+        .where((p) => p.id == _editingGradientPresetId)
+        .firstOrNull;
+    if (existing == null) {
+      await _saveCurrentGradientAsPreset();
+      return;
+    }
+    final updated = UserColorPalette(
+      id: existing.id,
+      name: existing.name,
+      type: existing.type,
+      gradientColorArgbs: _stops.map((s) => s.color.toARGB32()).toList(),
+      gradientStops: _stops.map((s) => s.position).toList(),
+      gradientType: _gradientType,
+      gradientAngle: _angleDegrees.toInt(),
+      sortOrder: existing.sortOrder,
+      createdAt: existing.createdAt,
+      updatedAt: DateTime.now(),
+      remoteId: existing.remoteId,
+      syncedToCloud: false,
+    );
+    await _datasource!.write(UserColorPaletteModel.fromEntity(updated));
+    setState(() => _selectedGradientPresetId = existing.id);
+    _loadPresets();
   }
 
-  /// 외부(부모)에서 호출 — 탭 전환 시 자동 확인 처리용.
-  void confirmAndCloseEditor() {
-    if (!_showCustomEditor) return;
-    _confirmEditor();
+  // ── Select handlers ────────────────────────────────────────────────────
+
+  void _onBuiltinSolidSelect(Color c) {
+    setState(() => _selectedSolidPresetId = null);
+    widget.onGradientChanged(null);
+    widget.onColorSelected(c);
   }
 
-  /// 외부(부모)에서 호출 — AppBar 뒤로가기 시 편집기 취소.
-  void cancelAndCloseEditor() {
-    if (!_showCustomEditor) return;
-    _cancelEditor();
+  Future<void> _onUserSolidSelect(UserColorPalette p) async {
+    if (p.solidColorArgb == null) return;
+    setState(() => _selectedSolidPresetId = p.id);
+    widget.onGradientChanged(null);
+    widget.onColorSelected(Color(p.solidColorArgb!));
+    await _datasource?.touchLastUsed(p.id);
+    _delayedReloadPresets();
   }
 
-  void _confirmEditor() {
-    setState(() => _showCustomEditor = false);
-    widget.onEditorModeChanged?.call(false);
+  Future<void> _onUserSolidLongPress(UserColorPalette p) async {
+    if (p.solidColorArgb == null) return;
+    await _openColorWheel(context, Color(p.solidColorArgb!), (newColor) {
+      // 신규 생성 (원본 유지). dedup 은 _saveSolidAsPreset 내부에서 처리.
+      _saveSolidAsPreset(newColor);
+    });
   }
 
-  void _cancelEditor() {
-    setState(() => _showCustomEditor = false);
-    widget.onGradientChanged(_gradientBeforeEdit);
-    widget.onEditorModeChanged?.call(false);
+  void _onBuiltinGradientSelect(QrGradient g) {
+    setState(() => _selectedGradientPresetId = null);
+    widget.onGradientChanged(g);
   }
+
+  Future<void> _onUserGradientSelect(UserColorPalette p) async {
+    final g = _qrGradientFromPalette(p);
+    setState(() => _selectedGradientPresetId = p.id);
+    widget.onGradientChanged(g);
+    await _datasource?.touchLastUsed(p.id);
+    _delayedReloadPresets();
+  }
+
+  void _onUserGradientLongPress(UserColorPalette p) {
+    _openGradientEditor(editingId: p.id, preset: p);
+  }
+
+  // ── Grid modal ─────────────────────────────────────────────────────────
+
+  Future<void> _showSolidGridModal({required _ColorGridMode mode}) async {
+    if (_solidPresets.isEmpty) return;
+    final result = await showModalBottomSheet<_ColorGridResult>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => _ColorGridModal(
+        presets: _solidPresets,
+        mode: mode,
+        isGradient: false,
+        selectedPresetId: _selectedSolidPresetId,
+      ),
+    );
+    if (result == null) return;
+    switch (result) {
+      case _ColorGridDeleteResult(:final deletedIds):
+        if (deletedIds.contains(_selectedSolidPresetId)) {
+          setState(() => _selectedSolidPresetId = null);
+        }
+        for (final id in deletedIds) {
+          await _datasource?.delete(id);
+        }
+        _loadPresets();
+      case _ColorGridSelectResult(:final preset):
+        await _onUserSolidSelect(preset);
+      case _ColorGridEditResult():
+        // solid 는 modal 에서 편집 진입 없음 (롱프레스는 null 콜백)
+        break;
+    }
+  }
+
+  Future<void> _showGradientGridModal({required _ColorGridMode mode}) async {
+    if (_gradientPresets.isEmpty) return;
+    final result = await showModalBottomSheet<_ColorGridResult>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => _ColorGridModal(
+        presets: _gradientPresets,
+        mode: mode,
+        isGradient: true,
+        selectedPresetId: _selectedGradientPresetId,
+      ),
+    );
+    if (result == null) return;
+    switch (result) {
+      case _ColorGridDeleteResult(:final deletedIds):
+        if (deletedIds.contains(_selectedGradientPresetId)) {
+          setState(() => _selectedGradientPresetId = null);
+          widget.onGradientChanged(null);
+        }
+        for (final id in deletedIds) {
+          await _datasource?.delete(id);
+        }
+        _loadPresets();
+      case _ColorGridSelectResult(:final preset):
+        await _onUserGradientSelect(preset);
+      case _ColorGridEditResult(:final preset):
+        _openGradientEditor(editingId: preset.id, preset: preset);
+    }
+  }
+
+  // ── Color wheel (공용 다이얼로그) ──────────────────────────────────────
 
   Future<void> _openColorWheel(BuildContext context, Color initial,
       ValueChanged<Color> onConfirm) async {
@@ -121,136 +393,40 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
     if (confirmed == true) onConfirm(temp);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(qrResultProvider);
-    final selectedColor = state.style.qrColor;
-    final customGradient = state.style.customGradient;
-    final l10n = AppLocalizations.of(context)!;
+  // ── 그라디언트 편집기 UI / 헬퍼 ────────────────────────────────────────
 
-    // 맞춤 편집기 모드일 때: 팔레트 숨기고 편집기 + 하단 추가/취소 표시
-    if (_showCustomEditor) {
-      return Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _SectionHeader(label: l10n.labelCustomGradient),
-                  const SizedBox(height: 12),
-                  _buildCustomEditor(l10n),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    // 기본 모드: 단색 + 그라디언트 팔레트
+  Widget _buildGradientEditor(AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── 단색 섹션 ──────────────────────────────────────────────────
-          _SectionHeader(label: l10n.tabColorSolid),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              ...qrSafeColors.map((c) {
-                final isSelected =
-                    c.toARGB32() == selectedColor.toARGB32() &&
-                        customGradient == null;
-                return _ColorCircle(
-                  color: c,
-                  isSelected: isSelected,
-                  onTap: () {
-                    widget.onGradientChanged(null);
-                    widget.onColorSelected(c);
-                  },
-                );
-              }),
-              _AddCircleButton(
-                onTap: () => _openColorWheel(context, selectedColor, (c) {
-                  widget.onGradientChanged(null);
-                  widget.onColorSelected(c);
-                }),
-              ),
-            ],
+          _SectionLabelWithDelete(label: l10n.labelCustomGradient),
+          const SizedBox(height: 12),
+          _buildTypeAndOptionRow(l10n),
+          const SizedBox(height: 16),
+          Text(l10n.labelColorStops,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+          const SizedBox(height: 6),
+          _GradientSliderBar(
+            stops: _stops,
+            onChanged: (newStops) {
+              setState(() => _stops = newStops);
+              _emitGradient();
+            },
+            onStopAdded: _stops.length < 5
+                ? (newStops) {
+                    setState(() => _stops = newStops);
+                    _emitGradient();
+                  }
+                : null,
           ),
-
-          const SizedBox(height: 24),
-
-          // ── 그라디언트 섹션 ────────────────────────────────────────────
-          _SectionHeader(label: l10n.tabColorGradient),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              ...kQrPresetGradients.map((g) {
-                final isSelected = customGradient != null &&
-                    customGradient.type == g.type &&
-                    customGradient.angleDegrees == g.angleDegrees &&
-                    customGradient.colors.first.toARGB32() ==
-                        g.colors.first.toARGB32();
-                return _GradientRect(
-                  gradient: g,
-                  isSelected: isSelected,
-                  onTap: () => widget.onGradientChanged(g),
-                );
-              }),
-              _AddRectButton(onTap: _openEditor),
-            ],
-          ),
+          const SizedBox(height: 16),
+          _buildColorStopList(l10n),
         ],
       ),
     );
   }
-
-  // ── 맞춤 그라디언트 편집기 ─────────────────────────────────────────────────
-
-  Widget _buildCustomEditor(AppLocalizations l10n) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Fix 1: 유형 + 각도/가운데를 드롭다운으로 한 행에 배치
-        _buildTypeAndOptionRow(l10n),
-        const SizedBox(height: 16),
-
-        // "색 지점" 타이틀 (미리보기 바 위)
-        Text(l10n.labelColorStops,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-        const SizedBox(height: 6),
-
-        // 그라디언트 미리보기 + 드래그 슬라이더 통합 (바 탭으로 색 지점 추가)
-        _GradientSliderBar(
-          stops: _stops,
-          onChanged: (newStops) {
-            setState(() => _stops = newStops);
-            _emitGradient();
-          },
-          onStopAdded: _stops.length < 5
-              ? (newStops) {
-                  setState(() => _stops = newStops);
-                  _emitGradient();
-                }
-              : null,
-        ),
-        const SizedBox(height: 16),
-
-        // 색 지점 목록 (미리보기 바 아래)
-        _buildColorStopList(l10n),
-      ],
-    );
-  }
-
-  // ── Fix 1: 유형 + 각도/가운데 드롭다운 한 행 ──────────────────────────────
 
   Widget _buildTypeAndOptionRow(AppLocalizations l10n) {
     const angles = [0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0];
@@ -261,10 +437,8 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
       'bottomLeft': l10n.optionCenterBottomLeft,
       'bottomRight': l10n.optionCenterBottomRight,
     };
-
     return Row(
       children: [
-        // 유형 드롭다운
         Expanded(
           child: _LabeledDropdown<String>(
             label: l10n.labelGradientType,
@@ -281,7 +455,6 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
           ),
         ),
         const SizedBox(width: 12),
-        // 각도 또는 가운데 드롭다운
         if (_gradientType == 'linear')
           Expanded(
             child: _LabeledDropdown<double>(
@@ -304,8 +477,8 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
               label: l10n.labelCenter,
               value: _center,
               items: centerOptions.entries
-                  .map((e) =>
-                      DropdownMenuItem(value: e.key, child: Text(e.value)))
+                  .map((e) => DropdownMenuItem(
+                      value: e.key, child: Text(e.value)))
                   .toList(),
               onChanged: (v) {
                 if (v == null) return;
@@ -318,506 +491,184 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
     );
   }
 
-  // ── 색 지점 목록 ──────────────────────────────────────────────────────────
-
   Widget _buildColorStopList(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ...List.generate(_stops.length, (i) {
-          final stop = _stops[i];
-          final canDelete = _stops.length > 2;
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 3),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () =>
-                      _openColorWheel(context, stop.color, (newColor) {
-                    setState(() => _stops[i] =
-                        _ColorStop(color: newColor, position: stop.position));
-                    _emitGradient();
-                  }),
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: stop.color,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey.shade300),
+      children: List.generate(_stops.length, (i) {
+        final stop = _stops[i];
+        final canDelete = _stops.length > 2;
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () =>
+                    _openColorWheel(context, stop.color, (newColor) {
+                  setState(() => _stops[i] =
+                      _ColorStop(color: newColor, position: stop.position));
+                  _emitGradient();
+                }),
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: stop.color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                app_color_hex.colorToHex(stop.color),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const Spacer(),
+              if (canDelete)
+                SizedBox(
+                  height: 28,
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() => _stops.removeAt(i));
+                      _redistributeStopPositions();
+                      _emitGradient();
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      l10n.actionDeleteStop,
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.red),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  app_color_hex.colorToHex(stop.color),
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontFamily: 'monospace',
-                      color: Colors.grey.shade700),
-                ),
-                const Spacer(),
-                if (canDelete)
-                  SizedBox(
-                    height: 28,
-                    child: TextButton(
-                      onPressed: () {
-                        setState(() => _stops.removeAt(i));
-                        _redistributePositions();
-                        _emitGradient();
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(l10n.actionDeleteStop,
-                          style:
-                              const TextStyle(fontSize: 12, color: Colors.red)),
-                    ),
-                  ),
-              ],
-            ),
-          );
-        }),
-      ],
+            ],
+          ),
+        );
+      }),
     );
   }
 
-  void _redistributePositions() {
+  void _emitGradient() {
+    final gradient = QrGradient(
+      type: _gradientType,
+      colors: _stops.map((s) => s.color).toList(),
+      stops: _stops.map((s) => s.position).toList(),
+      angleDegrees: _angleDegrees,
+      center: _gradientType == 'radial' ? _center : null,
+    );
+    widget.onGradientChanged(gradient);
+  }
+
+  void _redistributeStopPositions() {
     if (_stops.length < 2) return;
     for (var i = 0; i < _stops.length; i++) {
       final pos = i / (_stops.length - 1);
       _stops[i] = _ColorStop(color: _stops[i].color, position: pos);
     }
   }
-}
 
-// ── 데이터 모델 ────────────────────────────────────────────────────────────────
-
-class _ColorStop {
-  final Color color;
-  final double position;
-
-  const _ColorStop({required this.color, required this.position});
-}
-
-// ── 공통 위젯 ──────────────────────────────────────────────────────────────────
-
-class _SectionHeader extends StatelessWidget {
-  final String label;
-  const _SectionHeader({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(label,
-        style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700));
+  void _loadGradientIntoEditorState(UserColorPalette p) {
+    final colors = p.gradientColorArgbs ?? [0xFF000000, 0xFFFFFFFF];
+    final positions = p.gradientStops ??
+        List.generate(colors.length, (i) => i / (colors.length - 1));
+    setState(() {
+      _gradientType = p.gradientType ?? 'linear';
+      _angleDegrees = (p.gradientAngle ?? 45).toDouble();
+      _center = 'center';
+      _stops = List.generate(colors.length, (i) {
+        return _ColorStop(
+          color: Color(colors[i]),
+          position:
+              i < positions.length ? positions[i] : i / (colors.length - 1),
+        );
+      });
+    });
   }
-}
 
-/// 라벨 + 드롭다운을 세로로 묶는 컴팩트 위젯.
-class _LabeledDropdown<T> extends StatelessWidget {
-  final String label;
-  final T value;
-  final List<DropdownMenuItem<T>> items;
-  final ValueChanged<T?> onChanged;
+  void _resetEditorStateToDefault() {
+    setState(() {
+      _gradientType = 'linear';
+      _angleDegrees = 45;
+      _center = 'center';
+      _stops = [
+        _ColorStop(color: const Color(0xFF0066CC), position: 0.0),
+        _ColorStop(color: const Color(0xFF6A0DAD), position: 1.0),
+      ];
+    });
+  }
 
-  const _LabeledDropdown({
-    required this.label,
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
+  // ── build ──────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-        const SizedBox(height: 2),
-        DropdownButtonFormField<T>(
-          initialValue: value,
-          items: items,
-          onChanged: onChanged,
-          isDense: true,
-          decoration: InputDecoration(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            isDense: true,
+    final state = ref.watch(qrResultProvider);
+    final l10n = AppLocalizations.of(context)!;
+
+    if (_showGradientEditor) {
+      return _buildGradientEditor(l10n);
+    }
+
+    final currentGradient = state.style.customGradient;
+    final currentColor = state.style.qrColor;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── 단색 섹션 ──
+          _SectionLabelWithDelete(
+            label: l10n.tabColorSolid,
+            onDeleteTap: _solidPresets.isNotEmpty
+                ? () => _showSolidGridModal(mode: _ColorGridMode.delete)
+                : null,
           ),
-          style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color),
-        ),
-      ],
-    );
-  }
-}
-
-// ── 단색 원형 버튼 ───────────────────────────────────────────────────────────
-
-class _ColorCircle extends StatelessWidget {
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ColorCircle({
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.transparent,
-            width: 3,
+          const SizedBox(height: 10),
+          _SolidRow(
+            builtinSelected: (currentGradient == null &&
+                    _selectedSolidPresetId == null)
+                ? currentColor
+                : null,
+            userPresets: _solidPresets,
+            selectedPresetId: _selectedSolidPresetId,
+            onBuiltinSelect: _onBuiltinSolidSelect,
+            onAddTap: () =>
+                _openColorWheel(context, currentColor, _saveSolidAsPreset),
+            onUserSelect: _onUserSolidSelect,
+            onUserLongPress: _onUserSolidLongPress,
+            onShowAll: () => _showSolidGridModal(mode: _ColorGridMode.view),
           ),
-          boxShadow: isSelected
-              ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 6)]
-              : null,
-        ),
-        child: isSelected
-            ? const Icon(Icons.check, size: 16, color: Colors.white)
-            : null,
-      ),
-    );
-  }
-}
+          const SizedBox(height: 24),
 
-class _AddCircleButton extends StatelessWidget {
-  final VoidCallback onTap;
-  const _AddCircleButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border:
-              Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
-          color: Colors.grey.shade50,
-        ),
-        child: Icon(Icons.add, size: 18, color: Colors.grey.shade600),
-      ),
-    );
-  }
-}
-
-// ── 그라디언트 사각 버튼 ─────────────────────────────────────────────────────
-
-class _GradientRect extends StatelessWidget {
-  final QrGradient gradient;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _GradientRect({
-    required this.gradient,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          gradient: gradient.type == 'radial'
-              ? RadialGradient(colors: gradient.colors, stops: gradient.stops)
-              : LinearGradient(
-                  colors: gradient.colors,
-                  stops: gradient.stops,
-                  transform:
-                      GradientRotation(gradient.angleDegrees * 3.14159 / 180),
-                ),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.transparent,
-            width: 3,
+          // ── 그라디언트 섹션 ──
+          _SectionLabelWithDelete(
+            label: l10n.tabColorGradient,
+            onDeleteTap: _gradientPresets.isNotEmpty
+                ? () => _showGradientGridModal(mode: _ColorGridMode.delete)
+                : null,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                      color: gradient.colors.first.withValues(alpha: 0.4),
-                      blurRadius: 6)
-                ]
-              : null,
-        ),
-        child: isSelected
-            ? const Icon(Icons.check, size: 16, color: Colors.white)
-            : null,
+          const SizedBox(height: 10),
+          _GradientRow(
+            currentGradient: currentGradient,
+            userPresets: _gradientPresets,
+            selectedPresetId: _selectedGradientPresetId,
+            onBuiltinSelect: _onBuiltinGradientSelect,
+            onAddTap: () => _openGradientEditor(),
+            onUserSelect: _onUserGradientSelect,
+            onUserLongPress: _onUserGradientLongPress,
+            onShowAll: () =>
+                _showGradientGridModal(mode: _ColorGridMode.view),
+          ),
+        ],
       ),
     );
-  }
-}
-
-class _AddRectButton extends StatelessWidget {
-  final VoidCallback onTap;
-  const _AddRectButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border:
-              Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
-          color: Colors.grey.shade50,
-        ),
-        child: Icon(Icons.add, size: 20, color: Colors.grey.shade600),
-      ),
-    );
-  }
-}
-
-// ── 그라디언트 미리보기 바 ────────────────────────────────────────────────────
-
-// ── 그라디언트 미리보기 + 드래그 슬라이더 통합 컴포넌트 ─────────────────────
-
-class _GradientSliderBar extends StatefulWidget {
-  final List<_ColorStop> stops;
-  final ValueChanged<List<_ColorStop>> onChanged;
-
-  /// 바 탭으로 새 색 지점 추가 시 콜백 (최대 5개 제한은 호출자가 판단).
-  final ValueChanged<List<_ColorStop>>? onStopAdded;
-
-  const _GradientSliderBar({
-    required this.stops,
-    required this.onChanged,
-    this.onStopAdded,
-  });
-
-  @override
-  State<_GradientSliderBar> createState() => _GradientSliderBarState();
-}
-
-class _GradientSliderBarState extends State<_GradientSliderBar> {
-  int? _draggingIndex;
-  bool _didDrag = false;
-
-  static const _barHeight = 33.0;
-  static const _handleRadius = 15.0;
-  static const _handleActiveRadius = 20.0;
-  static const _horizontalPadding = _handleActiveRadius;
-  static const _totalHeight = _barHeight + _handleRadius + 4;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapUp: _onTapUp,
-      onHorizontalDragStart: _onDragStart,
-      onHorizontalDragUpdate: _onDragUpdate,
-      onHorizontalDragEnd: (_) => setState(() => _draggingIndex = null),
-      child: CustomPaint(
-        size: const Size(double.infinity, _totalHeight),
-        painter: _GradientSliderBarPainter(
-          stops: widget.stops,
-          activeIndex: _draggingIndex,
-        ),
-      ),
-    );
-  }
-
-  double _ratioFromX(double localX, double totalWidth) {
-    final usableWidth = totalWidth - _horizontalPadding * 2;
-    return ((localX - _horizontalPadding) / usableWidth).clamp(0.0, 1.0);
-  }
-
-  /// 바 탭: 기존 핸들 근처가 아니면 새 색 지점 추가.
-  void _onTapUp(TapUpDetails details) {
-    if (_didDrag) {
-      _didDrag = false;
-      return;
-    }
-    if (widget.stops.length >= 5) return;
-    if (widget.onStopAdded == null) return;
-
-    final renderBox = context.findRenderObject() as RenderBox;
-    final ratio = _ratioFromX(
-      details.localPosition.dx,
-      renderBox.size.width,
-    );
-
-    // 기존 핸들 근처(3% 이내)이면 추가하지 않음
-    for (final s in widget.stops) {
-      if ((s.position - ratio).abs() < 0.03) return;
-    }
-
-    // 랜덤 색상 생성
-    final newColor = Color((math.Random().nextDouble() * 0xFFFFFF).toInt())
-        .withValues(alpha: 1);
-    final newStops = List<_ColorStop>.from(widget.stops)
-      ..add(_ColorStop(color: newColor, position: ratio))
-      ..sort((a, b) => a.position.compareTo(b.position));
-    widget.onStopAdded!(newStops);
-  }
-
-  void _onDragStart(DragStartDetails details) {
-    _didDrag = false;
-    final renderBox = context.findRenderObject() as RenderBox;
-    final ratio = _ratioFromX(
-      details.localPosition.dx,
-      renderBox.size.width,
-    );
-
-    double minDist = double.infinity;
-    int closest = -1;
-    for (var i = 0; i < widget.stops.length; i++) {
-      final dist = (widget.stops[i].position - ratio).abs();
-      if (dist < minDist) {
-        minDist = dist;
-        closest = i;
-      }
-    }
-    // 양 끝(첫/마지막) 스톱은 고정
-    if (closest == 0 || closest == widget.stops.length - 1) {
-      _draggingIndex = null;
-      return;
-    }
-    setState(() => _draggingIndex = closest);
-  }
-
-  void _onDragUpdate(DragUpdateDetails details) {
-    if (_draggingIndex == null) return;
-    _didDrag = true;
-    final renderBox = context.findRenderObject() as RenderBox;
-    final ratio = _ratioFromX(
-      details.localPosition.dx,
-      renderBox.size.width,
-    );
-
-    final i = _draggingIndex!;
-    final minPos = widget.stops[i - 1].position + 0.01;
-    final maxPos = widget.stops[i + 1].position - 0.01;
-    final clamped = ratio.clamp(minPos, maxPos);
-
-    final newStops = List<_ColorStop>.from(widget.stops);
-    newStops[i] = _ColorStop(color: newStops[i].color, position: clamped);
-    widget.onChanged(newStops);
-  }
-}
-
-class _GradientSliderBarPainter extends CustomPainter {
-  final List<_ColorStop> stops;
-  final int? activeIndex;
-
-  _GradientSliderBarPainter({required this.stops, required this.activeIndex});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const hPad = _GradientSliderBarState._horizontalPadding;
-    const barH = _GradientSliderBarState._barHeight;
-    const r = _GradientSliderBarState._handleRadius;
-    const rActive = _GradientSliderBarState._handleActiveRadius;
-
-    final barRect = RRect.fromLTRBR(
-      hPad, 0, size.width - hPad, barH, const Radius.circular(8),
-    );
-
-    // 그라디언트 바 그리기
-    final colors = stops.map((s) => s.color).toList();
-    final positions = stops.map((s) => s.position).toList();
-    final gradient = LinearGradient(colors: colors, stops: positions);
-    final shader = gradient.createShader(barRect.outerRect);
-
-    canvas.drawRRect(barRect, Paint()..shader = shader);
-
-    // 바 테두리
-    canvas.drawRRect(
-      barRect,
-      Paint()
-        ..color = Colors.black.withValues(alpha: 0.12)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1,
-    );
-
-    // 핸들 (바 중앙에 배치)
-    final usableWidth = size.width - hPad * 2;
-    final handleCy = barH / 2;
-
-    for (var i = 0; i < stops.length; i++) {
-      final stop = stops[i];
-      final cx = hPad + stop.position * usableWidth;
-      final isActive = i == activeIndex;
-      final isEdge = i == 0 || i == stops.length - 1;
-      final currentR = isActive ? rActive : r;
-
-      // 핸들 그림자
-      canvas.drawCircle(
-        Offset(cx, handleCy + 1),
-        currentR + 1,
-        Paint()..color = Colors.black.withValues(alpha: 0.10),
-      );
-
-      // 핸들 배경 (흰색)
-      canvas.drawCircle(
-        Offset(cx, handleCy),
-        currentR,
-        Paint()..color = Colors.white,
-      );
-
-      // 핸들 테두리
-      canvas.drawCircle(
-        Offset(cx, handleCy),
-        currentR,
-        Paint()
-          ..color = isActive
-              ? Colors.blue
-              : (isEdge ? Colors.grey.shade400 : Colors.grey.shade500)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = isActive ? 2.5 : 1.5,
-      );
-
-      // 핸들 안쪽 색상 원
-      canvas.drawCircle(
-        Offset(cx, handleCy),
-        currentR - 3,
-        Paint()..color = stop.color,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _GradientSliderBarPainter oldDelegate) =>
-      activeIndex != oldDelegate.activeIndex ||
-      !_stopsEqual(stops, oldDelegate.stops);
-
-  static bool _stopsEqual(List<_ColorStop> a, List<_ColorStop> b) {
-    if (identical(a, b)) return true;
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i].color != b[i].color || a[i].position != b[i].position) return false;
-    }
-    return true;
   }
 }

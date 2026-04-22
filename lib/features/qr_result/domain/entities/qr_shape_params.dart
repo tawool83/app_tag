@@ -185,58 +185,96 @@ class DotShapeParams {
       : 'DotShapeParams.asym(m:$sfM, n1:$sfN1, n2:$sfN2, n3:$sfN3, a:$sfA, b:$sfB, rot:$rotation, s:$scale)';
 }
 
-/// Superellipse 기반 눈 파라미터.
+/// Eye (finder pattern) 모양 파라미터.
 ///
-/// |x/a|^n + |y/b|^n = 1 에서 n 값으로 형태 결정:
-/// n=2 → 원, n≈4 → squircle (iOS), n→∞ → 사각형.
+/// 외곽 ring 은 4 모서리 독립 corner radius (0.0 = 둥근, 1.0 = 각진).
+/// 내부 fill 은 uniform superellipse (2.0 원 ~ 20.0 사각).
 ///
-/// 회전·내부 크기 필드는 QR 인식률 저하 원인이 되어 제거됨 (2026-04-21).
-/// 내부 finder 패턴은 항상 QR 스펙 3/7 비율 고정 렌더.
+/// 좌표계는 local eye (회전 전). 렌더러에서 finder 위치에 따라 ±90° 회전 적용.
+///   - Q1 corner = top-right
+///   - Q2 corner = top-left
+///   - Q3 corner = bottom-left
+///   - Q4 corner = bottom-right (회전 후 QR 중심 방향)
 class EyeShapeParams {
-  final double outerN; // 외곽 superellipse n: 2.0(원)~20.0(사각)
-  final double innerN; // 내부 superellipse n: 2.0(원)~20.0(사각)
+  /// 0.0 = 완전 둥근(원형) 모서리, 1.0 = 완전 각진(직각) 모서리.
+  final double cornerQ1;
+  final double cornerQ2;
+  final double cornerQ3;
+  final double cornerQ4;
+
+  /// 내부 fill superellipse n: 2.0(원) ~ 20.0(사각). uniform.
+  final double innerN;
 
   const EyeShapeParams({
-    this.outerN = 20.0,
-    this.innerN = 20.0,
+    this.cornerQ1 = 0.0,
+    this.cornerQ2 = 0.0,
+    this.cornerQ3 = 0.0,
+    this.cornerQ4 = 0.0,
+    this.innerN = 2.0,
   });
 
-  // ── 기존 프리셋 매핑 ──
-  static const square = EyeShapeParams(outerN: 20.0, innerN: 20.0);
-  static const rounded = EyeShapeParams(outerN: 5.0, innerN: 20.0);
-  static const circle = EyeShapeParams(outerN: 2.0, innerN: 2.0);
-  static const squircle = EyeShapeParams(outerN: 4.0, innerN: 4.0);
-  static const smooth = EyeShapeParams(outerN: 3.0, innerN: 3.0);
+  // ── 내장 프리셋 매핑 (참조용) ──
+  static const square   = EyeShapeParams(cornerQ1: 1, cornerQ2: 1, cornerQ3: 1, cornerQ4: 1, innerN: 20);
+  static const rounded  = EyeShapeParams(cornerQ1: 0.7, cornerQ2: 0.7, cornerQ3: 0.7, cornerQ4: 0.7, innerN: 20);
+  static const circle   = EyeShapeParams(cornerQ1: 0, cornerQ2: 0, cornerQ3: 0, cornerQ4: 0, innerN: 2);
+  static const squircle = EyeShapeParams(cornerQ1: 0.4, cornerQ2: 0.4, cornerQ3: 0.4, cornerQ4: 0.4, innerN: 4);
+  static const smooth   = EyeShapeParams(cornerQ1: 0.2, cornerQ2: 0.2, cornerQ3: 0.2, cornerQ4: 0.2, innerN: 3);
 
   EyeShapeParams copyWith({
-    double? outerN,
+    double? cornerQ1,
+    double? cornerQ2,
+    double? cornerQ3,
+    double? cornerQ4,
     double? innerN,
   }) =>
       EyeShapeParams(
-        outerN: outerN ?? this.outerN,
+        cornerQ1: cornerQ1 ?? this.cornerQ1,
+        cornerQ2: cornerQ2 ?? this.cornerQ2,
+        cornerQ3: cornerQ3 ?? this.cornerQ3,
+        cornerQ4: cornerQ4 ?? this.cornerQ4,
         innerN: innerN ?? this.innerN,
       );
 
   Map<String, dynamic> toJson() => {
-        'outerN': outerN,
+        'cornerQ1': cornerQ1,
+        'cornerQ2': cornerQ2,
+        'cornerQ3': cornerQ3,
+        'cornerQ4': cornerQ4,
         'innerN': innerN,
       };
 
-  factory EyeShapeParams.fromJson(Map<String, dynamic> json) => EyeShapeParams(
-        outerN: (json['outerN'] as num?)?.toDouble() ?? 20.0,
-        innerN: (json['innerN'] as num?)?.toDouble() ?? 20.0,
-      );
+  /// legacy(outerN 키만 있고 cornerQ* 없음) 는 null 리턴 — 호출자가 skip.
+  static EyeShapeParams? fromJsonOrNull(Map<String, dynamic> json) {
+    final hasCorner = json.containsKey('cornerQ1');
+    final hasLegacyOuter = json.containsKey('outerN') && !hasCorner;
+    if (hasLegacyOuter) return null;
+    return EyeShapeParams(
+      cornerQ1: (json['cornerQ1'] as num?)?.toDouble() ?? 0.0,
+      cornerQ2: (json['cornerQ2'] as num?)?.toDouble() ?? 0.0,
+      cornerQ3: (json['cornerQ3'] as num?)?.toDouble() ?? 0.0,
+      cornerQ4: (json['cornerQ4'] as num?)?.toDouble() ?? 0.0,
+      innerN: (json['innerN'] as num?)?.toDouble() ?? 2.0,
+    );
+  }
+
+  /// 기본 fromJson — legacy 인 경우 default 값 반환.
+  factory EyeShapeParams.fromJson(Map<String, dynamic> json) =>
+      fromJsonOrNull(json) ?? const EyeShapeParams();
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is EyeShapeParams &&
-          outerN == other.outerN &&
+          cornerQ1 == other.cornerQ1 &&
+          cornerQ2 == other.cornerQ2 &&
+          cornerQ3 == other.cornerQ3 &&
+          cornerQ4 == other.cornerQ4 &&
           innerN == other.innerN;
 
   @override
-  int get hashCode => Object.hash(outerN, innerN);
+  int get hashCode => Object.hash(cornerQ1, cornerQ2, cornerQ3, cornerQ4, innerN);
 
   @override
-  String toString() => 'EyeShapeParams(outerN:$outerN, innerN:$innerN)';
+  String toString() =>
+      'EyeShapeParams(Q1:$cornerQ1, Q2:$cornerQ2, Q3:$cornerQ3, Q4:$cornerQ4, innerN:$innerN)';
 }

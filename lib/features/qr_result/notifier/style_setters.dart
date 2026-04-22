@@ -92,7 +92,7 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
     state = state.copyWith(
       style: params == null
           ? state.style.copyWith(clearCustomEyeParams: true)
-          : state.style.copyWith(customEyeParams: params),
+          : state.style.copyWith(customEyeParams: params, clearRandomEyeSeed: true),
     );
     _schedulePush();
   }

@@ -42,61 +42,65 @@ class StickerTab extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Row 1: 유형 드롭다운 | 위치 ────────────────────────────────────
+          // 유형은 콘텐츠 폭(96~200dp), 위치는 Expanded 로 남은 폭 확보 → 위치 옵션 한 줄 유지.
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionLabel(l10n.labelLogoType),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 36,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<LogoType>(
-                          value: currentType,
-                          isDense: true,
-                          isExpanded: true,
-                          items: [
-                            DropdownMenuItem(
-                              value: LogoType.none,
-                              child: Text(l10n.optionNone,
-                                  style: const TextStyle(fontSize: 13)),
-                            ),
-                            DropdownMenuItem(
-                              value: LogoType.logo,
-                              child: Text(l10n.optionLogoTypeLogo,
-                                  style: const TextStyle(fontSize: 13)),
-                            ),
-                            DropdownMenuItem(
-                              value: LogoType.image,
-                              child: Text(l10n.optionLogoTypeImage,
-                                  style: const TextStyle(fontSize: 13)),
-                            ),
-                            DropdownMenuItem(
-                              value: LogoType.text,
-                              child: Text(l10n.optionLogoTypeText,
-                                  style: const TextStyle(fontSize: 13)),
-                            ),
-                          ],
-                          onChanged: (v) {
-                            if (v != null) {
-                              ref
-                                  .read(qrResultProvider.notifier)
-                                  .setLogoType(v);
-                              onChanged();
-                            }
-                          },
+              Flexible(
+                flex: 0,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 96, maxWidth: 200),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SectionLabel(l10n.labelLogoType),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 36,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<LogoType>(
+                            value: currentType,
+                            isDense: true,
+                            items: [
+                              DropdownMenuItem(
+                                value: LogoType.none,
+                                child: Text(l10n.optionNone,
+                                    style: const TextStyle(fontSize: 13)),
+                              ),
+                              DropdownMenuItem(
+                                value: LogoType.logo,
+                                child: Text(l10n.optionLogoTypeLogo,
+                                    style: const TextStyle(fontSize: 13)),
+                              ),
+                              DropdownMenuItem(
+                                value: LogoType.image,
+                                child: Text(l10n.optionLogoTypeImage,
+                                    style: const TextStyle(fontSize: 13)),
+                              ),
+                              DropdownMenuItem(
+                                value: LogoType.text,
+                                child: Text(l10n.optionLogoTypeText,
+                                    style: const TextStyle(fontSize: 13)),
+                              ),
+                            ],
+                            onChanged: (v) {
+                              if (v != null) {
+                                ref
+                                    .read(qrResultProvider.notifier)
+                                    .setLogoType(v);
+                                onChanged();
+                              }
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 12),

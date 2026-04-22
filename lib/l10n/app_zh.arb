@@ -232,8 +232,6 @@
   "shapeSmooth": "平滑",
   "shapeDiamond": "菱形",
   "shapeStar": "星形",
-  "actionRandomRegenerate": "随机重新生成",
-  "actionRandomEye": "随机眼形",
   "actionClear": "清除",
   "labelShowIcon": "显示图标",
   "msgIconUnavailable": "仅在设置了应用图标或表情符号时显示。",

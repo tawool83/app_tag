@@ -175,7 +175,9 @@ class _EyePreviewPainter extends CustomPainter {
       height: eyeSize,
     );
     final paint = Paint()..color = color..style = PaintingStyle.fill..isAntiAlias = true;
-    SuperellipsePath.paintEye(canvas, bounds, params, paint);
+    // 편집기 1-eye preview 는 local 좌표 표시 (회전 0).
+    // 3-eye 회전 시각화는 상단 QR 미리보기에서 확인.
+    SuperellipsePath.paintEye(canvas, bounds, params, paint, rotationDeg: 0.0);
   }
 
   @override

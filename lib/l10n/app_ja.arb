@@ -232,8 +232,6 @@
   "shapeSmooth": "スムーズ",
   "shapeDiamond": "ダイヤモンド",
   "shapeStar": "星",
-  "actionRandomRegenerate": "ランダム再生成",
-  "actionRandomEye": "ランダム目の形",
   "actionClear": "解除",
   "labelShowIcon": "アイコン表示",
   "msgIconUnavailable": "アプリアイコンまたは絵文字が設定されている場合のみ表示されます。",

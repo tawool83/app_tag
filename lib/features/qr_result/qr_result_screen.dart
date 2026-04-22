@@ -193,17 +193,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     super.dispose();
   }
 
-  /// 편집기 저장(확인) — AppBar [저장] 버튼 시 호출
-  void _confirmActiveEditor() {
-    if (_shapeEditorMode) {
-      _shapeTabKey.currentState?.confirmAndCloseEditor();
-      setState(() => _shapeEditorMode = false);
-    } else if (_colorEditorMode) {
-      _colorTabKey.currentState?.confirmAndCloseEditor();
-      setState(() => _colorEditorMode = false);
-    }
-  }
-
   /// 편집기 취소 — AppBar 뒤로가기 시 호출
   Future<void> _cancelActiveEditor() async {
     if (_shapeEditorMode) {
@@ -425,16 +414,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                 onPressed: _cancelActiveEditor,
               )
             : null,
-        actions: [
-          if (_isEditorActive)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilledButton(
-                onPressed: _confirmActiveEditor,
-                child: Text(l10n.actionSave),
-              ),
-            ),
-        ],
+        // 모든 편집기 (shape/color) 뒤로가기가 자동 저장 — [저장] 버튼 불필요.
+        actions: const [],
       ),
       body: Column(
         children: [
@@ -487,14 +468,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                   },
                   onEyeInnerChanged: (s) {
                     ref.read(qrResultProvider.notifier).setEyeInner(s);
-                    _recapture();
-                  },
-                  onRandomEyeRequested: () {
-                    ref.read(qrResultProvider.notifier).regenerateEyeSeed();
-                    _recapture();
-                  },
-                  onRandomEyeCleared: () {
-                    ref.read(qrResultProvider.notifier).clearRandomEye();
                     _recapture();
                   },
                   onEditorModeChanged: (editing) {

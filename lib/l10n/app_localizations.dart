@@ -1170,18 +1170,6 @@ abstract class AppLocalizations {
   /// **'별'**
   String get shapeStar;
 
-  /// No description provided for @actionRandomRegenerate.
-  ///
-  /// In ko, this message translates to:
-  /// **'랜덤 재생성'**
-  String get actionRandomRegenerate;
-
-  /// No description provided for @actionRandomEye.
-  ///
-  /// In ko, this message translates to:
-  /// **'랜덤 눈 모양'**
-  String get actionRandomEye;
-
   /// No description provided for @actionClear.
   ///
   /// In ko, this message translates to:
@@ -1751,6 +1739,30 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'내부 형태'**
   String get sliderInnerN;
+
+  /// No description provided for @sliderCornerQ1.
+  ///
+  /// In ko, this message translates to:
+  /// **'Q1 모서리'**
+  String get sliderCornerQ1;
+
+  /// No description provided for @sliderCornerQ2.
+  ///
+  /// In ko, this message translates to:
+  /// **'Q2 모서리'**
+  String get sliderCornerQ2;
+
+  /// No description provided for @sliderCornerQ3.
+  ///
+  /// In ko, this message translates to:
+  /// **'Q3 모서리'**
+  String get sliderCornerQ3;
+
+  /// No description provided for @sliderCornerQ4.
+  ///
+  /// In ko, this message translates to:
+  /// **'Q4 모서리'**
+  String get sliderCornerQ4;
 
   /// No description provided for @labelBoundaryType.
   ///

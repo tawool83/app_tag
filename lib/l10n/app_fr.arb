@@ -232,8 +232,6 @@
   "shapeSmooth": "Lisse",
   "shapeDiamond": "Diamant",
   "shapeStar": "Étoile",
-  "actionRandomRegenerate": "Regénérer aléatoirement",
-  "actionRandomEye": "Œil aléatoire",
   "actionClear": "Effacer",
   "labelShowIcon": "Afficher l'icône",
   "msgIconUnavailable": "Affiché uniquement lorsqu'une icône d'app ou un emoji est défini.",

@@ -108,7 +108,8 @@ class CustomizationMapper {
 
   static EyeShapeParams? eyeParamsFromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
-    return EyeShapeParams.fromJson(json);
+    // legacy(outerN만 존재) → null 반환 → customEye 해제, 빌트인 eye 로 fallback.
+    return EyeShapeParams.fromJsonOrNull(json);
   }
 
   static QrBoundaryParams boundaryParamsFromJson(Map<String, dynamic>? json) {

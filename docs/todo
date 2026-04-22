@@ -1,0 +1,4 @@
+  💡 Recommended:
+  - 즉시: 실기기에서 T-04~T-10 수동 visual QA 확인 (gap-detector 가 못 본 부분)
+  - 다음 사이클: /pdca analyze logo-image-recrop-fix — 남은 active feature 검증으로 세션 마무리
+  - 후속 feature: qr_layer_stack.dart _LogoWidget 분리 리팩터

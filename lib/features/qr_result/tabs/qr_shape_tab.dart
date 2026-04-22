@@ -35,16 +35,12 @@ part 'qr_shape_tab/animation_editor.dart';
 class QrShapeTab extends ConsumerStatefulWidget {
   final ValueChanged<QrEyeOuter> onEyeOuterChanged;
   final ValueChanged<QrEyeInner> onEyeInnerChanged;
-  final VoidCallback onRandomEyeRequested;
-  final VoidCallback onRandomEyeCleared;
   final ValueChanged<bool>? onEditorModeChanged;
 
   const QrShapeTab({
     super.key,
     required this.onEyeOuterChanged,
     required this.onEyeInnerChanged,
-    required this.onRandomEyeRequested,
-    required this.onRandomEyeCleared,
     this.onEditorModeChanged,
   });
 
@@ -75,6 +71,7 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
 
   // 현재 선택된 사용자 프리셋 ID (null = 빌트인 또는 미선택)
   String? _selectedDotPresetId;
+  String? _selectedEyePresetId;
 
   // 편집 중인 기존 프리셋 ID (null = 새로 만들기, non-null = 기존 수정)
   String? _editingPresetId;
@@ -157,51 +154,17 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
     _confirmEditor();
   }
 
-  /// 외부(부모)에서 호출 — AppBar 뒤로가기 시:
-  /// - 기존 프리셋 수정 중: 자동 저장 후 닫기
-  /// - 새 프리셋 생성 중: 저장/취소 다이얼로그 표시
-  /// Returns true if editor was closed, false if user chose to stay.
+  /// 외부(부모)에서 호출 — AppBar 뒤로가기 시: 현재 편집 값을 항상 자동 저장 후 닫기.
+  /// (기존 프리셋 수정/새 프리셋 생성 구분 없이 동일하게 "사용자 모양"에 반영)
   Future<bool> cancelAndCloseEditor() async {
     if (_activeEditor == null) return true;
-
-    // 기존 프리셋 수정 모드: 자동 저장
     if (_editingPresetId != null) {
       await _updateExistingPreset();
-      _confirmEditor();
-      return true;
-    }
-
-    // 새 프리셋 생성 모드: 저장/취소 확인
-    if (!mounted) return false;
-    final l10n = AppLocalizations.of(context)!;
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.actionSave),
-        content: Text(l10n.dialogSaveTemplateTitle),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.actionCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.actionSave),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true) {
+    } else {
       await _saveCurrentAsPreset();
-      _confirmEditor();
-      return true;
-    } else if (result == false) {
-      _cancelEditor();
-      return true;
     }
-    // result == null (dismiss): 에디터 유지
-    return false;
+    _confirmEditor();
+    return true;
   }
 
   void _confirmEditor() {
@@ -222,10 +185,60 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
     widget.onEditorModeChanged?.call(false);
   }
 
-  void _cancelEditor() {
-    ref.read(shapePreviewModeProvider.notifier).state = ShapePreviewMode.fullQr;
-    setState(() { _activeEditor = null; _editingPresetId = null; });
-    widget.onEditorModeChanged?.call(false);
+  Future<void> _showEyeGridModal(BuildContext context, {required _EyeGridMode mode}) async {
+    if (_eyePresets.isEmpty) return;
+    final result = await showModalBottomSheet<_EyeGridResult>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => _EyeGridModal(
+        presets: _eyePresets,
+        mode: mode,
+        selectedPresetId: _selectedEyePresetId,
+      ),
+    );
+    if (result == null) return;
+    switch (result) {
+      case _EyeGridDeleteResult(:final deletedIds):
+        if (deletedIds.contains(_selectedEyePresetId)) {
+          setState(() => _selectedEyePresetId = null);
+          ref.read(qrResultProvider.notifier).setCustomEyeParams(null);
+        }
+        for (final id in deletedIds) {
+          await _datasource?.delete(ShapePresetType.eye, id);
+        }
+        _loadPresets();
+      case _EyeGridEditResult(:final preset):
+        ref.read(qrResultProvider.notifier).setCustomEyeParams(preset.eyeParams!);
+        setState(() => _selectedEyePresetId = preset.id);
+        await _datasource?.touchLastUsed(ShapePresetType.eye, preset.id);
+        _loadPresets();
+        _openEditor(_EditorType.eye, editingId: preset.id);
+      case _EyeGridSelectResult(:final preset):
+        ref.read(qrResultProvider.notifier).setCustomEyeParams(preset.eyeParams!);
+        setState(() => _selectedEyePresetId = preset.id);
+        await _datasource?.touchLastUsed(ShapePresetType.eye, preset.id);
+        _loadPresets();
+    }
+  }
+
+  /// 빌트인 눈 모양 선택: customEye 해제 + 프리셋 선택 상태 해제 후 부모 콜백 호출.
+  void _onEyeOuterSelected(QrEyeOuter outer) {
+    if (_selectedEyePresetId != null || ref.read(qrResultProvider).style.customEyeParams != null) {
+      ref.read(qrResultProvider.notifier).setCustomEyeParams(null);
+      setState(() => _selectedEyePresetId = null);
+    }
+    widget.onEyeOuterChanged(outer);
+  }
+
+  void _onEyeInnerSelected(QrEyeInner inner) {
+    if (_selectedEyePresetId != null || ref.read(qrResultProvider).style.customEyeParams != null) {
+      ref.read(qrResultProvider.notifier).setCustomEyeParams(null);
+      setState(() => _selectedEyePresetId = null);
+    }
+    widget.onEyeInnerChanged(inner);
   }
 
   Future<void> _showDotGridModal(BuildContext context, {required _DotGridMode mode}) async {
@@ -285,6 +298,17 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
           _loadPresets();
         }
       case _EditorType.eye:
+        final existing = _eyePresets.where((p) => p.id == _editingPresetId).firstOrNull;
+        if (existing != null) {
+          final updated = UserShapePreset(
+            id: existing.id, name: existing.name, type: existing.type,
+            createdAt: existing.createdAt, lastUsedAt: DateTime.now(),
+            version: existing.version, eyeParams: _editEye,
+          );
+          await _datasource!.save(updated);
+          setState(() => _selectedEyePresetId = existing.id);
+          _loadPresets();
+        }
       case _EditorType.boundary:
       case _EditorType.animation:
         break; // 다른 타입은 아직 미지원
@@ -305,6 +329,17 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
       }
     }
 
+    // 눈: 동일 파라미터가 이미 있으면 기존 프리셋 선택
+    if (_activeEditor == _EditorType.eye) {
+      final existing = _eyePresets.where((p) => p.eyeParams == _editEye).firstOrNull;
+      if (existing != null) {
+        setState(() => _selectedEyePresetId = existing.id);
+        await _datasource!.touchLastUsed(ShapePresetType.eye, existing.id);
+        _loadPresets();
+        return;
+      }
+    }
+
     final id = const Uuid().v4();
     final now = DateTime.now();
     UserShapePreset preset;
@@ -320,6 +355,7 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
           id: id, name: id.substring(0, 8), type: ShapePresetType.eye,
           createdAt: now, eyeParams: _editEye,
         );
+        setState(() => _selectedEyePresetId = id);
       case _EditorType.boundary:
         preset = UserShapePreset(
           id: id, name: id.substring(0, 8), type: ShapePresetType.boundary,
@@ -397,41 +433,63 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
           const Divider(height: 1),
           const SizedBox(height: 16),
 
-          // ② 눈 모양 — 외곽
+          // ② 눈 모양 — 외곽 (사용자 눈/랜덤이 활성화되면 dim)
           _sectionLabel(l10n.labelEyeOuter),
           const SizedBox(height: 10),
           _OuterShapeRow(
-            selected: isRandom ? null : state.style.eyeOuter,
-            onSelected: widget.onEyeOuterChanged,
+            selected: state.style.eyeOuter,
+            dimmed: isRandom || state.style.customEyeParams != null,
+            onSelected: _onEyeOuterSelected,
           ),
           const SizedBox(height: 14),
 
-          // ③ 눈 모양 — 내부
+          // ③ 눈 모양 — 내부 (사용자 눈/랜덤이 활성화되면 dim)
           _sectionLabel(l10n.labelEyeInner),
           const SizedBox(height: 10),
           _InnerShapeRow(
-            selected: isRandom ? null : state.style.eyeInner,
-            onSelected: widget.onEyeInnerChanged,
+            selected: state.style.eyeInner,
+            dimmed: isRandom || state.style.customEyeParams != null,
+            onSelected: _onEyeInnerSelected,
           ),
-          const SizedBox(height: 8),
-          _CustomEyeRow(
-            presets: _eyePresets,
-            onAdd: () => _openEditor(_EditorType.eye),
-            onSelect: (p) {
-              ref.read(qrResultProvider.notifier).setCustomEyeParams(p.eyeParams!);
-            },
-            onDelete: (p) async {
-              await _datasource?.delete(ShapePresetType.eye, p.id);
-              _loadPresets();
-            },
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          // ④ 랜덤 눈 버튼
-          _RandomEyeButton(
-            isActive: isRandom,
-            onGenerate: widget.onRandomEyeRequested,
-            onClear: widget.onRandomEyeCleared,
+          // ④ 사용자 눈 모양 (빌트인/랜덤이 활성화되면 dim)
+          Row(
+            children: [
+              Expanded(child: _sectionLabel(l10n.labelCustomEye)),
+              if (_eyePresets.isNotEmpty)
+                GestureDetector(
+                  onTap: () => _showEyeGridModal(context, mode: _EyeGridMode.delete),
+                  child: Icon(Icons.delete_outline, size: 18, color: Colors.grey.shade600),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeIn,
+            switchOutCurve: Curves.easeOut,
+            child: _CustomEyeRow(
+              key: ValueKey(_eyePresets.map((p) => p.id).join(',')),
+              selectedPresetId: _selectedEyePresetId,
+              dimmed: isRandom || state.style.customEyeParams == null,
+              presets: _eyePresets,
+              onAdd: () => _openEditor(_EditorType.eye),
+              onUserSelect: (p) async {
+                setState(() => _selectedEyePresetId = p.id);
+                ref.read(qrResultProvider.notifier).setCustomEyeParams(p.eyeParams!);
+                await _datasource?.touchLastUsed(ShapePresetType.eye, p.id);
+                _delayedReloadPresets();
+              },
+              onUserLongPress: (p) async {
+                ref.read(qrResultProvider.notifier).setCustomEyeParams(p.eyeParams!);
+                setState(() => _selectedEyePresetId = p.id);
+                await _datasource?.touchLastUsed(ShapePresetType.eye, p.id);
+                _loadPresets();
+                _openEditor(_EditorType.eye, editingId: p.id);
+              },
+              onShowAll: () => _showEyeGridModal(context, mode: _EyeGridMode.view),
+            ),
           ),
           const SizedBox(height: 20),
           const Divider(height: 1),

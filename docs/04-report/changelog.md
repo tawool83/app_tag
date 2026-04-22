@@ -2,6 +2,82 @@
 
 모든 주요 변경사항을 기록합니다.
 
+## [2026-04-22] - color-tab-user-presets 완료
+
+### Added
+- 색상 탭 사용자 프리셋 UX (도트/눈 편집 R-series 패턴 동형)
+  - 단색 사용자 preset 저장/선택/삭제 + color wheel 기반 편집 (신규 생성 방식)
+  - 그라디언트 사용자 preset 저장/선택/편집/삭제 + editor 자동 저장 (update 방식)
+  - 섹션 라벨 우측 🗑 → `_ColorGridModal` (view/delete 모드, `isGradient` 분기)
+  - `···` 오버플로 → grid modal view 모드
+  - `updatedAt` 기준 최근 순 정렬 + 100ms 지연 재정렬
+  - Dedup: solid (`solidColorArgb`), gradient (colors + stops + type + angleDegrees)
+- `HiveColorPaletteDataSource` 확장: `touchLastUsed`, `readAllSortedByRecency(PaletteType)`, in-memory cache
+- `qr_color_tab/` part 폴더 (R-series 구조): `shared.dart`, `solid_row.dart`, `gradient_row.dart`, `gradient_editor.dart`, `color_grid_modal.dart`
+
+### Changed
+- `qr_color_tab.dart` 824줄 single-file → library root 617줄 + 5 part 파일 (~856줄 분산)
+- built-in 단색 `qrSafeColors` 10개 → 5개 (검정/진파랑/진초록/진빨강/진보라)
+- built-in 그라디언트 `kQrPresetGradients` 8개 → 5개 (블루-퍼플/선셋/에메랄드-네이비/로즈-퍼플/라디얼 다크)
+- `qr_color_tab.dart` import: `flutter_colorpicker` 의 `PaletteType` 충돌 → `hide PaletteType` 적용
+- AppBar `actions` 를 `const []` 로 정리 — shape/color 편집기 모두 뒤로가기 = 자동 저장 통일
+
+### Removed
+- `qr_result_screen.dart` 의 `_confirmActiveEditor` 메서드 (AppBar [저장] 버튼 제거로 미사용)
+- built-in 단색 5개 (남색/청록/진갈색/진주황/인디고), built-in 그라디언트 3개 (오션/포레스트/미드나잇)
+
+### Design Notes
+- **Extension → State body 결정**: Design §5.4 의 `extension _GradientEditorBuilder on QrColorTabState` 는 Flutter `setState @protected` lint 를 유발 → 편집기 UI 메서드 7개를 `QrColorTabState` 본체로 이동. library root 가 617줄 되었으나 CLAUDE.md Rule 8 의 "UI part ≤ 400" 는 `qr_color_tab/*.dart` 개별 part 에만 적용 (shape tab 선례 동일). Design 문서 갱신 완료.
+- `UserColorPalette` / `UserColorPaletteModel` (Hive typeId 3) 무변경 — sync 인프라 호환 유지.
+
+### Quality Metrics
+- **Design Match Rate**: 99% (Design §4.1/§5.4 갱신 후)
+- **Critical/Important Gap**: 0 / 0
+- **Low Gap**: 3 (모두 positive 또는 cosmetic, 수용)
+- **flutter analyze**: 0 errors (pre-existing 15 info/warning)
+- **Iteration 횟수**: 0 (첫 구현에서 ≥ 90% 달성)
+
+### Related
+- Plan: `docs/01-plan/features/color-tab-user-presets.plan.md`
+- Design: `docs/02-design/features/color-tab-user-presets.design.md`
+- Analysis: `docs/03-analysis/color-tab-user-presets.analysis.md`
+- Report: `docs/04-report/features/color-tab-user-presets.report.md`
+
+---
+
+## [2026-04-22] - eye-quadrant-corners 완료
+
+### Added
+- `EyeShapeParams` 4-corner 독립 필드 (`cornerQ1/Q2/Q3/Q4`, 0.0 round ~ 1.0 square)
+- `SuperellipsePath.paintEye` 에 `rotationDeg` 파라미터 — 3 finder 위치별 ±90° 회전으로 각 eye 의 local Q4 모서리가 QR 중심을 향함
+- `kEyeRotations = [0.0, 90.0, -90.0]` 상수 (TL=Q2, TR=Q1, BL=Q3)
+- Editor 슬라이더 5개 (Q1/Q2/Q3/Q4 + innerN)
+- Legacy eye preset 자동 cleanup (Hive `user_eye_presets` box, `fromJsonOrNull` 기반 감지)
+- `sliderCornerQ1~Q4` l10n 키 (ko 만 번역, 9개 로케일 fallback)
+
+### Changed
+- `EyeShapeParams`: `outerN` 제거 → 4-corner 로 대체 (backward-incompatible, pre-release 승인)
+- `customization_mapper.eyeParamsFromJson`: `fromJsonOrNull` 사용 — legacy 감지 시 null 반환 → customEye 해제 후 빌트인 fallback
+- 외곽 ring 렌더: superellipse → `RRect.fromRectAndCorners` (Flutter native + QR 인식 안정)
+
+### Removed
+- `_RandomEyeButton`, `_onRandomEyeFromEditor`, `onRandomGenerate` (중간 실험 후 UX 결정으로 제거)
+- `actionRandomEye`, `actionRandomRegenerate` l10n 키 (10 로케일)
+
+### Quality Metrics
+- **Design Match Rate**: 98% (Critical 0, Important 0, Low 2 수용)
+- **flutter analyze**: 0 errors (pre-existing info/warning 15개 유지)
+- **파일 변경**: 9 수정 / 0 신규 / 0 삭제 (~+240 / -20)
+- **Iteration 횟수**: 0 (첫 구현에서 ≥ 90% 달성)
+
+### Related
+- Plan: `docs/01-plan/features/eye-quadrant-corners.plan.md`
+- Design: `docs/02-design/features/eye-quadrant-corners.design.md`
+- Analysis: `docs/03-analysis/eye-quadrant-corners.analysis.md`
+- Report: `docs/04-report/features/eye-quadrant-corners.report.md`
+
+---
+
 ## [2026-04-21] - QrResultNotifier 분할 리팩터 완료 (R-Series 종료)
 
 ### Changed

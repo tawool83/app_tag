@@ -232,8 +232,6 @@
   "shapeSmooth": "เรียบ",
   "shapeDiamond": "เพชร",
   "shapeStar": "ดาว",
-  "actionRandomRegenerate": "สร้างใหม่แบบสุ่ม",
-  "actionRandomEye": "รูปทรงตาแบบสุ่ม",
   "actionClear": "ล้าง",
   "labelShowIcon": "แสดงไอคอน",
   "msgIconUnavailable": "แสดงเฉพาะเมื่อตั้งค่าไอคอนแอปหรืออีโมจิแล้ว",

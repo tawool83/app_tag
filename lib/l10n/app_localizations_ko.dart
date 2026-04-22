@@ -554,12 +554,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shapeStar => '별';
 
   @override
-  String get actionRandomRegenerate => '랜덤 재생성';
-
-  @override
-  String get actionRandomEye => '랜덤 눈 모양';
-
-  @override
   String get actionClear => '해제';
 
   @override
@@ -845,6 +839,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get sliderInnerN => '내부 형태';
+
+  @override
+  String get sliderCornerQ1 => 'Q1 모서리';
+
+  @override
+  String get sliderCornerQ2 => 'Q2 모서리';
+
+  @override
+  String get sliderCornerQ3 => 'Q3 모서리';
+
+  @override
+  String get sliderCornerQ4 => 'Q4 모서리';
 
   @override
   String get labelBoundaryType => '외곽 종류';

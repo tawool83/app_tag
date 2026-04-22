@@ -1,6 +1,10 @@
 part of '../qr_shape_tab.dart';
 
-// ── 눈 편집기 (4 슬라이더) ──────────────────────────────────────────────────
+// ── 눈 편집기 (슬라이더 5개) ──────────────────────────────────────────────
+//
+// 슬라이더:
+//   cornerQ1 / Q2 / Q3 / Q4 (0.0 둥글 ~ 1.0 사각) — local 좌표계
+//   innerN (2.0 원 ~ 20.0 사각) — 내부 fill superellipse
 
 class _EyeEditor extends StatelessWidget {
   final EyeShapeParams params;
@@ -22,15 +26,48 @@ class _EyeEditor extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SliderRow(
-          label: l10n.sliderOuterN,
-          value: params.outerN,
-          min: 2, max: 20,
-          valueLabel: params.outerN.toStringAsFixed(1),
+          label: l10n.sliderCornerQ1,
+          value: params.cornerQ1,
+          min: 0, max: 1,
+          valueLabel: params.cornerQ1.toStringAsFixed(2),
           onChanged: (v) {
             onDragStart();
-            onChanged(params.copyWith(outerN: v));
+            onChanged(params.copyWith(cornerQ1: v));
           },
-          onChangeEnd: (v) => onDragEnd(params.copyWith(outerN: v)),
+          onChangeEnd: (v) => onDragEnd(params.copyWith(cornerQ1: v)),
+        ),
+        _SliderRow(
+          label: l10n.sliderCornerQ2,
+          value: params.cornerQ2,
+          min: 0, max: 1,
+          valueLabel: params.cornerQ2.toStringAsFixed(2),
+          onChanged: (v) {
+            onDragStart();
+            onChanged(params.copyWith(cornerQ2: v));
+          },
+          onChangeEnd: (v) => onDragEnd(params.copyWith(cornerQ2: v)),
+        ),
+        _SliderRow(
+          label: l10n.sliderCornerQ3,
+          value: params.cornerQ3,
+          min: 0, max: 1,
+          valueLabel: params.cornerQ3.toStringAsFixed(2),
+          onChanged: (v) {
+            onDragStart();
+            onChanged(params.copyWith(cornerQ3: v));
+          },
+          onChangeEnd: (v) => onDragEnd(params.copyWith(cornerQ3: v)),
+        ),
+        _SliderRow(
+          label: l10n.sliderCornerQ4,
+          value: params.cornerQ4,
+          min: 0, max: 1,
+          valueLabel: params.cornerQ4.toStringAsFixed(2),
+          onChanged: (v) {
+            onDragStart();
+            onChanged(params.copyWith(cornerQ4: v));
+          },
+          onChangeEnd: (v) => onDragEnd(params.copyWith(cornerQ4: v)),
         ),
         _SliderRow(
           label: l10n.sliderInnerN,

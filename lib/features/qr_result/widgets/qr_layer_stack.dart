@@ -6,6 +6,7 @@ import '../domain/entities/qr_dot_style.dart' show QrDotStyleToParams;
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/sticker_config.dart';
 import '../qr_result_provider.dart';
+import '../utils/logo_clear_zone.dart';
 import 'custom_qr_painter.dart';
 import 'qr_preview_section.dart' show buildPrettyQr, centerImageProvider, buildQrGradientShader;
 
@@ -165,6 +166,14 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
         embedInQr ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
     final qrImage = _qrImageFor(widget.deepLink, ecLevel);
 
+    // 로고/이미지 뒤 QR 도트를 비울 영역. text/bottomRight/embedIcon=false 에서는 null.
+    final clearZone = computeLogoClearZone(
+      qrSize: Size.square(qrSize),
+      iconSize: widget.size * 0.22,
+      sticker: state.sticker,
+      embedIcon: state.logo.embedIcon,
+    );
+
     // 그라디언트 셰이더
     final activeGradient = state.template.templateGradient ?? state.style.customGradient;
     final color = activeGradient != null ? Colors.black : state.style.qrColor;
@@ -184,6 +193,7 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
             boundaryParams: state.style.boundaryParams,
             animParams: state.style.animationParams,
             animValue: _animController!.value,
+            clearZone: clearZone,
           ),
         ),
       );
@@ -197,6 +207,7 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
           eyeParams: state.style.customEyeParams ?? const EyeShapeParams(),
           boundaryParams: state.style.boundaryParams,
           animParams: state.style.animationParams,
+          clearZone: clearZone,
         ),
       );
     }

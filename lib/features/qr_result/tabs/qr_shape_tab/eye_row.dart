@@ -1,40 +1,273 @@
 part of '../qr_shape_tab.dart';
 
 // ── 커스텀 눈 프리셋 행 ───────────────────────────────────────────────────────
+// [+][user...][···] — 도트 행과 동일한 구조. 빌트인 없음 (눈 빌트인은
+// 아래의 내각/외각 행이 담당).
 
 class _CustomEyeRow extends StatelessWidget {
+  final String? selectedPresetId;
+  final bool dimmed;
   final List<UserShapePreset> presets;
   final VoidCallback onAdd;
-  final ValueChanged<UserShapePreset> onSelect;
-  final ValueChanged<UserShapePreset> onDelete;
+  final ValueChanged<UserShapePreset> onUserSelect;
+  final ValueChanged<UserShapePreset> onUserLongPress;
+  final VoidCallback onShowAll;
 
   const _CustomEyeRow({
+    super.key,
+    required this.selectedPresetId,
+    required this.dimmed,
     required this.presets,
     required this.onAdd,
-    required this.onSelect,
-    required this.onDelete,
+    required this.onUserSelect,
+    required this.onUserLongPress,
+    required this.onShowAll,
   });
+
+  static const _chipSize = 48.0;
+  static const _gap = 8.0;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 52,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 150),
+      opacity: dimmed ? 0.4 : 1.0,
+      child: SizedBox(
+        height: 52,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final totalWidth = constraints.maxWidth;
+            // 고정 영역: "+" 버튼
+            final fixedWidth = _chipSize + _gap;
+            final remaining = totalWidth - fixedWidth;
+            final maxSlots = (remaining / (_chipSize + _gap)).floor();
+            final needMore = presets.length > maxSlots && maxSlots > 0;
+            final inlineCount = needMore
+                ? (maxSlots - 1).clamp(0, presets.length)
+                : maxSlots.clamp(0, presets.length);
+            final inlinePresets = presets.sublist(0, inlineCount);
+
+            return Row(
+              children: [
+                // "+" 추가 버튼
+                Padding(
+                  padding: const EdgeInsets.only(right: _gap),
+                  child: GestureDetector(
+                    onTap: onAdd,
+                    child: Container(
+                      width: _chipSize,
+                      height: _chipSize,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child:
+                          const Icon(Icons.add, size: 24, color: Colors.grey),
+                    ),
+                  ),
+                ),
+                // 인라인 사용자 프리셋
+                ...inlinePresets.map((p) => _PresetChip(
+                      preset: p,
+                      isSelected: p.id == selectedPresetId,
+                      onTap: () => onUserSelect(p),
+                      onLongPress: () => onUserLongPress(p),
+                    )),
+                // ··· 더보기 버튼
+                if (needMore)
+                  Padding(
+                    padding: const EdgeInsets.only(right: _gap),
+                    child: GestureDetector(
+                      onTap: onShowAll,
+                      child: Container(
+                        width: _chipSize,
+                        height: _chipSize,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: const Center(
+                          child: Text('···',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey)),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ── 눈 격자 모달 (보기 / 삭제 모드) ────────────────────────────────────────────
+
+enum _EyeGridMode { view, delete }
+
+sealed class _EyeGridResult {}
+class _EyeGridDeleteResult extends _EyeGridResult { final Set<String> deletedIds; _EyeGridDeleteResult(this.deletedIds); }
+class _EyeGridEditResult extends _EyeGridResult { final UserShapePreset preset; _EyeGridEditResult(this.preset); }
+class _EyeGridSelectResult extends _EyeGridResult { final UserShapePreset preset; _EyeGridSelectResult(this.preset); }
+
+class _EyeGridModal extends StatefulWidget {
+  final List<UserShapePreset> presets;
+  final _EyeGridMode mode;
+  final String? selectedPresetId;
+
+  const _EyeGridModal({
+    required this.presets,
+    required this.mode,
+    this.selectedPresetId,
+  });
+
+  @override
+  State<_EyeGridModal> createState() => _EyeGridModalState();
+}
+
+class _EyeGridModalState extends State<_EyeGridModal> {
+  final _markedForDeletion = <String>{};
+
+  bool _isSelected(UserShapePreset preset) =>
+      preset.id == widget.selectedPresetId;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isDelete = widget.mode == _EyeGridMode.delete;
+    return Container(
+      constraints: BoxConstraints(maxHeight: screenHeight * 0.6),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _AddButton(onTap: onAdd),
-          ...presets.map((p) => _PresetChip(
-                preset: p,
-                onTap: () => onSelect(p),
-                onLongPress: () => onDelete(p),
-              )),
+          // 핸들바
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Flexible(
+            child: GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: widget.presets.length,
+              itemBuilder: (context, i) {
+                final preset = widget.presets[i];
+                final isMarked = _markedForDeletion.contains(preset.id);
+                final isCurrent = _isSelected(preset);
+                return GestureDetector(
+                  onTap: () {
+                    if (isDelete) {
+                      setState(() {
+                        if (isMarked) {
+                          _markedForDeletion.remove(preset.id);
+                        } else {
+                          _markedForDeletion.add(preset.id);
+                        }
+                      });
+                    } else {
+                      Navigator.pop(context, _EyeGridSelectResult(preset));
+                    }
+                  },
+                  onLongPress: isDelete
+                      ? null
+                      : () => Navigator.pop(context, _EyeGridEditResult(preset)),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    decoration: BoxDecoration(
+                      color: isMarked
+                          ? Colors.red.shade50
+                          : isCurrent
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isMarked
+                            ? Colors.red
+                            : isCurrent
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.grey.shade300,
+                        width: (isMarked || isCurrent) ? 2 : 1,
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: ImageFiltered(
+                            imageFilter: isMarked
+                                ? dart_ui.ImageFilter.blur(
+                                    sigmaX: 3, sigmaY: 3)
+                                : dart_ui.ImageFilter.blur(
+                                    sigmaX: 0, sigmaY: 0),
+                            child: CustomPaint(
+                              size: const Size(32, 32),
+                              painter: _PresetIconPainter(preset: preset),
+                            ),
+                          ),
+                        ),
+                        if (isMarked)
+                          const Center(
+                            child: Icon(Icons.delete_outline,
+                                color: Colors.red, size: 24),
+                          ),
+                        if (isCurrent && !isMarked)
+                          Positioned(
+                            right: 2,
+                            bottom: 2,
+                            child: Icon(Icons.check_circle,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 14),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (isDelete)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _markedForDeletion.isNotEmpty
+                        ? Colors.red
+                        : Colors.grey.shade400,
+                  ),
+                  onPressed: _markedForDeletion.isNotEmpty
+                      ? () => Navigator.pop(
+                          context, _EyeGridDeleteResult(_markedForDeletion))
+                      : null,
+                  icon: const Icon(Icons.delete, size: 18),
+                  label: Text(l10n.actionDeleteCount(_markedForDeletion.length)),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-// ── 눈 외곽 모양 행 (기존) ──────────────────────────────────────────────────
+// ── 눈 외곽 모양 행 ─────────────────────────────────────────────────────────
 
 Map<QrEyeOuter, String> _outerLabels(AppLocalizations l10n) => {
   QrEyeOuter.square:      l10n.shapeSquare,
@@ -46,9 +279,14 @@ Map<QrEyeOuter, String> _outerLabels(AppLocalizations l10n) => {
 
 class _OuterShapeRow extends StatelessWidget {
   final QrEyeOuter? selected;
+  final bool dimmed;
   final ValueChanged<QrEyeOuter> onSelected;
 
-  const _OuterShapeRow({required this.selected, required this.onSelected});
+  const _OuterShapeRow({
+    required this.selected,
+    required this.dimmed,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +295,10 @@ class _OuterShapeRow extends StatelessWidget {
       spacing: 10,
       runSpacing: 10,
       children: QrEyeOuter.values.map((outer) {
-        final isSelected = selected == outer;
+        final isSelected = !dimmed && selected == outer;
         return _ShapeButton(
           isSelected: isSelected,
-          dimmed: selected == null,
+          dimmed: dimmed || selected == null,
           onTap: () => onSelected(outer),
           tooltip: labels[outer] ?? '',
           child: CustomPaint(
@@ -75,7 +313,7 @@ class _OuterShapeRow extends StatelessWidget {
   }
 }
 
-// ── 눈 내부 모양 행 (기존) ──────────────────────────────────────────────────
+// ── 눈 내부 모양 행 ─────────────────────────────────────────────────────────
 
 Map<QrEyeInner, String> _innerLabels(AppLocalizations l10n) => {
   QrEyeInner.square:  l10n.shapeSquare,
@@ -86,9 +324,14 @@ Map<QrEyeInner, String> _innerLabels(AppLocalizations l10n) => {
 
 class _InnerShapeRow extends StatelessWidget {
   final QrEyeInner? selected;
+  final bool dimmed;
   final ValueChanged<QrEyeInner> onSelected;
 
-  const _InnerShapeRow({required this.selected, required this.onSelected});
+  const _InnerShapeRow({
+    required this.selected,
+    required this.dimmed,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +340,10 @@ class _InnerShapeRow extends StatelessWidget {
       spacing: 10,
       runSpacing: 10,
       children: QrEyeInner.values.map((inner) {
-        final isSelected = selected == inner;
+        final isSelected = !dimmed && selected == inner;
         return _ShapeButton(
           isSelected: isSelected,
-          dimmed: selected == null,
+          dimmed: dimmed || selected == null,
           onTap: () => onSelected(inner),
           tooltip: labels[inner] ?? '',
           child: CustomPaint(
@@ -111,52 +354,6 @@ class _InnerShapeRow extends StatelessWidget {
           ),
         );
       }).toList(),
-    );
-  }
-}
-
-// ── 랜덤 눈 버튼 ──────────────────────────────────────────────────────────────
-
-class _RandomEyeButton extends StatelessWidget {
-  final bool isActive;
-  final VoidCallback onGenerate;
-  final VoidCallback onClear;
-
-  const _RandomEyeButton({
-    required this.isActive,
-    required this.onGenerate,
-    required this.onClear,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Row(
-      children: [
-        Expanded(
-          child: FilledButton.icon(
-            onPressed: onGenerate,
-            icon: const Icon(Icons.casino_outlined, size: 18),
-            label: Text(isActive ? l10n.actionRandomRegenerate : l10n.actionRandomEye),
-            style: FilledButton.styleFrom(
-              backgroundColor: isActive
-                  ? Theme.of(context).colorScheme.tertiary
-                  : Theme.of(context).colorScheme.primary,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-        if (isActive) ...[
-          const SizedBox(width: 8),
-          OutlinedButton(
-            onPressed: onClear,
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            ),
-            child: Text(l10n.actionClear),
-          ),
-        ],
-      ],
     );
   }
 }

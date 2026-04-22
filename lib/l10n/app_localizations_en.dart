@@ -562,12 +562,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shapeStar => 'Star';
 
   @override
-  String get actionRandomRegenerate => 'Random Regenerate';
-
-  @override
-  String get actionRandomEye => 'Random Eye Shape';
-
-  @override
   String get actionClear => 'Clear';
 
   @override
@@ -856,6 +850,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sliderInnerN => 'Inner Shape';
+
+  @override
+  String get sliderCornerQ1 => 'Q1 모서리';
+
+  @override
+  String get sliderCornerQ2 => 'Q2 모서리';
+
+  @override
+  String get sliderCornerQ3 => 'Q3 모서리';
+
+  @override
+  String get sliderCornerQ4 => 'Q4 모서리';
 
   @override
   String get labelBoundaryType => 'Outline Type';

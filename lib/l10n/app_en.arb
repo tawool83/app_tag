@@ -232,8 +232,6 @@
   "shapeSmooth": "Smooth",
   "shapeDiamond": "Diamond",
   "shapeStar": "Star",
-  "actionRandomRegenerate": "Random Regenerate",
-  "actionRandomEye": "Random Eye Shape",
   "actionClear": "Clear",
   "labelShowIcon": "Show Icon",
   "msgIconUnavailable": "Only displayed when an app icon or emoji is set.",

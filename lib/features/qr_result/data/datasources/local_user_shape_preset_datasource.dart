@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:hive/hive.dart';
 
+import '../../domain/entities/qr_shape_params.dart';
 import '../../domain/entities/user_shape_preset.dart';
 
 /// Hive 기반 사용자 모양 프리셋 저장소.
@@ -43,12 +44,30 @@ class LocalUserShapePresetDatasource {
 
   List<UserShapePreset> _decodeBox(ShapePresetType type) {
     final box = _boxes[type]!;
-    final presets = box.values
-        .map((jsonStr) {
-          final map = jsonDecode(jsonStr) as Map<String, dynamic>;
-          return UserShapePreset.fromJson(map);
-        })
-        .toList();
+    final legacyIds = <String>[];
+    final presets = <UserShapePreset>[];
+    for (final entry in box.toMap().entries) {
+      final jsonStr = entry.value;
+      try {
+        final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+        // eye legacy 감지: eyeParams.outerN 만 있고 cornerQ* 없음
+        if (type == ShapePresetType.eye) {
+          final eyeJson = map['eyeParams'] as Map<String, dynamic>?;
+          if (eyeJson != null &&
+              EyeShapeParams.fromJsonOrNull(eyeJson) == null) {
+            legacyIds.add(entry.key as String);
+            continue;
+          }
+        }
+        presets.add(UserShapePreset.fromJson(map));
+      } catch (_) {
+        legacyIds.add(entry.key as String); // 디코드 실패도 제거
+      }
+    }
+    // 비동기 cleanup (fire-and-forget)
+    for (final id in legacyIds) {
+      box.delete(id);
+    }
     presets.sort((a, b) => b.lastUsedAt.compareTo(a.lastUsedAt));
     return presets;
   }

@@ -1,10 +1,31 @@
 {
   "version": "3.0",
-  "lastUpdated": "2026-04-21T15:30:00.000Z",
-  "activeFeatures": [],
-  "primaryFeature": null,
-  "lastPhaseTransition": "report → archived (2026-04-21, qr-scanner-ui-ux matchRate 92, FR 19/20)",
-  "features": {},
+  "lastUpdated": "2026-04-22T08:25:48.404Z",
+  "activeFeatures": [
+    "logo-image-recrop-fix"
+  ],
+  "primaryFeature": "logo-image-recrop-fix",
+  "lastPhaseTransition": "completed → archived (2026-04-22, logo-tab-dot-clearing, matchRate 100, 4 docs moved to docs/archive/2026-04/logo-tab-dot-clearing/)",
+  "features": {
+    "logo-image-recrop-fix": {
+      "phase": "do",
+      "startedAt": "2026-04-22T00:00:00.000Z",
+      "directDo": true,
+      "rationale": "small UX bug + UI simplification, Plan/Design skipped with user approval (/pdca do)",
+      "filesModified": [
+        "lib/features/qr_result/domain/usecases/crop_logo_image_usecase.dart",
+        "lib/features/qr_result/tabs/logo_editors/logo_image_editor.dart"
+      ]
+    },
+    "logo-tab-dot-clearing": {
+      "phase": "archived",
+      "startedAt": "2026-04-22T00:00:00.000Z",
+      "archivedAt": "2026-04-22T09:15:00.000Z",
+      "archivedTo": "docs/archive/2026-04/logo-tab-dot-clearing/",
+      "matchRate": 100,
+      "iterationCount": 0
+    }
+  },
   "pipeline": {
     "currentPhase": 1,
     "level": "Dynamic",
@@ -13,7 +34,7 @@
   "session": {
     "startedAt": "2026-04-09T06:11:12.207Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-21T13:07:54.333Z"
+    "lastActivity": "2026-04-22T08:25:48.404Z"
   },
   "history": [
     {
@@ -45,6 +66,18 @@
       "feature": "qr-scanner-ui-ux",
       "phase": "archived",
       "action": "Plan+Design+Analysis+Report archived (matchRate 92%, 33 new files, R-series 8/8) → docs/archive/2026-04/qr-scanner-ui-ux/"
+    },
+    {
+      "timestamp": "2026-04-22T08:25:48.403Z",
+      "feature": "logo-tab-dot-clearing",
+      "phase": "act",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-22T09:15:00.000Z",
+      "feature": "logo-tab-dot-clearing",
+      "phase": "archived",
+      "action": "Plan+Design+Analysis+Report archived (matchRate 100, 7/7 FR Pass, 0 iterations, 1 new + 3 modified files, +89 lines) → docs/archive/2026-04/logo-tab-dot-clearing/"
     }
   ],
   "stateMachine": {

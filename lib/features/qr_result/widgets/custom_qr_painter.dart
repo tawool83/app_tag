@@ -5,6 +5,7 @@ import 'package:qr/qr.dart';
 import '../domain/entities/qr_animation_params.dart';
 import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_shape_params.dart';
+import '../utils/logo_clear_zone.dart';
 import '../utils/polar_polygon.dart';
 import '../utils/qr_animation_engine.dart';
 import '../utils/qr_boundary_clipper.dart';
@@ -24,6 +25,7 @@ class CustomQrPainter extends CustomPainter {
   final QrAnimationParams animParams;
   final double animValue; // 0.0~1.0 from AnimationController
   final ui.Gradient? gradient; // non-null이면 그라디언트 렌더링
+  final ClearZone? clearZone; // non-null이면 해당 영역 cell draw skip (로고/이미지 뒤 비움)
 
   late final QrMatrixHelper _helper;
 
@@ -41,6 +43,7 @@ class CustomQrPainter extends CustomPainter {
     this.animParams = const QrAnimationParams(),
     this.animValue = 0.0,
     this.gradient,
+    this.clearZone,
   }) {
     _helper = QrMatrixHelper(
       moduleCount: qrImage.moduleCount,
@@ -92,8 +95,15 @@ class CustomQrPainter extends CustomPainter {
     QrBoundaryClipper.applyClip(canvas, size, boundaryParams);
 
     // 1. Finder Pattern (3개 코너 7x7)
-    for (final bounds in _helper.finderBounds(m, Offset.zero)) {
-      SuperellipsePath.paintEye(canvas, bounds, eyeParams, basePaint);
+    //    finderBounds 순서: [top-left (Q2), top-right (Q1), bottom-left (Q3)]
+    //    각 eye 의 local Q4 가 QR 중심을 향하도록 회전 보정
+    const kEyeRotations = <double>[0.0, 90.0, -90.0];
+    final finderRects = _helper.finderBounds(m, Offset.zero);
+    for (int i = 0; i < finderRects.length; i++) {
+      SuperellipsePath.paintEye(
+        canvas, finderRects[i], eyeParams, basePaint,
+        rotationDeg: kEyeRotations[i],
+      );
     }
 
     // 2a. 구조(timing/alignment/formatInfo/versionInfo) 모듈 — dotParams 모양 사용, 애니메이션 미적용.
@@ -110,6 +120,7 @@ class CustomQrPainter extends CustomPainter {
       final structRadius = m / 2 * dotParams.scale;
       for (final cell in _structuralCells) {
         final center = Offset(cell.col * m + m / 2, cell.row * m + m / 2);
+        if (_isInClearZone(center)) continue;
         final path = PolarPolygon.buildPath(center, structRadius, dotParams);
         canvas.drawPath(path, structPaint);
       }
@@ -119,6 +130,7 @@ class CustomQrPainter extends CustomPainter {
     final radius = m / 2;
     for (final cell in _dataCells) {
       final center = Offset(cell.col * m + m / 2, cell.row * m + m / 2);
+      if (_isInClearZone(center)) continue;
       final frame = _helper.isAnimatable(cell.row, cell.col)
           ? QrAnimationEngine.compute(animParams, animValue, cell.row, cell.col, n)
           : DotAnimFrame.identity;
@@ -156,6 +168,19 @@ class CustomQrPainter extends CustomPainter {
     canvas.restore();
   }
 
+  /// cell 중심이 clearZone 내부인지 판정 (O(1)). null 이면 항상 false.
+  bool _isInClearZone(Offset cellCenter) {
+    final cz = clearZone;
+    if (cz == null) return false;
+    if (cz.isCircular) {
+      final dx = cellCenter.dx - cz.rect.center.dx;
+      final dy = cellCenter.dy - cz.rect.center.dy;
+      final r = cz.rect.width / 2;
+      return dx * dx + dy * dy <= r * r;
+    }
+    return cz.rect.contains(cellCenter);
+  }
+
   Color _applyHueShift(Color base, double shift) {
     if (shift == 0) return base;
     final hsv = HSVColor.fromColor(base);
@@ -171,7 +196,8 @@ class CustomQrPainter extends CustomPainter {
       boundaryParams != old.boundaryParams ||
       animParams != old.animParams ||
       animValue != old.animValue ||
-      gradient != old.gradient;
+      gradient != old.gradient ||
+      clearZone != old.clearZone;
 }
 
 class _ModuleCell {

@@ -554,12 +554,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shapeStar => '星形';
 
   @override
-  String get actionRandomRegenerate => '随机重新生成';
-
-  @override
-  String get actionRandomEye => '随机眼形';
-
-  @override
   String get actionClear => '清除';
 
   @override
@@ -845,6 +839,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sliderInnerN => '内部形状';
+
+  @override
+  String get sliderCornerQ1 => 'Q1 모서리';
+
+  @override
+  String get sliderCornerQ2 => 'Q2 모서리';
+
+  @override
+  String get sliderCornerQ3 => 'Q3 모서리';
+
+  @override
+  String get sliderCornerQ4 => 'Q4 모서리';
 
   @override
   String get labelBoundaryType => '外框类型';
