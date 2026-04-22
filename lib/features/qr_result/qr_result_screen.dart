@@ -17,6 +17,7 @@ import 'domain/entities/qr_action_status.dart';
 import 'domain/entities/qr_template.dart';
 import 'domain/entities/sticker_config.dart' show StickerText;
 import 'data/services/qr_readability_service.dart';
+import 'domain/entities/template_engine_version.dart';
 import 'domain/entities/user_qr_template.dart';
 import 'presentation/providers/qr_result_providers.dart';
 import '../../core/services/settings_service.dart';
@@ -336,6 +337,23 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       eyeInnerIndex: state.style.eyeInner.index,
       randomEyeSeed: state.style.randomEyeSeed,
       quietZoneColorValue: state.style.quietZoneColor.toARGB32(),
+      // 커스텀 파라미터 스냅샷 (v2)
+      customDotParamsJson: state.style.customDotParams != null
+          ? jsonEncode(state.style.customDotParams!.toJson())
+          : null,
+      customEyeParamsJson: state.style.customEyeParams != null
+          ? jsonEncode(state.style.customEyeParams!.toJson())
+          : null,
+      boundaryParamsJson: state.style.boundaryParams.isDefault
+          ? null
+          : jsonEncode(state.style.boundaryParams.toJson()),
+      // 버전 관리 (v2)
+      schemaVersion: kTemplateSchemaVersion,
+      minEngineVersion: computeMinEngineVersion(
+        hasCustomDotParams: state.style.customDotParams != null,
+        hasCustomEyeParams: state.style.customEyeParams != null,
+        hasNonDefaultBoundary: !state.style.boundaryParams.isDefault,
+      ),
       // 스티커 레이어
       logoPositionIndex: state.sticker.logoPosition.index,
       logoBackgroundIndex: state.sticker.logoBackground.index,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/error/result.dart';
 import '../../../core/extensions/context_extensions.dart';
+import '../domain/entities/template_engine_version.dart';
 import '../domain/entities/user_qr_template.dart';
 import '../presentation/providers/qr_result_providers.dart';
 import '../qr_result_provider.dart';
@@ -35,6 +36,12 @@ class _MyTemplatesTabState extends ConsumerState<MyTemplatesTab> {
   }
 
   Future<void> _apply(UserQrTemplate t) async {
+    if (!isTemplateCompatible(t.minEngineVersion)) {
+      if (mounted) {
+        context.showSnack('이 템플릿은 최신 버전의 앱이 필요합니다.');
+      }
+      return;
+    }
     ref.read(qrResultProvider.notifier).applyUserTemplate(t);
     widget.onChanged();
     if (mounted) {
@@ -125,6 +132,8 @@ class _TemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compatible = isTemplateCompatible(template.minEngineVersion);
+
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -140,17 +149,29 @@ class _TemplateCard extends StatelessWidget {
               child: ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(10)),
-                child: template.thumbnailBytes != null
-                    ? Image.memory(
-                        template.thumbnailBytes!,
-                        fit: BoxFit.cover,
-                      )
-                    : Container(
-                        color: Colors.grey.shade100,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    template.thumbnailBytes != null
+                        ? Image.memory(
+                            template.thumbnailBytes!,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            color: Colors.grey.shade100,
+                            child: const Center(
+                              child: Icon(Icons.qr_code, size: 48, color: Colors.grey),
+                            ),
+                          ),
+                    if (!compatible)
+                      Container(
+                        color: Colors.black38,
                         child: const Center(
-                          child: Icon(Icons.qr_code, size: 48, color: Colors.grey),
+                          child: Icon(Icons.lock_outline, size: 32, color: Colors.white70),
                         ),
                       ),
+                  ],
+                ),
               ),
             ),
             // 이름 + 삭제 버튼

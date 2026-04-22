@@ -49,6 +49,15 @@ class UserQrTemplate {
   /// 배경 fill 색상 ARGB int. null = 기본 흰색
   final int? logoBackgroundColorValue;
 
+  // ── 커스텀 파라미터 JSON 스냅샷 (v2) ──
+  final String? customDotParamsJson;
+  final String? customEyeParamsJson;
+  final String? boundaryParamsJson;
+
+  // ── 버전 관리 (v2) ──
+  final int schemaVersion;
+  final int minEngineVersion;
+
   // 메타
   final Uint8List? thumbnailBytes;
   final DateTime updatedAt;
@@ -92,6 +101,11 @@ class UserQrTemplate {
     this.logoTextFont,
     this.logoTextSize,
     this.logoBackgroundColorValue,
+    this.customDotParamsJson,
+    this.customEyeParamsJson,
+    this.boundaryParamsJson,
+    this.schemaVersion = 2,
+    this.minEngineVersion = 1,
     this.thumbnailBytes,
     DateTime? updatedAt,
     this.remoteId,

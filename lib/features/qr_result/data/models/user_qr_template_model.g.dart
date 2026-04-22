@@ -55,13 +55,18 @@ class UserQrTemplateModelAdapter extends TypeAdapter<UserQrTemplateModel> {
       logoTextFont: fields[35] as String?,
       logoTextSize: fields[36] as double?,
       logoBackgroundColorValue: fields[37] as int?,
+      customDotParamsJson: fields[38] as String?,
+      customEyeParamsJson: fields[39] as String?,
+      boundaryParamsJson: fields[40] as String?,
+      schemaVersion: fields[41] as int?,
+      minEngineVersion: fields[42] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserQrTemplateModel obj) {
     writer
-      ..writeByte(38)
+      ..writeByte(43)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -137,7 +142,17 @@ class UserQrTemplateModelAdapter extends TypeAdapter<UserQrTemplateModel> {
       ..writeByte(36)
       ..write(obj.logoTextSize)
       ..writeByte(37)
-      ..write(obj.logoBackgroundColorValue);
+      ..write(obj.logoBackgroundColorValue)
+      ..writeByte(38)
+      ..write(obj.customDotParamsJson)
+      ..writeByte(39)
+      ..write(obj.customEyeParamsJson)
+      ..writeByte(40)
+      ..write(obj.boundaryParamsJson)
+      ..writeByte(41)
+      ..write(obj.schemaVersion)
+      ..writeByte(42)
+      ..write(obj.minEngineVersion);
   }
 
   @override

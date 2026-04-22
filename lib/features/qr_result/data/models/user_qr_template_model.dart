@@ -124,6 +124,23 @@ class UserQrTemplateModel extends HiveObject {
   @HiveField(37)
   int? logoBackgroundColorValue;
 
+  // ── 커스텀 파라미터 JSON 스냅샷 (v2) ──
+  @HiveField(38)
+  String? customDotParamsJson;
+
+  @HiveField(39)
+  String? customEyeParamsJson;
+
+  @HiveField(40)
+  String? boundaryParamsJson;
+
+  // ── 버전 관리 (v2) ──
+  @HiveField(41)
+  int? schemaVersion;
+
+  @HiveField(42)
+  int? minEngineVersion;
+
   UserQrTemplateModel({
     required this.id,
     required this.name,
@@ -163,6 +180,11 @@ class UserQrTemplateModel extends HiveObject {
     this.logoTextFont,
     this.logoTextSize,
     this.logoBackgroundColorValue,
+    this.customDotParamsJson,
+    this.customEyeParamsJson,
+    this.boundaryParamsJson,
+    this.schemaVersion,
+    this.minEngineVersion,
   });
 
   UserQrTemplate toEntity() => UserQrTemplate(
@@ -204,6 +226,11 @@ class UserQrTemplateModel extends HiveObject {
         logoTextFont: logoTextFont,
         logoTextSize: logoTextSize,
         logoBackgroundColorValue: logoBackgroundColorValue,
+        customDotParamsJson: customDotParamsJson,
+        customEyeParamsJson: customEyeParamsJson,
+        boundaryParamsJson: boundaryParamsJson,
+        schemaVersion: schemaVersion ?? 1,
+        minEngineVersion: minEngineVersion ?? 1,
       );
 
   factory UserQrTemplateModel.fromEntity(UserQrTemplate e) =>
@@ -246,5 +273,10 @@ class UserQrTemplateModel extends HiveObject {
         logoTextFont: e.logoTextFont,
         logoTextSize: e.logoTextSize,
         logoBackgroundColorValue: e.logoBackgroundColorValue,
+        customDotParamsJson: e.customDotParamsJson,
+        customEyeParamsJson: e.customEyeParamsJson,
+        boundaryParamsJson: e.boundaryParamsJson,
+        schemaVersion: e.schemaVersion,
+        minEngineVersion: e.minEngineVersion,
       );
 }

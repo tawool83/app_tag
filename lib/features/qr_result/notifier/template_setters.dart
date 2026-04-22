@@ -35,6 +35,32 @@ mixin _TemplateSetters on StateNotifier<QrResultState> {
         gradient = QrGradient.fromJson(jsonDecode(t.gradientJson!));
       } catch (_) {}
     }
+
+    // v2: 커스텀 파라미터 복원
+    DotShapeParams? dotParams;
+    if (t.customDotParamsJson != null) {
+      try {
+        dotParams = DotShapeParams.fromJson(
+            jsonDecode(t.customDotParamsJson!) as Map<String, dynamic>);
+      } catch (_) {}
+    }
+
+    EyeShapeParams? eyeParams;
+    if (t.customEyeParamsJson != null) {
+      try {
+        eyeParams = EyeShapeParams.fromJson(
+            jsonDecode(t.customEyeParamsJson!) as Map<String, dynamic>);
+      } catch (_) {}
+    }
+
+    QrBoundaryParams? boundary;
+    if (t.boundaryParamsJson != null) {
+      try {
+        boundary = QrBoundaryParams.fromJson(
+            jsonDecode(t.boundaryParamsJson!) as Map<String, dynamic>);
+      } catch (_) {}
+    }
+
     state = state.copyWith(
       style: state.style.copyWith(
         qrColor: Color(t.qrColorValue),
@@ -47,6 +73,11 @@ mixin _TemplateSetters on StateNotifier<QrResultState> {
         randomEyeSeed: t.randomEyeSeed,
         clearRandomEyeSeed: t.randomEyeSeed == null,
         quietZoneColor: Color(t.quietZoneColorValue),
+        customDotParams: dotParams,
+        clearCustomDotParams: dotParams == null,
+        customEyeParams: eyeParams,
+        clearCustomEyeParams: eyeParams == null,
+        boundaryParams: boundary ?? const QrBoundaryParams(),
       ),
       sticker: StickerConfig(
         logoPosition: LogoPosition.values[t.logoPositionIndex],
