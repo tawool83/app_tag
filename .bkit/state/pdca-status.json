@@ -2,10 +2,11 @@
   "version": "3.0",
   "lastUpdated": "2026-04-22T08:25:48.404Z",
   "activeFeatures": [
-    "logo-image-recrop-fix"
+    "logo-image-recrop-fix",
+    "app-info-menu"
   ],
-  "primaryFeature": "logo-image-recrop-fix",
-  "lastPhaseTransition": "completed → archived (2026-04-22, logo-tab-dot-clearing, matchRate 100, 4 docs moved to docs/archive/2026-04/logo-tab-dot-clearing/)",
+  "primaryFeature": "app-info-menu",
+  "lastPhaseTransition": "new → plan (2026-04-23, app-info-menu)",
   "features": {
     "logo-image-recrop-fix": {
       "phase": "do",
@@ -16,6 +17,20 @@
         "lib/features/qr_result/domain/usecases/crop_logo_image_usecase.dart",
         "lib/features/qr_result/tabs/logo_editors/logo_image_editor.dart"
       ]
+    },
+    "qr-decorative-frame": {
+      "phase": "archived",
+      "startedAt": "2026-04-21T00:00:00.000Z",
+      "archivedAt": "2026-04-23T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/qr-decorative-frame/",
+      "matchRate": 94,
+      "iterationCount": 0
+    },
+    "app-info-menu": {
+      "phase": "design",
+      "startedAt": "2026-04-23T00:00:00.000Z",
+      "planDoc": "docs/01-plan/features/app-info-menu.plan.md",
+      "designDoc": "docs/02-design/features/app-info-menu.design.md"
     },
     "logo-tab-dot-clearing": {
       "phase": "archived",
@@ -78,6 +93,12 @@
       "feature": "logo-tab-dot-clearing",
       "phase": "archived",
       "action": "Plan+Design+Analysis+Report archived (matchRate 100, 7/7 FR Pass, 0 iterations, 1 new + 3 modified files, +89 lines) → docs/archive/2026-04/logo-tab-dot-clearing/"
+    },
+    {
+      "timestamp": "2026-04-23T00:00:00.000Z",
+      "feature": "qr-decorative-frame",
+      "phase": "archived",
+      "action": "Plan+Design+Analysis+Report archived (matchRate 94%, 10/10 FR Pass, 0 iterations, 3 new + 8 modified files) → docs/archive/2026-04/qr-decorative-frame/"
     }
   ],
   "stateMachine": {

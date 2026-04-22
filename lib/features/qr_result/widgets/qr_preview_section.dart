@@ -16,6 +16,7 @@ import '../qr_result_provider.dart' show QrResultState, qrResultProvider, shapeP
 import '../utils/polar_polygon.dart';
 import '../utils/superellipse.dart';
 import '../utils/qr_boundary_clipper.dart';
+import '../utils/qr_margin_painter.dart';
 import '../../../l10n/app_localizations.dart';
 import 'qr_layer_stack.dart';
 
@@ -220,8 +221,10 @@ class _BoundaryPreviewPainter extends CustomPainter {
     canvas.save();
     canvas.translate(offset, offset);
 
-    if (clipPath != null) {
-      // 외곽선 그리기
+    if (params.isFrameMode && clipPath != null) {
+      _drawFramePreview(canvas, previewRect, clipPath);
+    } else if (clipPath != null) {
+      // 기존 clip 모드 미리보기
       final strokePaint = Paint()
         ..color = color
         ..style = PaintingStyle.stroke
@@ -229,17 +232,14 @@ class _BoundaryPreviewPainter extends CustomPainter {
         ..isAntiAlias = true;
       canvas.drawPath(clipPath, strokePaint);
 
-      // 내부 반투명 채우기
       final fillPaint = Paint()
         ..color = color.withValues(alpha: 0.1)
         ..style = PaintingStyle.fill;
       canvas.drawPath(clipPath, fillPaint);
 
-      // 내부에 작은 그리드 패턴으로 QR 느낌 표현
       canvas.clipPath(clipPath);
       _drawGridPattern(canvas, previewRect, color);
     } else {
-      // square 기본형: 사각형 테두리
       final rect = Offset.zero & previewRect;
       canvas.drawRect(rect, Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 2.0);
       _drawGridPattern(canvas, previewRect, color);
@@ -248,21 +248,65 @@ class _BoundaryPreviewPainter extends CustomPainter {
     canvas.restore();
   }
 
-  void _drawGridPattern(Canvas canvas, Size size, Color color) {
+  /// 프레임 모드 미리보기: 프레임 + 마진 패턴 + 중앙 QR placeholder
+  void _drawFramePreview(Canvas canvas, Size previewRect, Path framePath) {
+    final qrAreaSize = previewRect.width / params.frameScale;
+    final center = previewRect.center(Offset.zero);
+
+    // 1. 프레임 내부 배경
+    canvas.save();
+    canvas.clipPath(framePath);
+    canvas.drawRect(
+      Offset.zero & previewRect,
+      Paint()..color = color.withValues(alpha: 0.08),
+    );
+
+    // 2. 마진 패턴 (QR 영역 제외)
+    final qrRect = Rect.fromCenter(
+      center: center,
+      width: qrAreaSize,
+      height: qrAreaSize,
+    );
+    final qrPath = Path()..addRect(qrRect);
+    final marginClip = Path.combine(PathOperation.difference, framePath, qrPath);
+    canvas.save();
+    canvas.clipPath(marginClip);
+    QrMarginPatternEngine.drawGrid(
+      canvas, previewRect, color.withValues(alpha: 0.3), params.patternDensity,
+    );
+    canvas.restore();
+
+    // 3. QR placeholder (체커보드)
+    canvas.save();
+    canvas.clipRect(qrRect);
+    _drawGridPattern(canvas, previewRect, color, qrRect);
+    canvas.restore();
+
+    // 4. 프레임 외곽선
+    canvas.drawPath(framePath, Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..isAntiAlias = true);
+
+    canvas.restore();
+  }
+
+  void _drawGridPattern(Canvas canvas, Size size, Color color, [Rect? bounds]) {
     final gridPaint = Paint()
       ..color = color.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
     const gridCount = 7;
-    final cellSize = size.width / gridCount;
+    final area = bounds ?? (Offset.zero & size);
+    final cellSize = area.width / gridCount;
     final margin = cellSize * 0.15;
     for (int r = 0; r < gridCount; r++) {
       for (int c = 0; c < gridCount; c++) {
-        // 체커보드 패턴으로 QR 느낌
         if ((r + c) % 2 == 0) {
           canvas.drawRect(
             Rect.fromLTWH(
-              c * cellSize + margin,
-              r * cellSize + margin,
+              area.left + c * cellSize + margin,
+              area.top + r * cellSize + margin,
               cellSize - margin * 2,
               cellSize - margin * 2,
             ),

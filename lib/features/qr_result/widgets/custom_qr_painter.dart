@@ -90,9 +90,11 @@ class CustomQrPainter extends CustomPainter {
       basePaint.color = color;
     }
 
-    // 0. 외곽 클리핑
+    // 0. 외곽 클리핑 (프레임 모드에서는 QR 정사각형 유지 → clipPath 스킵)
     canvas.save();
-    QrBoundaryClipper.applyClip(canvas, size, boundaryParams);
+    if (!boundaryParams.isFrameMode) {
+      QrBoundaryClipper.applyClip(canvas, size, boundaryParams);
+    }
 
     // 1. Finder Pattern (3개 코너 7x7)
     //    finderBounds 순서: [top-left (Q2), top-right (Q1), bottom-left (Q3)]

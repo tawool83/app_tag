@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/entities/qr_animation_params.dart';
 import '../domain/entities/qr_boundary_params.dart';
+import '../domain/entities/qr_margin_pattern.dart';
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/user_shape_preset.dart';
 import '../data/datasources/local_user_shape_preset_datasource.dart';
@@ -500,17 +501,9 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
           const SizedBox(height: 10),
           _BoundaryPresetRow(
             selected: state.style.boundaryParams.type,
-            onSelected: (type) {
-              final preset = switch (type) {
-                QrBoundaryType.square => const QrBoundaryParams(),
-                QrBoundaryType.circle => QrBoundaryParams.circle,
-                QrBoundaryType.superellipse => QrBoundaryParams.squircle,
-                QrBoundaryType.star => QrBoundaryParams.star5,
-                QrBoundaryType.heart => QrBoundaryParams.heart,
-                QrBoundaryType.hexagon => QrBoundaryParams.hexagon,
-                QrBoundaryType.custom => QrBoundaryParams.squircle,
-              };
-              ref.read(qrResultProvider.notifier).setBoundaryParams(preset);
+            isFrameMode: state.style.boundaryParams.isFrameMode,
+            onPresetApply: (params) {
+              ref.read(qrResultProvider.notifier).setBoundaryParams(params);
             },
             presets: _boundaryPresets,
             onAdd: () => _openEditor(_EditorType.boundary),

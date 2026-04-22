@@ -8,6 +8,7 @@ import '../domain/entities/sticker_config.dart';
 import '../qr_result_provider.dart';
 import '../utils/logo_clear_zone.dart';
 import 'custom_qr_painter.dart';
+import 'decorative_frame_painter.dart';
 import 'qr_preview_section.dart' show buildPrettyQr, centerImageProvider, buildQrGradientShader;
 
 /// QR 결과 화면의 레이어 렌더링 위젯.
@@ -92,8 +93,14 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
     final iconProvider = centerImageProvider(state);
     final isTextLogo = state.logo.embedIcon && sticker.logoType == LogoType.text;
     final useCustom = _useCustomPainter(state);
+    final isFrameMode = state.style.boundaryParams.isFrameMode;
 
     _ensureAnimController(state.style.animationParams.isAnimated);
+
+    // ── 프레임 모드: 별도 렌더링 경로 ──
+    if (isFrameMode) {
+      return _buildFrameLayout(state, sticker, iconProvider, isTextLogo);
+    }
 
     // 콰이어트 존 패딩: QR 크기의 5% (최소 8px, 최대 20px)
     final quietPadding = (widget.size * 0.05).clamp(8.0, 20.0);
@@ -222,6 +229,153 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
           shaderCallback: (bounds) =>
               buildQrGradientShader(activeGradient, bounds),
           child: painterWidget,
+        ),
+      );
+    }
+
+    return SizedBox(width: qrSize, height: qrSize, child: painterWidget);
+  }
+
+  // ── 프레임 모드 렌더링 ──────────────────────────────────────────────
+  Widget _buildFrameLayout(
+    QrResultState state,
+    StickerConfig sticker,
+    ImageProvider? iconProvider,
+    bool isTextLogo,
+  ) {
+    final totalSize = widget.size;
+    final frameScale = state.style.boundaryParams.frameScale;
+    final qrAreaSize = totalSize / frameScale;
+    final quietPadding = (qrAreaSize * 0.05).clamp(4.0, 12.0);
+    final effectiveQrSize = qrAreaSize - quietPadding * 2;
+
+    final qrPainter = _buildFrameQrPainter(state, effectiveQrSize);
+
+    final activeGradient =
+        state.template.templateGradient ?? state.style.customGradient;
+    final patternColor = activeGradient != null
+        ? Colors.black.withValues(alpha: 0.4)
+        : state.style.qrColor.withValues(alpha: 0.4);
+
+    Widget qrWidget = qrPainter;
+    if (activeGradient != null) {
+      qrWidget = ShaderMask(
+        blendMode: BlendMode.srcIn,
+        shaderCallback: (bounds) =>
+            buildQrGradientShader(activeGradient, bounds),
+        child: qrPainter,
+      );
+    }
+
+    final Widget frameAndQr = SizedBox(
+      width: totalSize,
+      height: totalSize,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.hardEdge,
+        children: [
+          // Layer 0: 장식 프레임 + 마진 패턴
+          CustomPaint(
+            size: Size.square(totalSize),
+            painter: DecorativeFramePainter(
+              boundaryParams: state.style.boundaryParams,
+              qrAreaSize: qrAreaSize,
+              frameColor: state.style.quietZoneColor,
+              patternColor: patternColor,
+              dotParams: state.style.customDotParams ??
+                  state.style.dotStyle.toDotShapeParams(),
+            ),
+          ),
+          // Layer 1: QR 코드 (정사각형, 중앙)
+          Container(
+            width: qrAreaSize,
+            height: qrAreaSize,
+            color: state.style.quietZoneColor,
+            padding: EdgeInsets.all(quietPadding),
+            child: qrWidget,
+          ),
+          // Layer 2: 로고
+          if (iconProvider != null)
+            _LogoWidget(
+              sticker: sticker,
+              iconProvider: iconProvider,
+              size: totalSize,
+            )
+          else if (isTextLogo &&
+              sticker.logoText != null &&
+              !sticker.logoText!.isEmpty)
+            _LogoWidget.text(
+              sticker: sticker,
+              size: totalSize,
+            ),
+        ],
+      ),
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (sticker.hasTopText)
+          _StickerTextWidget(text: sticker.topText!, width: totalSize),
+        frameAndQr,
+        if (sticker.hasBottomText)
+          _StickerTextWidget(text: sticker.bottomText!, width: totalSize),
+      ],
+    );
+  }
+
+  Widget _buildFrameQrPainter(QrResultState state, double qrSize) {
+    final embedInQr = state.logo.embedIcon &&
+        centerImageProvider(state) != null &&
+        state.sticker.logoPosition == LogoPosition.center;
+    final ecLevel =
+        embedInQr ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
+    final qrImage = _qrImageFor(widget.deepLink, ecLevel);
+
+    final clearZone = computeLogoClearZone(
+      qrSize: Size.square(qrSize),
+      iconSize: widget.size * 0.22,
+      sticker: state.sticker,
+      embedIcon: state.logo.embedIcon,
+    );
+
+    final activeGradient =
+        state.template.templateGradient ?? state.style.customGradient;
+    final color = activeGradient != null ? Colors.black : state.style.qrColor;
+
+    Widget painterWidget;
+    if (_animController != null) {
+      painterWidget = AnimatedBuilder(
+        animation: _animController!,
+        builder: (_, __) => CustomPaint(
+          size: Size.square(qrSize),
+          painter: CustomQrPainter(
+            qrImage: qrImage,
+            color: color,
+            dotParams: state.style.customDotParams ??
+                state.style.dotStyle.toDotShapeParams(),
+            eyeParams:
+                state.style.customEyeParams ?? const EyeShapeParams(),
+            boundaryParams: state.style.boundaryParams,
+            animParams: state.style.animationParams,
+            animValue: _animController!.value,
+            clearZone: clearZone,
+          ),
+        ),
+      );
+    } else {
+      painterWidget = CustomPaint(
+        size: Size.square(qrSize),
+        painter: CustomQrPainter(
+          qrImage: qrImage,
+          color: color,
+          dotParams: state.style.customDotParams ??
+              state.style.dotStyle.toDotShapeParams(),
+          eyeParams:
+              state.style.customEyeParams ?? const EyeShapeParams(),
+          boundaryParams: state.style.boundaryParams,
+          animParams: state.style.animationParams,
+          clearZone: clearZone,
         ),
       );
     }

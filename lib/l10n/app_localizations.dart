@@ -1794,6 +1794,60 @@ abstract class AppLocalizations {
   /// **'패딩'**
   String get sliderPadding;
 
+  /// No description provided for @sliderFrameScale.
+  ///
+  /// In ko, this message translates to:
+  /// **'프레임 크기'**
+  String get sliderFrameScale;
+
+  /// No description provided for @labelMarginPattern.
+  ///
+  /// In ko, this message translates to:
+  /// **'마진 패턴'**
+  String get labelMarginPattern;
+
+  /// No description provided for @sliderPatternDensity.
+  ///
+  /// In ko, this message translates to:
+  /// **'패턴 밀도'**
+  String get sliderPatternDensity;
+
+  /// No description provided for @patternNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'없음'**
+  String get patternNone;
+
+  /// No description provided for @patternQrDots.
+  ///
+  /// In ko, this message translates to:
+  /// **'도트'**
+  String get patternQrDots;
+
+  /// No description provided for @patternMaze.
+  ///
+  /// In ko, this message translates to:
+  /// **'미로'**
+  String get patternMaze;
+
+  /// No description provided for @patternZigzag.
+  ///
+  /// In ko, this message translates to:
+  /// **'지그재그'**
+  String get patternZigzag;
+
+  /// No description provided for @patternWave.
+  ///
+  /// In ko, this message translates to:
+  /// **'물결'**
+  String get patternWave;
+
+  /// No description provided for @patternGrid.
+  ///
+  /// In ko, this message translates to:
+  /// **'격자'**
+  String get patternGrid;
+
   /// No description provided for @sliderSpeed.
   ///
   /// In ko, this message translates to:

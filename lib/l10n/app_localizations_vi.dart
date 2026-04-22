@@ -877,6 +877,33 @@ class AppLocalizationsVi extends AppLocalizations {
   String get sliderPadding => 'Khoảng đệm';
 
   @override
+  String get sliderFrameScale => '프레임 크기';
+
+  @override
+  String get labelMarginPattern => '마진 패턴';
+
+  @override
+  String get sliderPatternDensity => '패턴 밀도';
+
+  @override
+  String get patternNone => '없음';
+
+  @override
+  String get patternQrDots => '도트';
+
+  @override
+  String get patternMaze => '미로';
+
+  @override
+  String get patternZigzag => '지그재그';
+
+  @override
+  String get patternWave => '물결';
+
+  @override
+  String get patternGrid => '격자';
+
+  @override
   String get sliderSpeed => 'Tốc độ';
 
   @override
