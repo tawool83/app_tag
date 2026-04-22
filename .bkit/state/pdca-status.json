@@ -1,12 +1,11 @@
 {
   "version": "3.0",
-  "lastUpdated": "2026-04-22T08:25:48.404Z",
+  "lastUpdated": "2026-04-22T15:56:45.112Z",
   "activeFeatures": [
-    "logo-image-recrop-fix",
-    "app-info-menu"
+    "logo-image-recrop-fix"
   ],
-  "primaryFeature": "app-info-menu",
-  "lastPhaseTransition": "new → plan (2026-04-23, app-info-menu)",
+  "primaryFeature": "logo-image-recrop-fix",
+  "lastPhaseTransition": "completed → archived (2026-04-23, app-info-menu, matchRate 100, 4 docs moved to docs/archive/2026-04/app-info-menu/)",
   "features": {
     "logo-image-recrop-fix": {
       "phase": "do",
@@ -27,10 +26,12 @@
       "iterationCount": 0
     },
     "app-info-menu": {
-      "phase": "design",
+      "phase": "archived",
       "startedAt": "2026-04-23T00:00:00.000Z",
-      "planDoc": "docs/01-plan/features/app-info-menu.plan.md",
-      "designDoc": "docs/02-design/features/app-info-menu.design.md"
+      "archivedAt": "2026-04-23T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/app-info-menu/",
+      "matchRate": 100,
+      "iterationCount": 0
     },
     "logo-tab-dot-clearing": {
       "phase": "archived",
@@ -49,7 +50,7 @@
   "session": {
     "startedAt": "2026-04-09T06:11:12.207Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-22T08:25:48.404Z"
+    "lastActivity": "2026-04-22T15:56:45.112Z"
   },
   "history": [
     {
@@ -99,6 +100,12 @@
       "feature": "qr-decorative-frame",
       "phase": "archived",
       "action": "Plan+Design+Analysis+Report archived (matchRate 94%, 10/10 FR Pass, 0 iterations, 3 new + 8 modified files) → docs/archive/2026-04/qr-decorative-frame/"
+    },
+    {
+      "timestamp": "2026-04-23T00:00:00.000Z",
+      "feature": "app-info-menu",
+      "phase": "archived",
+      "action": "Plan+Design+Analysis+Report archived (matchRate 100, 5/5 FR Pass, 0 iterations, 0 new + 5 modified files) → docs/archive/2026-04/app-info-menu/"
     }
   ],
   "stateMachine": {

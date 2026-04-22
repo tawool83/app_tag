@@ -603,6 +603,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get screenSettingsTitle => 'Cài đặt';
 
   @override
+  String get drawerAppInfo => '프로그램 정보';
+
+  @override
+  String get appInfoBuild => '빌드';
+
+  @override
+  String get appInfoTemplateEngine => '템플릿 엔진';
+
+  @override
+  String get appInfoTemplateSchema => '템플릿 스키마';
+
+  @override
   String get settingsLanguage => 'Ngôn ngữ';
 
   @override

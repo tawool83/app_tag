@@ -1254,6 +1254,30 @@ abstract class AppLocalizations {
   /// **'설정'**
   String get screenSettingsTitle;
 
+  /// No description provided for @drawerAppInfo.
+  ///
+  /// In ko, this message translates to:
+  /// **'프로그램 정보'**
+  String get drawerAppInfo;
+
+  /// No description provided for @appInfoBuild.
+  ///
+  /// In ko, this message translates to:
+  /// **'빌드'**
+  String get appInfoBuild;
+
+  /// No description provided for @appInfoTemplateEngine.
+  ///
+  /// In ko, this message translates to:
+  /// **'템플릿 엔진'**
+  String get appInfoTemplateEngine;
+
+  /// No description provided for @appInfoTemplateSchema.
+  ///
+  /// In ko, this message translates to:
+  /// **'템플릿 스키마'**
+  String get appInfoTemplateSchema;
+
   /// No description provided for @settingsLanguage.
   ///
   /// In ko, this message translates to:

@@ -9,9 +9,6 @@ const String kSupabaseAnonKey =
 /// QR 코드 데이터 최대 길이 (raw 문자열 기준)
 const int kQrMaxLength = 150;
 
-/// 현재 앱이 렌더링 가능한 최대 템플릿 엔진 버전.
-const int kTemplateEngineVersion = 1;
-
 /// 원격 템플릿 캐시 유효 시간 (Supabase diff 동기화로 명시적 제어)
 const Duration kTemplateCacheTtl = Duration(hours: 24);
 

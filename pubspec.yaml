@@ -48,7 +48,7 @@ dependencies:
   pretty_qr_code: ^3.3.0
 
   # QR 스캔
-  mobile_scanner: ^6.0.0
+  mobile_scanner: ^7.2.0
 
   # 이미지 캡처/저장/공유/인쇄
   screenshot: ^2.3.0
@@ -63,6 +63,9 @@ dependencies:
   # 로컬 저장소
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+
+  # 앱 정보
+  package_info_plus: ^8.0.0
 
   # 유틸리티
   uuid: ^4.4.0

@@ -3,9 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/services/settings_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/presentation/providers/auth_providers.dart';
+import '../qr_result/domain/entities/template_engine_version.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -212,8 +214,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               context.push('/settings');
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: Text(l10n.drawerAppInfo),
+            onTap: () {
+              Navigator.pop(context);
+              _showAppInfoDialog();
+            },
+          ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showAppInfoDialog() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    showAboutDialog(
+      context: context,
+      applicationName: l10n.appTitle,
+      applicationVersion: '${info.version} (${l10n.appInfoBuild} ${info.buildNumber})',
+      applicationIcon: Image.asset('assets/img/logo.png', width: 64, height: 64),
+      children: [
+        const SizedBox(height: 16),
+        Text('${l10n.appInfoTemplateEngine} v$kTemplateEngineVersion'),
+        const SizedBox(height: 4),
+        Text('${l10n.appInfoTemplateSchema} v$kTemplateSchemaVersion'),
+      ],
     );
   }
 

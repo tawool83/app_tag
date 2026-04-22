@@ -5,7 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../../core/constants/app_config.dart';
+import '../../../../core/constants/app_config.dart' show kTemplateCacheTtl;
+import '../../domain/entities/template_engine_version.dart';
 import '../../../../core/utils/color_hex.dart';
 import '../../domain/entities/qr_template.dart';
 import '../../../../core/services/supabase_service.dart';
