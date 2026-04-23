@@ -125,6 +125,7 @@ class _TextEditorState extends State<_TextEditor> {
             onColorChanged: (c) => temp = c,
             enableAlpha: false,
             labelTypes: const [],
+            paletteType: PaletteType.hueWheel,
           ),
         ),
         actions: [

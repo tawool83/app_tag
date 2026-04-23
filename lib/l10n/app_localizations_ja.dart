@@ -487,11 +487,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get actionNoStyle => 'スタイルなし';
 
   @override
-  String msgTemplateApplied(String name) {
-    return '「$name」テンプレートが適用されました。';
-  }
-
-  @override
   String get dialogDeleteTemplateTitle => 'テンプレート削除';
 
   @override
@@ -606,6 +601,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get appInfoTemplateSchema => '템플릿 스키마';
+
+  @override
+  String get legalPrivacyPolicy => '개인정보처리방침';
+
+  @override
+  String get legalTermsOfService => '이용약관';
+
+  @override
+  String get legalAccountDeletion => '계정 삭제 안내';
+
+  @override
+  String get legalSupport => '문의하기';
 
   @override
   String get settingsLanguage => '言語';

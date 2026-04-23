@@ -197,14 +197,6 @@
   "labelReadability": "อัตราการอ่าน",
   "screenTemplateMyTemplates": "เทมเพลตของฉัน",
   "actionNoStyle": "ไม่มีสไตล์",
-  "msgTemplateApplied": "เทมเพลต \"{name}\" ถูกนำไปใช้แล้ว",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "ลบเทมเพลต",
   "dialogDeleteTemplateContent": "คุณต้องการลบ \"{name}\" หรือไม่?",
   "@dialogDeleteTemplateContent": {

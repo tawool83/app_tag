@@ -4,9 +4,10 @@ part of '../qr_shape_tab.dart';
 
 class _DotPresetRow extends StatelessWidget {
   final String? selectedPresetId;
-  final DotShapeParams? selectedBuiltinParams; // 빌트인 선택용 (presetId == null 일 때만)
+  // 빌트인 선택 하이라이트 기준. selectedPresetId == null && customDotParams == null 일 때만 non-null.
+  final QrDotStyle? selectedBuiltinStyle;
   final List<UserShapePreset> userPresets;
-  final ValueChanged<DotShapeParams> onBuiltinSelect;
+  final ValueChanged<QrDotStyle> onBuiltinSelect;
   final VoidCallback onAdd;
   final ValueChanged<UserShapePreset> onUserSelect;
   final ValueChanged<UserShapePreset> onUserLongPress;
@@ -15,7 +16,7 @@ class _DotPresetRow extends StatelessWidget {
   const _DotPresetRow({
     super.key,
     required this.selectedPresetId,
-    this.selectedBuiltinParams,
+    this.selectedBuiltinStyle,
     required this.userPresets,
     required this.onBuiltinSelect,
     required this.onAdd,
@@ -24,10 +25,10 @@ class _DotPresetRow extends StatelessWidget {
     required this.onShowAll,
   });
 
-  // 빌트인: 네모, 동그라미만
-  static const _builtinPresets = <(String, DotShapeParams)>[
-    ('■', DotShapeParams.square),
-    ('●', DotShapeParams.circle),
+  // 빌트인: pretty_qr 네이티브 렌더 (초기 QR과 동일).
+  static const _builtinPresets = <(String, QrDotStyle)>[
+    ('■', QrDotStyle.square),
+    ('●', QrDotStyle.circle),
   ];
 
   // 칩/버튼 크기 상수
@@ -60,12 +61,12 @@ class _DotPresetRow extends StatelessWidget {
             children: [
               // 빌트인 프리셋
               ..._builtinPresets.map((entry) {
-                final (label, params) = entry;
-                final isSelected = selectedPresetId == null && selectedBuiltinParams == params;
+                final (label, style) = entry;
+                final isSelected = selectedPresetId == null && selectedBuiltinStyle == style;
                 return _DotChip(
                   label: label,
                   isSelected: isSelected,
-                  onTap: () => onBuiltinSelect(params),
+                  onTap: () => onBuiltinSelect(style),
                 );
               }),
               // 구분선

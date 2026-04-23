@@ -241,6 +241,7 @@ class _BackgroundColorColumn extends StatelessWidget {
             onColorChanged: (c) => temp = c,
             enableAlpha: false,
             labelTypes: const [],
+            paletteType: PaletteType.hueWheel,
           ),
         ),
         actions: [

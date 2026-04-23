@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide PaletteType;
+import 'package:flutter_colorpicker/flutter_colorpicker.dart' as cp show PaletteType;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
@@ -376,6 +377,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
             onColorChanged: (c) => temp = c,
             enableAlpha: false,
             labelTypes: const [],
+            paletteType: cp.PaletteType.hueWheel,
           ),
         ),
         actions: [

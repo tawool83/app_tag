@@ -499,11 +499,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get actionNoStyle => 'Sin estilo';
 
   @override
-  String msgTemplateApplied(String name) {
-    return 'Plantilla \"$name\" aplicada.';
-  }
-
-  @override
   String get dialogDeleteTemplateTitle => 'Eliminar Plantilla';
 
   @override
@@ -620,6 +615,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get appInfoTemplateSchema => '템플릿 스키마';
+
+  @override
+  String get legalPrivacyPolicy => '개인정보처리방침';
+
+  @override
+  String get legalTermsOfService => '이용약관';
+
+  @override
+  String get legalAccountDeletion => '계정 삭제 안내';
+
+  @override
+  String get legalSupport => '문의하기';
 
   @override
   String get settingsLanguage => 'Idioma';

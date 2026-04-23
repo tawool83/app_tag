@@ -197,14 +197,6 @@
   "labelReadability": "Legibilidad",
   "screenTemplateMyTemplates": "Mis Plantillas",
   "actionNoStyle": "Sin estilo",
-  "msgTemplateApplied": "Plantilla \"{name}\" aplicada.",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "Eliminar Plantilla",
   "dialogDeleteTemplateContent": "¿Desea eliminar \"{name}\"?",
   "@dialogDeleteTemplateContent": {

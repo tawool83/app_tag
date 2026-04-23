@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/error/result.dart';
-import '../../../core/extensions/context_extensions.dart';
 import '../domain/entities/qr_template.dart';
 import '../domain/entities/user_qr_template.dart';
 import '../presentation/providers/qr_result_providers.dart';
@@ -52,9 +51,6 @@ class _AllTemplatesTabState extends ConsumerState<AllTemplatesTab> {
   Future<void> _applyUserTemplate(UserQrTemplate t) async {
     ref.read(qrResultProvider.notifier).applyUserTemplate(t);
     widget.onChanged();
-    if (mounted) {
-      context.showSnack(AppLocalizations.of(context)!.msgTemplateApplied(t.name));
-    }
   }
 
   Future<void> _deleteUserTemplate(UserQrTemplate t) async {

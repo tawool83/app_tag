@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/entities/qr_animation_params.dart';
 import '../domain/entities/qr_boundary_params.dart';
+import '../domain/entities/qr_dot_style.dart';
 import '../domain/entities/qr_margin_pattern.dart';
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/user_shape_preset.dart';
@@ -407,11 +408,15 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
             child: _DotPresetRow(
               key: ValueKey(_dotPresets.map((p) => p.id).join(',')),
               selectedPresetId: _selectedDotPresetId,
-              selectedBuiltinParams: _selectedDotPresetId == null ? state.style.customDotParams : null,
+              // customDotParams 없을 때만 현재 dotStyle 로 빌트인 칩 하이라이트
+              selectedBuiltinStyle: (_selectedDotPresetId == null && state.style.customDotParams == null)
+                  ? state.style.dotStyle
+                  : null,
               userPresets: _dotPresets,
-              onBuiltinSelect: (params) {
+              onBuiltinSelect: (style) {
                 setState(() => _selectedDotPresetId = null);
-                ref.read(qrResultProvider.notifier).setCustomDotParams(params);
+                // setDotStyle 이 customDotParams 를 자동 clear
+                ref.read(qrResultProvider.notifier).setDotStyle(style);
               },
               onAdd: () => _openEditor(_EditorType.dot),
               onUserSelect: (p) async {

@@ -63,6 +63,7 @@ class _LogoTextEditorState extends ConsumerState<LogoTextEditor> {
             onColorChanged: (c) => temp = c,
             enableAlpha: false,
             labelTypes: const [],
+            paletteType: PaletteType.hueWheel,
           ),
         ),
         actions: [

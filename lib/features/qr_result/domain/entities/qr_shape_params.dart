@@ -45,11 +45,13 @@ class DotShapeParams {
   // ── 대칭 프리셋 ──
   // vertices=4, rotation=0 → PolarPolygon이 꼭짓점을 상/우/하/좌에 배치(마름모).
   // 사각형을 원하면 rotation=45로 꼭짓점을 모서리로 이동시킨다.
+  // scale=√2: 4개 꼭짓점이 셀 외접원이 아닌 셀 코너에 도달 → 셀을 꽉 채움 (PrettyQrSmoothSymbol 과 동일 출력).
   static const square = DotShapeParams(
     vertices: 4,
     innerRadius: 1.0,
     roundness: 0.0,
     rotation: 45.0,
+    scale: 1.4142135623730951,
   );
   static const circle = DotShapeParams(
     vertices: 12,

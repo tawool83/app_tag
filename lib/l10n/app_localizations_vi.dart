@@ -492,11 +492,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get actionNoStyle => 'Không có kiểu';
 
   @override
-  String msgTemplateApplied(String name) {
-    return 'Mẫu \"$name\" đã được áp dụng.';
-  }
-
-  @override
   String get dialogDeleteTemplateTitle => 'Xóa mẫu';
 
   @override
@@ -613,6 +608,18 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get appInfoTemplateSchema => '템플릿 스키마';
+
+  @override
+  String get legalPrivacyPolicy => '개인정보처리방침';
+
+  @override
+  String get legalTermsOfService => '이용약관';
+
+  @override
+  String get legalAccountDeletion => '계정 삭제 안내';
+
+  @override
+  String get legalSupport => '문의하기';
 
   @override
   String get settingsLanguage => 'Ngôn ngữ';

@@ -197,14 +197,6 @@
   "labelReadability": "Khả năng đọc",
   "screenTemplateMyTemplates": "Mẫu của tôi",
   "actionNoStyle": "Không có kiểu",
-  "msgTemplateApplied": "Mẫu \"{name}\" đã được áp dụng.",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "Xóa mẫu",
   "dialogDeleteTemplateContent": "Bạn có muốn xóa \"{name}\" không?",
   "@dialogDeleteTemplateContent": {

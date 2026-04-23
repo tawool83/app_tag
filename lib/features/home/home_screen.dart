@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../core/constants/legal_urls.dart';
 import '../../core/services/settings_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/presentation/providers/auth_providers.dart';
@@ -241,6 +243,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Text('${l10n.appInfoTemplateEngine} v$kTemplateEngineVersion'),
         const SizedBox(height: 4),
         Text('${l10n.appInfoTemplateSchema} v$kTemplateSchemaVersion'),
+        const Divider(height: 24),
+        _LegalLinkTile(
+          icon: Icons.privacy_tip_outlined,
+          label: l10n.legalPrivacyPolicy,
+          url: LegalUrls.privacyPolicy,
+        ),
+        _LegalLinkTile(
+          icon: Icons.description_outlined,
+          label: l10n.legalTermsOfService,
+          url: LegalUrls.termsOfService,
+        ),
+        _LegalLinkTile(
+          icon: Icons.person_remove_outlined,
+          label: l10n.legalAccountDeletion,
+          url: LegalUrls.accountDeletion,
+        ),
+        _LegalLinkTile(
+          icon: Icons.mail_outline,
+          label: l10n.legalSupport,
+          url: LegalUrls.support,
+        ),
       ],
     );
   }
@@ -465,6 +488,43 @@ class _TileCard extends StatelessWidget {
                   fontSize: 21, fontWeight: FontWeight.w600, color: Colors.white),
               textAlign: TextAlign.center,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 프로그램 정보 dialog 내 외부 링크용 컴팩트 tile.
+/// 탭 시 OS 기본 브라우저/메일 앱으로 이동.
+class _LegalLinkTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String url;
+
+  const _LegalLinkTile({
+    required this.icon,
+    required this.label,
+    required this.url,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 12),
+            Expanded(child: Text(label)),
+            const Icon(Icons.open_in_new, size: 14, color: Colors.grey),
           ],
         ),
       ),

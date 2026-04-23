@@ -499,11 +499,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get actionNoStyle => 'Sem estilo';
 
   @override
-  String msgTemplateApplied(String name) {
-    return 'Modelo \"$name\" foi aplicado.';
-  }
-
-  @override
   String get dialogDeleteTemplateTitle => 'Excluir Modelo';
 
   @override
@@ -620,6 +615,18 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get appInfoTemplateSchema => '템플릿 스키마';
+
+  @override
+  String get legalPrivacyPolicy => '개인정보처리방침';
+
+  @override
+  String get legalTermsOfService => '이용약관';
+
+  @override
+  String get legalAccountDeletion => '계정 삭제 안내';
+
+  @override
+  String get legalSupport => '문의하기';
 
   @override
   String get settingsLanguage => 'Idioma';

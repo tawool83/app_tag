@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App Store 2024-05+ 필수 Privacy Manifest.
+         본 앱이 직접 사용하는 Required Reason API 만 선언.
+         (광고·결제 SDK 도입 시 해당 SDK 가 제공하는 PrivacyInfo 가 자동 병합됨) -->
+
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <!-- 현재 앱은 사용자 추적·광고 식별자를 사용하지 않음.
+         Supabase 로그인 사용자의 개인정보는 App Store Connect 의
+         "App Privacy" (Nutrition Label) 에서 별도 선언. -->
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <!-- UserDefaults: shared_preferences 패키지가 내부적으로 사용.
+             사유: 앱 내 사용자 설정(마지막 인쇄 크기, 임베드 아이콘 등) 저장.
+             Code CA92.1 — 앱 자체 기능을 위한 사용자 선호 저장. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+
+        <!-- File Timestamp: path_provider / image_gallery_saver 등이 사용.
+             사유: 공유·저장 시 파일 메타데이터를 사용자에게 표시하기 위함.
+             Code C617.1 — 사용자에게 파일 정보를 보여주기 위한 접근. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+            </array>
+        </dict>
+
+        <!-- Disk Space: path_provider 및 image_gallery_saver 가 내부적으로 접근할 수 있음.
+             사유: 파일 저장 전 공간 확인.
+             Code E174.1 — 앱이 사용자 파일을 저장하기 전 디스크 공간 확인. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>E174.1</string>
+            </array>
+        </dict>
+
+        <!-- System Boot Time: Flutter engine / 일부 plugin 이 간접 사용.
+             사유: 내부 이벤트 타임스탬프 계산.
+             Code 35F9.1 — 앱 내부 이벤트 타임스탬프 계산용. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>35F9.1</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

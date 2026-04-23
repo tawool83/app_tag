@@ -197,14 +197,6 @@
   "labelReadability": "認識率",
   "screenTemplateMyTemplates": "マイテンプレート",
   "actionNoStyle": "スタイルなし",
-  "msgTemplateApplied": "「{name}」テンプレートが適用されました。",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "テンプレート削除",
   "dialogDeleteTemplateContent": "「{name}」を削除しますか？",
   "@dialogDeleteTemplateContent": {

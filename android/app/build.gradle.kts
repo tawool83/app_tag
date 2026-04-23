@@ -25,7 +25,9 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion  // Android 6.0 (device_apps 요구사항)
-        targetSdk = flutter.targetSdkVersion
+        // targetSdk: Google Play 신규 앱은 2025-08 이후 API 35 필수.
+        // Flutter SDK 변동과 무관하게 빌드 재현성을 위해 명시.
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

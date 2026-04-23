@@ -197,14 +197,6 @@
   "labelReadability": "인식률",
   "screenTemplateMyTemplates": "나의 템플릿",
   "actionNoStyle": "스타일 없음",
-  "msgTemplateApplied": "「{name}」 템플릿이 적용되었습니다.",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "템플릿 삭제",
   "dialogDeleteTemplateContent": "「{name}」을(를) 삭제하시겠습니까?",
   "@dialogDeleteTemplateContent": {
@@ -250,6 +242,10 @@
   "appInfoBuild": "빌드",
   "appInfoTemplateEngine": "템플릿 엔진",
   "appInfoTemplateSchema": "템플릿 스키마",
+  "legalPrivacyPolicy": "개인정보처리방침",
+  "legalTermsOfService": "이용약관",
+  "legalAccountDeletion": "계정 삭제 안내",
+  "legalSupport": "문의하기",
   "settingsLanguage": "언어",
   "settingsLanguageSystem": "시스템 기본",
   "msgCopiedToClipboard": "\"{text}\" 클립보드에 복사됨",

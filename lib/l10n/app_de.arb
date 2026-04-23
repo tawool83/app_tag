@@ -197,14 +197,6 @@
   "labelReadability": "Lesbarkeit",
   "screenTemplateMyTemplates": "Meine Vorlagen",
   "actionNoStyle": "Kein Stil",
-  "msgTemplateApplied": "Vorlage '{name}' wurde angewendet.",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "Vorlage löschen",
   "dialogDeleteTemplateContent": "Möchten Sie '{name}' löschen?",
   "@dialogDeleteTemplateContent": {

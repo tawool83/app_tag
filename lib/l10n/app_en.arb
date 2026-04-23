@@ -197,14 +197,6 @@
   "labelReadability": "Readability",
   "screenTemplateMyTemplates": "My Templates",
   "actionNoStyle": "No Style",
-  "msgTemplateApplied": "Template \"{name}\" has been applied.",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "Delete Template",
   "dialogDeleteTemplateContent": "Are you sure you want to delete \"{name}\"?",
   "@dialogDeleteTemplateContent": {

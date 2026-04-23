@@ -1044,12 +1044,6 @@ abstract class AppLocalizations {
   /// **'스타일 없음'**
   String get actionNoStyle;
 
-  /// No description provided for @msgTemplateApplied.
-  ///
-  /// In ko, this message translates to:
-  /// **'「{name}」 템플릿이 적용되었습니다.'**
-  String msgTemplateApplied(String name);
-
   /// No description provided for @dialogDeleteTemplateTitle.
   ///
   /// In ko, this message translates to:
@@ -1277,6 +1271,30 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'템플릿 스키마'**
   String get appInfoTemplateSchema;
+
+  /// No description provided for @legalPrivacyPolicy.
+  ///
+  /// In ko, this message translates to:
+  /// **'개인정보처리방침'**
+  String get legalPrivacyPolicy;
+
+  /// No description provided for @legalTermsOfService.
+  ///
+  /// In ko, this message translates to:
+  /// **'이용약관'**
+  String get legalTermsOfService;
+
+  /// No description provided for @legalAccountDeletion.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정 삭제 안내'**
+  String get legalAccountDeletion;
+
+  /// No description provided for @legalSupport.
+  ///
+  /// In ko, this message translates to:
+  /// **'문의하기'**
+  String get legalSupport;
 
   /// No description provided for @settingsLanguage.
   ///

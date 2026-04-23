@@ -501,11 +501,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get actionNoStyle => 'Sans style';
 
   @override
-  String msgTemplateApplied(String name) {
-    return 'Modèle « $name » appliqué.';
-  }
-
-  @override
   String get dialogDeleteTemplateTitle => 'Supprimer le Modèle';
 
   @override
@@ -622,6 +617,18 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get appInfoTemplateSchema => '템플릿 스키마';
+
+  @override
+  String get legalPrivacyPolicy => '개인정보처리방침';
+
+  @override
+  String get legalTermsOfService => '이용약관';
+
+  @override
+  String get legalAccountDeletion => '계정 삭제 안내';
+
+  @override
+  String get legalSupport => '문의하기';
 
   @override
   String get settingsLanguage => 'Langue';

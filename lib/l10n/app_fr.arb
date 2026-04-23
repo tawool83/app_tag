@@ -197,14 +197,6 @@
   "labelReadability": "Lisibilité",
   "screenTemplateMyTemplates": "Mes Modèles",
   "actionNoStyle": "Sans style",
-  "msgTemplateApplied": "Modèle « {name} » appliqué.",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "Supprimer le Modèle",
   "dialogDeleteTemplateContent": "Voulez-vous supprimer « {name} » ?",
   "@dialogDeleteTemplateContent": {

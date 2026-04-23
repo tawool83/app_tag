@@ -487,11 +487,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get actionNoStyle => '스타일 없음';
 
   @override
-  String msgTemplateApplied(String name) {
-    return '「$name」 템플릿이 적용되었습니다.';
-  }
-
-  @override
   String get dialogDeleteTemplateTitle => '템플릿 삭제';
 
   @override
@@ -606,6 +601,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get appInfoTemplateSchema => '템플릿 스키마';
+
+  @override
+  String get legalPrivacyPolicy => '개인정보처리방침';
+
+  @override
+  String get legalTermsOfService => '이용약관';
+
+  @override
+  String get legalAccountDeletion => '계정 삭제 안내';
+
+  @override
+  String get legalSupport => '문의하기';
 
   @override
   String get settingsLanguage => '언어';

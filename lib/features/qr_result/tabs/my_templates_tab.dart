@@ -44,9 +44,6 @@ class _MyTemplatesTabState extends ConsumerState<MyTemplatesTab> {
     }
     ref.read(qrResultProvider.notifier).applyUserTemplate(t);
     widget.onChanged();
-    if (mounted) {
-      context.showSnack('「${t.name}」 템플릿이 적용되었습니다.');
-    }
   }
 
   Future<void> _delete(UserQrTemplate t) async {

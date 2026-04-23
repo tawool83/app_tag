@@ -197,14 +197,6 @@
   "labelReadability": "识别率",
   "screenTemplateMyTemplates": "我的模板",
   "actionNoStyle": "无样式",
-  "msgTemplateApplied": "模板「{name}」已应用。",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "删除模板",
   "dialogDeleteTemplateContent": "确定要删除「{name}」吗？",
   "@dialogDeleteTemplateContent": {

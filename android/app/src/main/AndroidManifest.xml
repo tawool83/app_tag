@@ -3,7 +3,12 @@
     <uses-permission android:name="android.permission.NFC" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
-    <!-- 앱 목록 조회 (Android 11+) -->
+    <!-- 앱 목록 조회 (Android 11+) — Google Play 민감 권한.
+         사유: AppTag 는 사용자가 설치한 앱을 선택하여 해당 앱의 딥링크를
+         QR/NFC 태그로 저장하는 앱이므로, 설치된 앱 목록 접근이 핵심 기능.
+         Play Console Declaration:
+           Use case: App discovery / Interacts with other apps on user's device
+         제출 문구: docs/store-compliance/play-console-checklist.md 참조. -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <!-- 카메라 (QR 스캐너) -->

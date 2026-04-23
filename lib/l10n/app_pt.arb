@@ -197,14 +197,6 @@
   "labelReadability": "Legibilidade",
   "screenTemplateMyTemplates": "Meus Modelos",
   "actionNoStyle": "Sem estilo",
-  "msgTemplateApplied": "Modelo \"{name}\" foi aplicado.",
-  "@msgTemplateApplied": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "dialogDeleteTemplateTitle": "Excluir Modelo",
   "dialogDeleteTemplateContent": "Deseja excluir \"{name}\"?",
   "@dialogDeleteTemplateContent": {
