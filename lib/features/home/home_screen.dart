@@ -1,15 +1,18 @@
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/legal_urls.dart';
-import '../../core/services/settings_service.dart';
+import '../../core/error/result.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/presentation/providers/auth_providers.dart';
 import '../qr_result/domain/entities/template_engine_version.dart';
+import '../qr_task/domain/entities/qr_task.dart';
+import '../qr_task/presentation/providers/qr_task_providers.dart';
+import 'widgets/create_picker_sheet.dart';
+import 'widgets/qr_task_action_sheet.dart';
+import 'widgets/qr_task_gallery_card.dart';  // QrTaskGalleryTile
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -19,151 +22,137 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _editMode = false;
-  Set<String> _hiddenKeys = {};
-  bool _showHiddenSection = false;
-  bool _initialized = false;
+  List<QrTask> _tasks = [];
+  bool _loading = true;
+
+  /// 삭제 모드 활성 여부.
+  bool _deleteMode = false;
+
+  /// 삭제 모드에서 선택된 task id 들.
+  final Set<String> _selectedIds = {};
 
   @override
   void initState() {
     super.initState();
-    _loadHiddenKeys();
+    _loadTasks();
   }
 
-  Future<void> _loadHiddenKeys() async {
-    final keys = await SettingsService.getHiddenTileKeys();
+  Future<void> _loadTasks() async {
+    final result = await ref.read(listHomeVisibleUseCaseProvider)();
+    if (!mounted) return;
     setState(() {
-      _hiddenKeys = keys;
-      _initialized = true;
+      _tasks = result.valueOrNull ?? [];
+      _loading = false;
     });
   }
 
-  void _enterEditMode() {
-    setState(() {
-      _editMode = true;
-      _showHiddenSection = false;
-    });
-  }
-
-  void _exitEditMode() {
-    setState(() => _editMode = false);
-  }
-
-  Future<void> _hideTile(String key, int visibleCount) async {
-    if (visibleCount <= 1) return;
-    setState(() => _hiddenKeys.add(key));
-    await SettingsService.saveHiddenTileKeys(_hiddenKeys);
-  }
-
-  Future<void> _restoreTile(String key) async {
-    setState(() => _hiddenKeys.remove(key));
-    await SettingsService.saveHiddenTileKeys(_hiddenKeys);
-  }
-
-  List<_TileItem> _buildTiles() {
-    final l10n = AppLocalizations.of(context)!;
-    return [
-      _TileItem(
-        key: 'scanner',
-        icon: Icons.qr_code_scanner,
-        label: l10n.tileScanner,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFF00897B),
-        onTap: () => context.push('/scanner'),
+  void _showCreateSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      _TileItem(
-        key: 'app',
-        icon: Platform.isAndroid ? Icons.apps : CupertinoIcons.square_stack_3d_up,
-        label: Platform.isAndroid ? l10n.tileAppAndroid : l10n.tileAppIos,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFF5C6BC0),
-        onTap: () => context.push(
-          Platform.isAndroid ? '/app-picker' : '/ios-input',
+      builder: (_) => const CreatePickerSheet(),
+    );
+  }
+
+  void _showActionSheet(QrTask task) {
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.8,
+        child: QrTaskActionSheet(
+          task: task,
+          onChanged: _loadTasks,
         ),
       ),
-      _TileItem(
-        key: 'clipboard',
-        icon: Icons.content_paste,
-        label: l10n.tileClipboard,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFF78909C),
-        onTap: () => context.push('/clipboard-tag'),
+    );
+  }
+
+  // ── 삭제 모드 ────────────────────────────────────────────────────────
+
+  void _enterDeleteMode() {
+    setState(() {
+      _deleteMode = true;
+      _selectedIds.clear();
+    });
+  }
+
+  void _exitDeleteMode() {
+    setState(() {
+      _deleteMode = false;
+      _selectedIds.clear();
+    });
+  }
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  /// "모두선택" 탭 → 즐겨찾기 제외한 전체 항목 선택.
+  void _selectAll() {
+    setState(() {
+      _selectedIds.addAll(
+        _tasks.where((t) => !t.isFavorite).map((t) => t.id),
+      );
+    });
+  }
+
+  /// "확인" 탭 → 선택된 항목 삭제 확인 다이얼로그.
+  Future<void> _confirmDeleteSelected() async {
+    if (_selectedIds.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(l10n.dialogDeleteSelectedTitle),
+        content: Text(l10n.dialogDeleteSelectedContent(_selectedIds.length)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.actionCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.actionDelete,
+                style: const TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
-      _TileItem(
-        key: 'website',
-        icon: Icons.language,
-        label: l10n.tileWebsite,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFF42A5F5),
-        onTap: () => context.push('/website-tag'),
-      ),
-      _TileItem(
-        key: 'contact',
-        icon: Icons.contact_phone,
-        label: l10n.tileContact,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFF66BB6A),
-        onTap: () => context.push('/contact-tag'),
-      ),
-      _TileItem(
-        key: 'wifi',
-        icon: Icons.wifi,
-        label: l10n.tileWifi,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFF26A69A),
-        onTap: () => context.push('/wifi-tag'),
-      ),
-      _TileItem(
-        key: 'location',
-        icon: Icons.location_on,
-        label: l10n.tileLocation,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFFEF5350),
-        onTap: () => context.push('/location-tag'),
-      ),
-      _TileItem(
-        key: 'event',
-        icon: Icons.event,
-        label: l10n.tileEvent,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFFFFA726),
-        onTap: () => context.push('/event-tag'),
-      ),
-      _TileItem(
-        key: 'email',
-        icon: Icons.email,
-        label: l10n.tileEmail,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFF7E57C2),
-        onTap: () => context.push('/email-tag'),
-      ),
-      _TileItem(
-        key: 'sms',
-        icon: Icons.sms,
-        label: l10n.tileSms,
-        iconColor: Colors.white,
-        bgColor: const Color(0xFFEC407A),
-        onTap: () => context.push('/sms-tag'),
-      ),
-    ];
+    );
+    if (confirmed == true) {
+      final hideUseCase = ref.read(hideFromHomeUseCaseProvider);
+      for (final id in _selectedIds) {
+        await hideUseCase(id);
+      }
+      _exitDeleteMode();
+      _loadTasks();
+    }
   }
 
   AppBar _buildAppBar() {
     final l10n = AppLocalizations.of(context)!;
-    if (_editMode) {
-      return AppBar(
-        title: Text(l10n.screenHomeEditModeTitle),
-        actions: [
-          TextButton(
-            onPressed: _exitEditMode,
-            child: Text(l10n.actionDone, style: const TextStyle(fontSize: 16)),
-          ),
-        ],
-      );
-    }
     final isLoggedIn = ref.watch(authProvider).user != null;
     return AppBar(
       actions: [
+        IconButton(
+          icon: const Icon(Icons.qr_code_scanner),
+          tooltip: l10n.tileScanner,
+          onPressed: () => context.push('/scanner'),
+        ),
         IconButton(
           icon: const Icon(Icons.help_outline),
           tooltip: l10n.tooltipHelp,
@@ -214,6 +203,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onTap: () {
               Navigator.pop(context);
               context.push('/settings');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_outlined),
+            title: Text(l10n.drawerSvgStorage),
+            onTap: () {
+              Navigator.pop(context);
+              context.push('/svg-storage');
             },
           ),
           ListTile(
@@ -270,233 +267,147 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_initialized) {
-      return Scaffold(
-        appBar: _buildAppBar(),
-        drawer: _buildDrawer(),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final allTiles = _buildTiles();
-    final visibleTiles =
-        allTiles.where((t) => !_hiddenKeys.contains(t.key)).toList();
-    final hiddenTiles =
-        allTiles.where((t) => _hiddenKeys.contains(t.key)).toList();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: _buildAppBar(),
-      drawer: _editMode ? null : _buildDrawer(),
-      body: Stack(
+      drawer: _buildDrawer(),
+      body: Column(
         children: [
-          // 고정 배경 로고
-          Positioned.fill(
-            child: Center(
-              child: Opacity(
-                opacity: 0.06,
-                child: Image.asset(
-                  'assets/img/logo.png',
-                  width: 240,
-                  height: 240,
+          // ── CTA: 새로 만들기 + 삭제 버튼 ─────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 64,
+                    child: FilledButton.icon(
+                      onPressed: _deleteMode ? null : _showCreateSheet,
+                      icon: const Icon(Icons.add, size: 28),
+                      label: Text(
+                        l10n.actionCreateNew,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      ),
+                      style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 4,
+                        shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                if (_tasks.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 64,
+                    child: _deleteMode
+                        ? _buildDeleteModeButton(l10n)
+                        : IconButton.filled(
+                            onPressed: _enterDeleteMode,
+                            icon: const Icon(Icons.delete_outline),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.grey.shade200,
+                              foregroundColor: Colors.grey.shade700,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              minimumSize: const Size(56, 64),
+                            ),
+                          ),
+                  ),
+                ],
+              ],
             ),
           ),
-          // 스크롤 가능한 콘텐츠
-          SingleChildScrollView(
-        child: Column(
-          children: [
-            // 메인 그리드
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              padding: const EdgeInsets.all(16),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
-              children: visibleTiles
-                  .map((t) => _buildTileWithBadge(t, visibleTiles.length))
-                  .toList(),
-            ),
 
-            // 더보기 버튼 + 숨긴 타일 섹션
-            if (hiddenTiles.isNotEmpty && !_editMode)
-              _buildHiddenSection(hiddenTiles),
-          ],
-        ),
-      ),
+          // ── QrTask 타일 갤러리 ──────────────────────────────────────
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _tasks.isEmpty
+                    ? _buildEmptyState(l10n)
+                    : GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 120,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 100 / 130,
+                        ),
+                        itemCount: _tasks.length,
+                        itemBuilder: (_, i) {
+                          final task = _tasks[i];
+                          return QrTaskGalleryTile(
+                            task: task,
+                            selectable: _deleteMode,
+                            selected: _selectedIds.contains(task.id),
+                            onTap: _deleteMode
+                                ? () => _toggleSelection(task.id)
+                                : () => _showActionSheet(task),
+                            onLongPress: _deleteMode
+                                ? () => _toggleSelection(task.id)
+                                : () => _showActionSheet(task),
+                          );
+                        },
+                      ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTileWithBadge(_TileItem tile, int visibleCount) {
-    final isLastVisible = visibleCount == 1;
-
-    return Stack(
-      fit: StackFit.expand,
-      clipBehavior: Clip.none,
+  /// 삭제 모드 버튼: 선택 없으면 "모두선택", 선택 있으면 "확인".
+  /// 취소는 X 아이콘으로.
+  Widget _buildDeleteModeButton(AppLocalizations l10n) {
+    final hasSelection = _selectedIds.isNotEmpty;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _TileCard(
-          item: tile,
-          editMode: _editMode,
-          onLongPress: _editMode ? null : _enterEditMode,
-        ),
-        if (_editMode)
-          Positioned(
-            top: -4,
-            right: -4,
-            child: GestureDetector(
-              onTap: isLastVisible ? null : () => _hideTile(tile.key, visibleCount),
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: isLastVisible ? Colors.grey : Colors.red,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
-                ),
-                child: const Icon(Icons.close, color: Colors.white, size: 14),
-              ),
+        FilledButton(
+          onPressed: hasSelection ? _confirmDeleteSelected : _selectAll,
+          style: FilledButton.styleFrom(
+            backgroundColor: hasSelection
+                ? Theme.of(context).colorScheme.primary
+                : Colors.grey.shade700,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
+            minimumSize: const Size(0, 64),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
           ),
+          child: Text(
+            hasSelection ? l10n.actionConfirm : l10n.actionSelectAll,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        const SizedBox(width: 4),
+        IconButton(
+          onPressed: _exitDeleteMode,
+          icon: const Icon(Icons.close),
+          tooltip: l10n.actionCancel,
+        ),
       ],
     );
   }
 
-  Widget _buildHiddenSection(List<_TileItem> hiddenTiles) {
-    return Column(
-      children: [
-        // 더보기 / 접기 버튼
-        InkWell(
-          onTap: () =>
-              setState(() => _showHiddenSection = !_showHiddenSection),
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _showHiddenSection
-                      ? AppLocalizations.of(context)!.actionCollapseHidden
-                      : AppLocalizations.of(context)!.actionShowHidden(hiddenTiles.length),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  _showHiddenSection
-                      ? Icons.expand_less
-                      : Icons.expand_more,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ],
-            ),
+  Widget _buildEmptyState(AppLocalizations l10n) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.qr_code, size: 64, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(
+            l10n.homeEmptyTitle,
+            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
           ),
-        ),
-
-        // 숨긴 타일 그리드
-        if (_showHiddenSection)
-          Opacity(
-            opacity: 0.5,
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
-              children: hiddenTiles.map((t) {
-                final restoreTile = _TileItem(
-                  key: t.key,
-                  icon: t.icon,
-                  label: t.label,
-                  iconColor: t.iconColor,
-                  bgColor: t.bgColor,
-                  onTap: () => _restoreTile(t.key),
-                );
-                return _TileCard(
-                  item: restoreTile,
-                  editMode: false,
-                );
-              }).toList(),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-// ── 데이터 모델 ────────────────────────────────────────────────────────────────
-
-class _TileItem {
-  final String key;
-  final IconData icon;
-  final String label;
-  final Color iconColor;
-  final Color bgColor;
-  final VoidCallback onTap;
-
-  const _TileItem({
-    required this.key,
-    required this.icon,
-    required this.label,
-    required this.iconColor,
-    required this.bgColor,
-    required this.onTap,
-  });
-}
-
-// ── 타일 카드 위젯 ─────────────────────────────────────────────────────────────
-
-class _TileCard extends StatelessWidget {
-  final _TileItem item;
-  final bool editMode;
-  final VoidCallback? onLongPress;
-
-  const _TileCard({
-    required this.item,
-    required this.editMode,
-    this.onLongPress,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      color: item.bgColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: editMode ? null : item.onTap,
-        onLongPress: onLongPress,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(item.icon, size: 48, color: item.iconColor),
-            const SizedBox(height: 8),
-            Text(
-              item.label,
-              style: const TextStyle(
-                  fontSize: 21, fontWeight: FontWeight.w600, color: Colors.white),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
-/// 프로그램 정보 dialog 내 외부 링크용 컴팩트 tile.
-/// 탭 시 OS 기본 브라우저/메일 앱으로 이동.
 class _LegalLinkTile extends StatelessWidget {
   final IconData icon;
   final String label;

@@ -161,6 +161,7 @@
   "tabLogo": "Logo",
   "tabText": "Texto",
   "actionSaveGallery": "Salvar na Galeria",
+  "actionSaveSvg": "SVG 저장",
   "actionSaveTemplate": "Salvar Modelo",
   "dialogLowReadabilityTitle": "Legibilidade baixa",
   "dialogLowReadabilityScore": "Legibilidade atual: {score}%",

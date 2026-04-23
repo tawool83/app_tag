@@ -161,6 +161,7 @@
   "tabLogo": "โลโก้",
   "tabText": "ข้อความ",
   "actionSaveGallery": "บันทึกลงแกลเลอรี",
+  "actionSaveSvg": "SVG 저장",
   "actionSaveTemplate": "บันทึกเทมเพลต",
   "dialogLowReadabilityTitle": "อัตราการอ่านต่ำ",
   "dialogLowReadabilityScore": "อัตราการอ่านปัจจุบัน: {score}%",

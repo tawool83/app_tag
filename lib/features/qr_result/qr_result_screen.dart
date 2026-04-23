@@ -1,24 +1,17 @@
 library;
 
-import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import '../../core/error/result.dart';
-import '../../core/extensions/context_extensions.dart';
 import '../qr_task/domain/entities/qr_task_kind.dart';
 import '../qr_task/domain/entities/qr_task_meta.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
-import 'domain/entities/qr_action_status.dart';
 import 'domain/entities/qr_template.dart';
 import 'domain/entities/sticker_config.dart' show StickerText;
-import 'data/services/qr_readability_service.dart';
-import 'domain/entities/template_engine_version.dart';
-import 'domain/entities/user_qr_template.dart';
 import 'presentation/providers/qr_result_providers.dart';
 import '../../core/services/settings_service.dart';
 import '../../core/constants/app_config.dart' show validateQrData;
@@ -33,7 +26,6 @@ import 'widgets/qr_preview_section.dart';
 
 // ── 파트 분리: qr_result_screen/ 하위로 이동한 헬퍼/위젯 ───────────────────
 part 'qr_result_screen/icon_renderer.dart';
-part 'qr_result_screen/action_buttons.dart';
 
 class QrResultScreen extends ConsumerStatefulWidget {
   const QrResultScreen({super.key});
@@ -49,9 +41,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   final _shapeTabKey = GlobalKey<QrShapeTabState>();
   late TabController _tabController;
   QrTemplateManifest _templateManifest = QrTemplateManifest.empty;
-
-  // 나의 템플릿 갱신용 key (AllTemplatesTab 강제 재빌드)
-  int _myTemplatesVersion = 0;
 
   // 편집기 모드 (탭/하단 버튼 숨김용)
   bool _colorEditorMode = false;
@@ -205,8 +194,25 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     }
   }
 
-  /// QR 위젯이 렌더링된 후 미리보기 이미지 캡처 (UI 보조).
-  /// 실제 데이터 영속은 QrResultNotifier 의 debounced JSON 저장 책임.
+  /// 뒤로가기 — 커스터마이제이션 flush + 썸네일 캡처 후 pop.
+  Future<void> _confirmAndPop() async {
+    await ref.read(qrResultProvider.notifier).flushPendingPush();
+    await _recapture();
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  /// 저장 — 커스터마이제이션 flush + 썸네일 캡처 완료 후 홈으로 이동.
+  Future<void> _saveAndGoHome() async {
+    await ref.read(qrResultProvider.notifier).flushPendingPush();
+    final bytes = await _captureThumbnail();
+    if (bytes != null) {
+      ref.read(qrResultProvider.notifier).setCapturedImage(bytes);
+      await _persistThumbnailAsync(bytes);
+    }
+    if (mounted) context.go('/home', extra: DateTime.now().millisecondsSinceEpoch);
+  }
+
+  /// QR 위젯이 렌더링된 후 미리보기 이미지 캡처 + QrTask에 영속.
   Future<void> _captureThumbnailToState() async {
     await Future.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
@@ -217,6 +223,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     final bytes = await ref.read(qrServiceProvider).captureQrImage(boundary);
     if (bytes != null && mounted) {
       ref.read(qrResultProvider.notifier).setCapturedImage(bytes);
+      _persistThumbnail(bytes);
     }
   }
 
@@ -232,149 +239,21 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     final bytes = await _captureThumbnail();
     if (bytes != null) {
       ref.read(qrResultProvider.notifier).setCapturedImage(bytes);
+      _persistThumbnail(bytes);
     }
   }
 
-  Future<void> _showReadabilitySnackBarIfNeeded(ReadabilityScore score) async {
-    final alertEnabled = await SettingsService.getReadabilityAlert();
-    if (!alertEnabled || !score.shouldWarnOnSave || !mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    context.showSnack(
-      '${l10n.dialogLowReadabilityTitle}: ${score.total}% — ${score.mainIssue}',
-      backgroundColor: Colors.orange.shade700,
-      duration: const Duration(seconds: 3),
-    );
-  }
-
-  Future<void> _showSaveTemplateSheet() async {
-    final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController();
-    try {
-      await _runSaveTemplateSheet(l10n, nameCtrl);
-    } finally {
-      nameCtrl.dispose();
+  void _persistThumbnail(Uint8List bytes) {
+    final taskId = ref.read(qrResultProvider.notifier).currentTaskId;
+    if (taskId != null) {
+      ref.read(updateQrTaskThumbnailUseCaseProvider)(taskId, bytes);
     }
   }
 
-  Future<void> _runSaveTemplateSheet(AppLocalizations l10n, TextEditingController nameCtrl) async {
-    final confirmed = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          24, 24, 24,
-          MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.dialogSaveTemplateTitle,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nameCtrl,
-              autofocus: true,
-              maxLength: 30,
-              decoration: InputDecoration(
-                labelText: l10n.labelTemplateName,
-                hintText: l10n.hintTemplateName,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: Text(l10n.actionCancel),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    if (nameCtrl.text.trim().isNotEmpty) {
-                      Navigator.pop(ctx, true);
-                    }
-                  },
-                  child: Text(l10n.actionSave),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    final name = nameCtrl.text.trim();
-    if (name.isEmpty) return;
-
-    final state = ref.read(qrResultProvider);
-    final thumbnail = await _captureThumbnail();
-
-    final template = UserQrTemplate(
-      id: const Uuid().v4(),
-      name: name,
-      createdAt: DateTime.now(),
-      // 배경 레이어 — 배경 이미지 기능 제거됨, Hive 스키마 호환을 위해 기본값만 저장
-      // QR 레이어
-      qrColorValue: state.style.qrColor.toARGB32(),
-      gradientJson: state.style.customGradient != null
-          ? jsonEncode(state.style.customGradient!.toJson())
-          : null,
-      roundFactor: state.style.roundFactor,
-      dotStyleIndex: state.style.dotStyle.index,
-      eyeOuterIndex: state.style.eyeOuter.index,
-      eyeInnerIndex: state.style.eyeInner.index,
-      randomEyeSeed: state.style.randomEyeSeed,
-      quietZoneColorValue: state.style.quietZoneColor.toARGB32(),
-      // 커스텀 파라미터 스냅샷 (v2)
-      customDotParamsJson: state.style.customDotParams != null
-          ? jsonEncode(state.style.customDotParams!.toJson())
-          : null,
-      customEyeParamsJson: state.style.customEyeParams != null
-          ? jsonEncode(state.style.customEyeParams!.toJson())
-          : null,
-      boundaryParamsJson: state.style.boundaryParams.isDefault
-          ? null
-          : jsonEncode(state.style.boundaryParams.toJson()),
-      // 버전 관리 (v2)
-      schemaVersion: kTemplateSchemaVersion,
-      minEngineVersion: computeMinEngineVersion(
-        hasCustomDotParams: state.style.customDotParams != null,
-        hasCustomEyeParams: state.style.customEyeParams != null,
-        hasNonDefaultBoundary: !state.style.boundaryParams.isDefault,
-      ),
-      // 스티커 레이어
-      logoPositionIndex: state.sticker.logoPosition.index,
-      logoBackgroundIndex: state.sticker.logoBackground.index,
-      topTextContent: state.sticker.topText?.content,
-      topTextColorValue: state.sticker.topText?.color.toARGB32(),
-      topTextFont: state.sticker.topText?.fontFamily,
-      topTextSize: state.sticker.topText?.fontSize,
-      bottomTextContent: state.sticker.bottomText?.content,
-      bottomTextColorValue: state.sticker.bottomText?.color.toARGB32(),
-      bottomTextFont: state.sticker.bottomText?.fontFamily,
-      bottomTextSize: state.sticker.bottomText?.fontSize,
-      thumbnailBytes: thumbnail,
-    );
-
-    await ref.read(saveUserTemplateUseCaseProvider)(template);
-
-    if (mounted) {
-      context.showSnack(l10n.msgTemplateSaved(name));
-      // 템플릿 탭으로 이동 (새 key로 AllTemplatesTab 강제 재빌드)
-      setState(() => _myTemplatesVersion++);
-      _tabController.animateTo(0);
+  Future<void> _persistThumbnailAsync(Uint8List bytes) async {
+    final taskId = ref.read(qrResultProvider.notifier).currentTaskId;
+    if (taskId != null) {
+      await ref.read(updateQrTaskThumbnailUseCaseProvider)(taskId, bytes);
     }
   }
 
@@ -404,11 +283,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   Widget build(BuildContext context) {
     final args =
         GoRouterState.of(context).extra as Map<String, dynamic>;
-    final appName = args['appName'] as String;
     final deepLink = args['deepLink'] as String;
 
     final state = ref.watch(qrResultProvider);
-    final score = QrReadabilityService.calculate(state, deepLink);
     final l10n = AppLocalizations.of(context)!;
 
     // 편집기 활성 시 AppBar 타이틀
@@ -419,21 +296,33 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             : null;
 
     return PopScope(
-      canPop: !_isEditorActive,
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _isEditorActive) _cancelActiveEditor();
+        if (didPop) return;
+        if (_isEditorActive) {
+          _cancelActiveEditor();
+        } else {
+          _confirmAndPop();
+        }
       },
       child: Scaffold(
       appBar: AppBar(
         title: Text(editorTitle ?? l10n.screenQrResultTitle),
-        leading: _isEditorActive
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _cancelActiveEditor,
-              )
-            : null,
-        // 모든 편집기 (shape/color) 뒤로가기가 자동 저장 — [저장] 버튼 불필요.
-        actions: const [],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _isEditorActive ? _cancelActiveEditor : _confirmAndPop,
+        ),
+        actions: _isEditorActive
+            ? const []
+            : [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilledButton(
+                    onPressed: _saveAndGoHome,
+                    child: Text(l10n.actionSave),
+                  ),
+                ),
+              ],
       ),
       body: Column(
         children: [
@@ -470,7 +359,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
               children: [
                 // 0: 템플릿 (나의 템플릿 + 전체 템플릿 통합)
                 AllTemplatesTab(
-                  key: ValueKey(_myTemplatesVersion),
                   manifest: _templateManifest,
                   activeTemplateId: state.template.activeTemplateId,
                   onTemplateSelected: _onTemplateSelected,
@@ -515,20 +403,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
             ),
           ),
 
-          // ④ 액션 버튼 (편집기 모드일 때 숨김 — 편집기 자체에 확인/취소 버튼)
-          if (!_colorEditorMode && !_shapeEditorMode) _ActionButtons(
-            state: state,
-            onSaveGallery: () async {
-              await _showReadabilitySnackBarIfNeeded(score);
-              ref.read(qrResultProvider.notifier).saveToGallery(appName);
-            },
-            onSaveTemplate: () async {
-              await _showReadabilitySnackBarIfNeeded(score);
-              _showSaveTemplateSheet();
-            },
-            onShare: () =>
-                ref.read(qrResultProvider.notifier).shareImage(appName),
-          ),
         ],
       ),
     ),

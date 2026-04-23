@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/error/failure.dart';
@@ -36,6 +37,7 @@ class QrTaskRepositoryImpl implements QrTaskRepository {
         createdAt: now,
         updatedAt: now,
         kind: kind,
+        name: DateFormat('yyyy-MM-dd HH:mm').format(now),
         meta: meta,
         customization: const QrCustomization(),
       );
@@ -61,7 +63,7 @@ class QrTaskRepositoryImpl implements QrTaskRepository {
   Future<Result<List<QrTask>>> listAll() async {
     try {
       final entities = _local.readAll().map((m) => m.toEntity()).toList()
-        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        ..sort(_favoriteFirstSort);
       return Success(entities);
     } catch (e, st) {
       return Err(UnexpectedFailure('QrTask 목록 조회 실패: $e',
@@ -100,6 +102,87 @@ class QrTaskRepositoryImpl implements QrTaskRepository {
     } catch (e) {
       return Err(StorageFailure('QrTask meta 갱신 실패: $e'));
     }
+  }
+
+  @override
+  Future<Result<void>> update(QrTask task) async {
+    try {
+      await _local.put(QrTaskModel.fromEntity(task));
+      return const Success(null);
+    } catch (e) {
+      return Err(StorageFailure('QrTask 갱신 실패: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void>> hideFromHome(String id) async {
+    try {
+      final existing = _local.readById(id);
+      if (existing == null) {
+        return Err(StorageFailure('QrTask 미존재: $id'));
+      }
+      final entity = existing.toEntity();
+      final updated = entity.copyWith(showOnHome: false);
+      await _local.put(QrTaskModel.fromEntity(updated));
+      return const Success(null);
+    } catch (e) {
+      return Err(StorageFailure('QrTask 홈 숨김 실패: $e'));
+    }
+  }
+
+  @override
+  Future<Result<List<QrTask>>> listHomeVisible() async {
+    try {
+      final entities = _local
+          .readAll()
+          .map((m) => m.toEntity())
+          .where((t) => t.showOnHome)
+          .toList()
+        ..sort(_favoriteFirstSort);
+      return Success(entities);
+    } catch (e, st) {
+      return Err(UnexpectedFailure('QrTask 홈 목록 조회 실패: $e',
+          cause: e, stackTrace: st));
+    }
+  }
+
+  @override
+  Future<Result<void>> hideAllFromHome() async {
+    try {
+      final all = _local.readAll();
+      for (final model in all) {
+        final entity = model.toEntity();
+        if (entity.showOnHome) {
+          final updated = entity.copyWith(showOnHome: false);
+          await _local.put(QrTaskModel.fromEntity(updated));
+        }
+      }
+      return const Success(null);
+    } catch (e) {
+      return Err(StorageFailure('QrTask 전체 홈 숨김 실패: $e'));
+    }
+  }
+
+  @override
+  Future<Result<void>> toggleFavorite(String id) async {
+    try {
+      final existing = _local.readById(id);
+      if (existing == null) {
+        return Err(StorageFailure('QrTask 미존재: $id'));
+      }
+      final entity = existing.toEntity();
+      final updated = entity.copyWith(isFavorite: !entity.isFavorite);
+      await _local.put(QrTaskModel.fromEntity(updated));
+      return const Success(null);
+    } catch (e) {
+      return Err(StorageFailure('QrTask 즐겨찾기 토글 실패: $e'));
+    }
+  }
+
+  /// favorite 우선, 그 안에서 updatedAt desc.
+  static int _favoriteFirstSort(QrTask a, QrTask b) {
+    if (a.isFavorite != b.isFavorite) return a.isFavorite ? -1 : 1;
+    return b.updatedAt.compareTo(a.updatedAt);
   }
 
   @override

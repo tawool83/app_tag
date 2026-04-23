@@ -161,6 +161,7 @@
   "tabLogo": "ロゴ",
   "tabText": "テキスト",
   "actionSaveGallery": "ギャラリーに保存",
+  "actionSaveSvg": "SVG 저장",
   "actionSaveTemplate": "テンプレート保存",
   "dialogLowReadabilityTitle": "認識率が低い状態です",
   "dialogLowReadabilityScore": "現在の認識率: {score}%",

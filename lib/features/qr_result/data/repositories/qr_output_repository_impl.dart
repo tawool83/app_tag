@@ -103,4 +103,22 @@ class QrOutputRepositoryImpl implements QrOutputRepository {
           cause: e, stackTrace: st));
     }
   }
+
+  @override
+  Future<Result<String>> saveAsSvg(String svgString, String appName) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final svgDir = Directory('${dir.path}/svg');
+      if (!svgDir.existsSync()) {
+        svgDir.createSync(recursive: true);
+      }
+      final fileName = 'apptag_${appName.replaceAll(' ', '_')}_qr.svg';
+      final file = File('${svgDir.path}/$fileName');
+      await file.writeAsString(svgString);
+      return Success(file.path);
+    } catch (e, st) {
+      return Err(UnexpectedFailure('SVG 저장 실패: $e',
+          cause: e, stackTrace: st));
+    }
+  }
 }

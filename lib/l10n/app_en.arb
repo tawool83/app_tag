@@ -161,6 +161,7 @@
   "tabLogo": "Logo",
   "tabText": "Text",
   "actionSaveGallery": "Save to Gallery",
+  "actionSaveSvg": "Save as SVG",
   "actionSaveTemplate": "Save Template",
   "dialogLowReadabilityTitle": "Low Readability",
   "dialogLowReadabilityScore": "Current readability: {score}%",

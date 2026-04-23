@@ -1,7 +1,6 @@
 library;
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -17,7 +16,6 @@ import 'domain/entities/sticker_config.dart';
 import 'data/services/qr_service.dart';
 import '../qr_task/domain/entities/qr_customization.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
-import 'domain/entities/user_qr_template.dart';
 import 'presentation/providers/qr_result_providers.dart';
 import 'domain/entities/qr_preview_mode.dart';
 import 'domain/state/qr_action_state.dart';
@@ -218,11 +216,17 @@ class QrResultNotifier extends StateNotifier<QrResultState>
     }
   }
 
+  /// 보류 중인 debounce 를 즉시 실행. pop 직전 호출하여 마지막 변경 보장.
+  Future<void> flushPendingPush() async {
+    if (_debounceTimer?.isActive ?? false) {
+      _debounceTimer!.cancel();
+      await _pushNow();
+    }
+  }
+
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    // pending flush 는 의도적으로 포기 — dispose 후 async ref 접근은 안전하지 않음.
-    // 이후 재진입 시 복원된 state 가 500ms debounce 로 재push 하므로 데이터 손실 없음.
     _disposed = true;
     super.dispose();
   }

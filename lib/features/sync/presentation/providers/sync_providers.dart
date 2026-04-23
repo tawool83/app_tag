@@ -1,26 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 
-import '../../../../core/di/supabase_config.dart';
-import '../../../qr_result/presentation/providers/qr_result_providers.dart';
-import '../../data/datasources/supabase_template_datasource.dart';
 import '../../data/engine/sync_engine.dart';
 
-// ── DataSource / Engine Providers ──────────────────────────────────────────
-
-final supabaseTemplateDataSourceProvider =
-    Provider<SupabaseTemplateDataSource?>((ref) {
-  if (!isSupabaseConfigured) return null;
-  return SupabaseTemplateDataSource(Supabase.instance.client);
-});
+// ── Engine Provider (stub — UserQrTemplate 삭제로 비활성) ─────────────────────
 
 final templateSyncEngineProvider = Provider<TemplateSyncEngine?>((ref) {
-  final remote = ref.watch(supabaseTemplateDataSourceProvider);
-  if (remote == null) return null;
-  return TemplateSyncEngine(
-    ref.watch(hiveUserTemplateDataSourceProvider),
-    remote,
-  );
+  return null; // QrTask 기반 동기화 재구현 필요
 });
 
 // ── Sync State ─────────────────────────────────────────────────────────────
@@ -61,7 +46,6 @@ class SyncNotifier extends StateNotifier<SyncState> {
 
   SyncNotifier(this._templateEngine) : super(const SyncState());
 
-  /// 전체 동기화 (앱 시작 시 / 수동 트리거).
   Future<void> syncAll(String userId) async {
     if (_templateEngine == null) return;
     state = state.copyWith(templateSync: SyncStatus.syncing);

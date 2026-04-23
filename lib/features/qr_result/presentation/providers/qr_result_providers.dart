@@ -1,48 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive/hive.dart';
 
 import '../../../../core/error/result.dart';
 import '../../domain/entities/logo_manifest.dart';
 import '../../domain/entities/qr_template.dart';
-import '../../data/datasources/hive_user_template_datasource.dart';
 import '../../data/datasources/local_default_template_datasource.dart';
-import '../../data/models/user_qr_template_model.dart';
 import '../../data/repositories/default_template_repository_impl.dart';
 import '../../data/repositories/logo_manifest_repository_impl.dart';
 import '../../data/repositories/qr_output_repository_impl.dart';
-import '../../data/repositories/user_template_repository_impl.dart';
 import '../../domain/repositories/default_template_repository.dart';
 import '../../domain/repositories/logo_manifest_repository.dart';
 import '../../domain/repositories/qr_output_repository.dart';
-import '../../domain/repositories/user_template_repository.dart';
-import '../../domain/usecases/clear_user_templates_usecase.dart';
 import '../../domain/usecases/crop_logo_image_usecase.dart';
-import '../../domain/usecases/delete_user_template_usecase.dart';
 import '../../domain/usecases/get_default_templates_usecase.dart';
-import '../../domain/usecases/get_user_templates_usecase.dart';
 import '../../domain/usecases/load_template_image_usecase.dart';
 import '../../domain/usecases/print_qr_code_usecase.dart';
 import '../../domain/usecases/rasterize_text_logo_usecase.dart';
+import '../../domain/usecases/save_qr_as_svg_usecase.dart';
 import '../../domain/usecases/save_qr_to_gallery_usecase.dart';
-import '../../domain/usecases/save_user_template_usecase.dart';
 import '../../domain/usecases/select_logo_asset_usecase.dart';
 import '../../domain/usecases/share_qr_image_usecase.dart';
 
 // ── Data layer ────────────────────────────────────────────────────────────────
-
-final userTemplateBoxProvider = Provider<Box<UserQrTemplateModel>>((ref) {
-  return Hive.box<UserQrTemplateModel>(HiveUserTemplateDataSource.boxName);
-});
-
-final hiveUserTemplateDataSourceProvider =
-    Provider<HiveUserTemplateDataSource>((ref) {
-  return HiveUserTemplateDataSource(ref.watch(userTemplateBoxProvider));
-});
-
-final userTemplateRepositoryProvider = Provider<UserTemplateRepository>((ref) {
-  return UserTemplateRepositoryImpl(
-      ref.watch(hiveUserTemplateDataSourceProvider));
-});
 
 final defaultTemplateDataSourceProvider =
     Provider<LocalDefaultTemplateDataSource>((ref) {
@@ -61,26 +39,6 @@ final qrOutputRepositoryProvider = Provider<QrOutputRepository>((ref) {
 
 // ── UseCases ──────────────────────────────────────────────────────────────────
 
-final getUserTemplatesUseCaseProvider =
-    Provider<GetUserTemplatesUseCase>((ref) {
-  return GetUserTemplatesUseCase(ref.watch(userTemplateRepositoryProvider));
-});
-
-final saveUserTemplateUseCaseProvider =
-    Provider<SaveUserTemplateUseCase>((ref) {
-  return SaveUserTemplateUseCase(ref.watch(userTemplateRepositoryProvider));
-});
-
-final deleteUserTemplateUseCaseProvider =
-    Provider<DeleteUserTemplateUseCase>((ref) {
-  return DeleteUserTemplateUseCase(ref.watch(userTemplateRepositoryProvider));
-});
-
-final clearUserTemplatesUseCaseProvider =
-    Provider<ClearUserTemplatesUseCase>((ref) {
-  return ClearUserTemplatesUseCase(ref.watch(userTemplateRepositoryProvider));
-});
-
 final getDefaultTemplatesUseCaseProvider =
     Provider<GetDefaultTemplatesUseCase>((ref) {
   return GetDefaultTemplatesUseCase(
@@ -94,6 +52,10 @@ final loadTemplateImageUseCaseProvider =
 
 final saveQrToGalleryUseCaseProvider = Provider<SaveQrToGalleryUseCase>((ref) {
   return SaveQrToGalleryUseCase(ref.watch(qrOutputRepositoryProvider));
+});
+
+final saveQrAsSvgUseCaseProvider = Provider<SaveQrAsSvgUseCase>((ref) {
+  return SaveQrAsSvgUseCase(ref.watch(qrOutputRepositoryProvider));
 });
 
 final shareQrImageUseCaseProvider = Provider<ShareQrImageUseCase>((ref) {

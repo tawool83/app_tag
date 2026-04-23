@@ -12,8 +12,14 @@ import '../../domain/usecases/clear_qr_tasks_usecase.dart';
 import '../../domain/usecases/create_qr_task_usecase.dart';
 import '../../domain/usecases/delete_qr_task_usecase.dart';
 import '../../domain/usecases/get_qr_task_by_id_usecase.dart';
+import '../../domain/usecases/hide_all_from_home_usecase.dart';
+import '../../domain/usecases/hide_from_home_usecase.dart';
+import '../../domain/usecases/list_home_visible_usecase.dart';
 import '../../domain/usecases/list_qr_tasks_usecase.dart';
+import '../../domain/usecases/rename_qr_task_usecase.dart';
+import '../../domain/usecases/toggle_favorite_usecase.dart';
 import '../../domain/usecases/update_qr_task_customization_usecase.dart';
+import '../../domain/usecases/update_qr_task_thumbnail_usecase.dart';
 
 /// Hive [Box] of [QrTaskModel] (오픈은 core/di/hive_config.dart 에서).
 final qrTaskBoxProvider = Provider<Box<QrTaskModel>>(
@@ -51,4 +57,29 @@ final deleteQrTaskUseCaseProvider = Provider<DeleteQrTaskUseCase>(
 
 final clearQrTasksUseCaseProvider = Provider<ClearQrTasksUseCase>(
   (ref) => ClearQrTasksUseCase(ref.watch(qrTaskRepositoryProvider)),
+);
+
+final toggleFavoriteUseCaseProvider = Provider<ToggleFavoriteUseCase>(
+  (ref) => ToggleFavoriteUseCase(ref.watch(qrTaskRepositoryProvider)),
+);
+
+final renameQrTaskUseCaseProvider = Provider<RenameQrTaskUseCase>(
+  (ref) => RenameQrTaskUseCase(ref.watch(qrTaskRepositoryProvider)),
+);
+
+final updateQrTaskThumbnailUseCaseProvider =
+    Provider<UpdateQrTaskThumbnailUseCase>(
+  (ref) => UpdateQrTaskThumbnailUseCase(ref.watch(qrTaskRepositoryProvider)),
+);
+
+final hideFromHomeUseCaseProvider = Provider<HideFromHomeUseCase>(
+  (ref) => HideFromHomeUseCase(ref.watch(qrTaskRepositoryProvider)),
+);
+
+final listHomeVisibleUseCaseProvider = Provider<ListHomeVisibleUseCase>(
+  (ref) => ListHomeVisibleUseCase(ref.watch(qrTaskRepositoryProvider)),
+);
+
+final hideAllFromHomeUseCaseProvider = Provider<HideAllFromHomeUseCase>(
+  (ref) => HideAllFromHomeUseCase(ref.watch(qrTaskRepositoryProvider)),
 );

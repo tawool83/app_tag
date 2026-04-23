@@ -264,6 +264,18 @@ abstract class AppLocalizations {
   /// **'사용 안내'**
   String get tooltipHelp;
 
+  /// No description provided for @tooltipFavorite.
+  ///
+  /// In ko, this message translates to:
+  /// **'즐겨찾기'**
+  String get tooltipFavorite;
+
+  /// No description provided for @tooltipUnfavorite.
+  ///
+  /// In ko, this message translates to:
+  /// **'즐겨찾기 해제'**
+  String get tooltipUnfavorite;
+
   /// No description provided for @tooltipHistory.
   ///
   /// In ko, this message translates to:
@@ -951,8 +963,14 @@ abstract class AppLocalizations {
   /// No description provided for @actionSaveGallery.
   ///
   /// In ko, this message translates to:
-  /// **'갤러리 저장'**
+  /// **'갤러리(PNG) 저장'**
   String get actionSaveGallery;
+
+  /// No description provided for @actionSaveSvg.
+  ///
+  /// In ko, this message translates to:
+  /// **'SVG 저장'**
+  String get actionSaveSvg;
 
   /// No description provided for @actionSaveTemplate.
   ///
@@ -1247,6 +1265,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'설정'**
   String get screenSettingsTitle;
+
+  /// No description provided for @drawerSvgStorage.
+  ///
+  /// In ko, this message translates to:
+  /// **'SVG 저장함'**
+  String get drawerSvgStorage;
+
+  /// No description provided for @svgStorageEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'저장된 SVG 파일이 없습니다'**
+  String get svgStorageEmpty;
+
+  /// No description provided for @svgStorageDeleteConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 SVG 파일을 삭제하시겠습니까?'**
+  String get svgStorageDeleteConfirm;
 
   /// No description provided for @drawerAppInfo.
   ///
@@ -2177,6 +2213,150 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'즐겨찾기'**
   String get actionFavorite;
+
+  /// No description provided for @actionStartCustomize.
+  ///
+  /// In ko, this message translates to:
+  /// **'QR 만들기'**
+  String get actionStartCustomize;
+
+  /// No description provided for @actionCreateNew.
+  ///
+  /// In ko, this message translates to:
+  /// **'새로 만들기'**
+  String get actionCreateNew;
+
+  /// No description provided for @actionEditAgain.
+  ///
+  /// In ko, this message translates to:
+  /// **'편집하기'**
+  String get actionEditAgain;
+
+  /// No description provided for @actionRename.
+  ///
+  /// In ko, this message translates to:
+  /// **'이름 변경'**
+  String get actionRename;
+
+  /// No description provided for @sheetCreateTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'새로 만들기'**
+  String get sheetCreateTitle;
+
+  /// No description provided for @homeEmptyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'첫 QR을 만들어 보세요'**
+  String get homeEmptyTitle;
+
+  /// No description provided for @dialogRenameTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'이름 변경'**
+  String get dialogRenameTitle;
+
+  /// No description provided for @hintTaskName.
+  ///
+  /// In ko, this message translates to:
+  /// **'작업 이름'**
+  String get hintTaskName;
+
+  /// No description provided for @dialogDeleteTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'삭제'**
+  String get dialogDeleteTitle;
+
+  /// No description provided for @dialogDeleteContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'{name} 을(를) 삭제하시겠습니까?'**
+  String dialogDeleteContent(String name);
+
+  /// No description provided for @msgNoThumbnail.
+  ///
+  /// In ko, this message translates to:
+  /// **'미리보기 이미지가 없습니다'**
+  String get msgNoThumbnail;
+
+  /// No description provided for @msgSavedToGallery.
+  ///
+  /// In ko, this message translates to:
+  /// **'갤러리에 저장되었습니다'**
+  String get msgSavedToGallery;
+
+  /// No description provided for @msgSvgSaved.
+  ///
+  /// In ko, this message translates to:
+  /// **'SVG 파일이 저장되었습니다'**
+  String get msgSvgSaved;
+
+  /// No description provided for @labelQr.
+  ///
+  /// In ko, this message translates to:
+  /// **'QR'**
+  String get labelQr;
+
+  /// No description provided for @timeJustNow.
+  ///
+  /// In ko, this message translates to:
+  /// **'방금'**
+  String get timeJustNow;
+
+  /// No description provided for @timeMinutesAgo.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}분 전'**
+  String timeMinutesAgo(int count);
+
+  /// No description provided for @timeHoursAgo.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}시간 전'**
+  String timeHoursAgo(int count);
+
+  /// No description provided for @timeDaysAgo.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}일 전'**
+  String timeDaysAgo(int count);
+
+  /// No description provided for @actionSelectAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'모두선택'**
+  String get actionSelectAll;
+
+  /// No description provided for @actionDeleteAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'모두삭제'**
+  String get actionDeleteAll;
+
+  /// No description provided for @dialogDeleteAllTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 삭제'**
+  String get dialogDeleteAllTitle;
+
+  /// No description provided for @dialogDeleteAllContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'모든 QR을 삭제하시겠습니까?'**
+  String get dialogDeleteAllContent;
+
+  /// No description provided for @dialogDeleteSelectedTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택 삭제'**
+  String get dialogDeleteSelectedTitle;
+
+  /// No description provided for @dialogDeleteSelectedContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}개의 QR을 삭제하시겠습니까?'**
+  String dialogDeleteSelectedContent(int count);
 }
 
 class _AppLocalizationsDelegate

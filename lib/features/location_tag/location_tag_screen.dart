@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import '../../core/extensions/context_extensions.dart';
 import '../../core/utils/tag_payload_encoder.dart';
-import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class LocationTagScreen extends StatefulWidget {
@@ -196,14 +195,6 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
       return;
     }
     context.push('/qr-result', extra: _buildArgs());
-  }
-
-  void _onNfc() {
-    if (_selected == null) {
-      context.showSnack(AppLocalizations.of(context)!.msgSelectLocation);
-      return;
-    }
-    context.push('/nfc-writer', extra: _buildArgs());
   }
 
   @override
@@ -420,12 +411,19 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
             ),
           ),
 
-          // ── QR/NFC 버튼 ───────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: OutputActionButtons(
-              onQrPressed: _onQr,
-              onNfcPressed: _onNfc,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _onQr,
+                icon: const Icon(Icons.palette),
+                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
             ),
           ),
         ],

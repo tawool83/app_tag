@@ -38,6 +38,7 @@ void main() {
       createdAt: DateTime.utc(2026, 1, 1),
       updatedAt: DateTime.utc(2026, 1, 1),
       kind: QrTaskKind.qr,
+      name: 'test',
       meta: const QrTaskMeta(appName: '', deepLink: '', platform: ''),
       customization: const QrCustomization(),
     );

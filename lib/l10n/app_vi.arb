@@ -161,6 +161,7 @@
   "tabLogo": "Logo",
   "tabText": "Văn bản",
   "actionSaveGallery": "Lưu vào Thư viện",
+  "actionSaveSvg": "SVG 저장",
   "actionSaveTemplate": "Lưu mẫu",
   "dialogLowReadabilityTitle": "Khả năng đọc thấp",
   "dialogLowReadabilityScore": "Khả năng đọc hiện tại: {score}%",

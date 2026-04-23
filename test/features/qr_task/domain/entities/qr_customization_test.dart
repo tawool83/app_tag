@@ -121,6 +121,7 @@ void main() {
         createdAt: DateTime.utc(2026, 4, 15, 10),
         updatedAt: DateTime.utc(2026, 4, 15, 10, 30),
         kind: QrTaskKind.qr,
+        name: '클립보드 2026-04-15 10:00',
         meta: const QrTaskMeta(
           appName: '클립보드',
           deepLink: 'hello world',
@@ -133,7 +134,7 @@ void main() {
       final json = task.toPayloadJson();
       final map = jsonDecode(json) as Map<String, dynamic>;
 
-      expect(map['schemaVersion'], 1);
+      expect(map['schemaVersion'], QrTask.currentSchemaVersion);
       expect(map['taskId'], 'task-1');
       expect(map['kind'], 'qr');
 

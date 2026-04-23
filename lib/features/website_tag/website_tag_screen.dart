@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/tag_payload_encoder.dart';
-import '../../core/widgets/output_action_buttons.dart';
 import '../../l10n/app_localizations.dart';
 
 class WebsiteTagScreen extends StatefulWidget {
@@ -44,11 +43,6 @@ class _WebsiteTagScreenState extends State<WebsiteTagScreen> {
     context.push('/qr-result', extra: _buildArgs());
   }
 
-  void _onNfc() {
-    if (!_formKey.currentState!.validate()) return;
-    context.push('/nfc-writer', extra: _buildArgs());
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,9 +83,17 @@ class _WebsiteTagScreenState extends State<WebsiteTagScreen> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: OutputActionButtons(
-              onQrPressed: _onQr,
-              onNfcPressed: _onNfc,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _onQr,
+                icon: const Icon(Icons.palette),
+                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
             ),
           ),
         ],

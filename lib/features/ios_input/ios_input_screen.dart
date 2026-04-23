@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/deep_link_constants.dart';
 import '../../l10n/app_localizations.dart';
-import '../../core/widgets/output_action_buttons.dart';
 
 class IosInputScreen extends StatefulWidget {
   const IosInputScreen({super.key});
@@ -36,11 +35,6 @@ class _IosInputScreenState extends State<IosInputScreen> {
   void _onQr() {
     if (!_formKey.currentState!.validate()) return;
     context.push('/qr-result', extra: _buildArgs());
-  }
-
-  void _onNfc() {
-    if (!_formKey.currentState!.validate()) return;
-    context.push('/nfc-writer', extra: _buildArgs());
   }
 
   @override
@@ -139,9 +133,17 @@ class _IosInputScreenState extends State<IosInputScreen> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: OutputActionButtons(
-              onQrPressed: _onQr,
-              onNfcPressed: _onNfc,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _onQr,
+                icon: const Icon(Icons.palette),
+                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
             ),
           ),
         ],

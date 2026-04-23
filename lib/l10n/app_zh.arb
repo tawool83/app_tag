@@ -161,6 +161,7 @@
   "tabLogo": "Logo",
   "tabText": "文字",
   "actionSaveGallery": "保存到相册",
+  "actionSaveSvg": "SVG 저장",
   "actionSaveTemplate": "保存模板",
   "dialogLowReadabilityTitle": "识别率较低",
   "dialogLowReadabilityScore": "当前识别率：{score}%",

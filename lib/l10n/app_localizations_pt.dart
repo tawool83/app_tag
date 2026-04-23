@@ -86,6 +86,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get tooltipHelp => 'Guia de uso';
 
   @override
+  String get tooltipFavorite => '즐겨찾기';
+
+  @override
+  String get tooltipUnfavorite => '즐겨찾기 해제';
+
+  @override
   String get tooltipHistory => 'Histórico';
 
   @override
@@ -446,6 +452,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get actionSaveGallery => 'Salvar na Galeria';
 
   @override
+  String get actionSaveSvg => 'SVG 저장';
+
+  @override
   String get actionSaveTemplate => 'Salvar Modelo';
 
   @override
@@ -603,6 +612,15 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get screenSettingsTitle => 'Configurações';
+
+  @override
+  String get drawerSvgStorage => 'SVG 저장함';
+
+  @override
+  String get svgStorageEmpty => '저장된 SVG 파일이 없습니다';
+
+  @override
+  String get svgStorageDeleteConfirm => '이 SVG 파일을 삭제하시겠습니까?';
 
   @override
   String get drawerAppInfo => '프로그램 정보';
@@ -1071,4 +1089,86 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get actionFavorite => '즐겨찾기';
+
+  @override
+  String get actionStartCustomize => 'QR 만들기';
+
+  @override
+  String get actionCreateNew => '새로 만들기';
+
+  @override
+  String get actionEditAgain => '편집하기';
+
+  @override
+  String get actionRename => '이름 변경';
+
+  @override
+  String get sheetCreateTitle => '새로 만들기';
+
+  @override
+  String get homeEmptyTitle => '첫 QR을 만들어 보세요';
+
+  @override
+  String get dialogRenameTitle => '이름 변경';
+
+  @override
+  String get hintTaskName => '작업 이름';
+
+  @override
+  String get dialogDeleteTitle => '삭제';
+
+  @override
+  String dialogDeleteContent(String name) {
+    return '$name 을(를) 삭제하시겠습니까?';
+  }
+
+  @override
+  String get msgNoThumbnail => '미리보기 이미지가 없습니다';
+
+  @override
+  String get msgSavedToGallery => '갤러리에 저장되었습니다';
+
+  @override
+  String get msgSvgSaved => 'SVG 파일이 저장되었습니다';
+
+  @override
+  String get labelQr => 'QR';
+
+  @override
+  String get timeJustNow => '방금';
+
+  @override
+  String timeMinutesAgo(int count) {
+    return '$count분 전';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    return '$count시간 전';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    return '$count일 전';
+  }
+
+  @override
+  String get actionSelectAll => '모두선택';
+
+  @override
+  String get actionDeleteAll => '모두삭제';
+
+  @override
+  String get dialogDeleteAllTitle => '전체 삭제';
+
+  @override
+  String get dialogDeleteAllContent => '모든 QR을 삭제하시겠습니까?';
+
+  @override
+  String get dialogDeleteSelectedTitle => '선택 삭제';
+
+  @override
+  String dialogDeleteSelectedContent(int count) {
+    return '$count개의 QR을 삭제하시겠습니까?';
+  }
 }

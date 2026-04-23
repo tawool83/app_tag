@@ -1,6 +1,7 @@
 # Plan — Main Screen Redesign (만들기-중심 홈 + 작업=템플릿 통합)
 
 > 생성일: 2026-04-23
+> 최종 수정: 2026-04-23 (Do phase 구현 반영)
 > Feature ID: `main-screen-redesign`
 > 대상: Flutter 모바일 앱 (pre-release)
 > 관련 기존 feature: `qr_result`, `qr_task`, `home`, `output_selector`, `all_templates_tab`
@@ -11,10 +12,10 @@
 
 | Perspective | Summary |
 |-------------|---------|
-| **Problem** | 현재 홈은 10개 타일의 "입력 진입점" 나열 중심. 앱의 차별점인 "QR 꾸미기" 가 여러 단계(타일→입력→output-selector→꾸미기) 뒤에 숨어 있음. 템플릿 저장/이미지저장/공유가 꾸미기 화면에 섞여 UX 혼선 유발. |
-| **Solution** | 홈을 **"만들기 중심"** 으로 재구성: ① 상단 `[새로 만들기 +]` 강조 버튼 + 하단 "내가 만든 QR" 목록. ② 타일 메뉴를 bottom-sheet 팝업으로 이전 후 입력 완료 시 `[QR 꾸미기 시작]` 하나로 바로 꾸미기 진입(output-selector 제거). ③ **QrTask = UserQrTemplate** 통합으로 "작업 = 템플릿" 의도 실현 — 꾸미는 중 변경이 실시간 스냅샷으로 저장. |
-| **Function UX Effect** | 홈에 내 작업물 갤러리가 바로 보임 → 재사용/재편집 빈도↑. 꾸미기 화면 하단 3버튼 제거로 작업 집중도↑. 이미지저장/공유/NFC쓰기는 "완성된 QR 목록 아이템 액션" 으로 이동 — 만들기-결과 맥락 분리. |
-| **Core Value** | 앱의 강점(꾸미기)을 홈 1-depth 로 노출 + "저장 버튼 없는 자동 템플릿화" 로 이탈 부담 제거 + 작업물 갤러리 UX 정착. |
+| **Problem** | 현재 홈은 10개 타일의 "입력 진입점" 나열 중심. 앱의 차별점인 "QR 꾸미기" 가 여러 단계 뒤에 숨어 있음. 메인 화면 목록과 히스토리가 동일 데이터를 공유하여 독립 관리 불가. 꾸미기 편집 후 홈 복귀 시 변경 미반영 버그 존재. |
+| **Solution** | 홈을 **"만들기 중심"** 으로 재구성: ① 상단 `[새로 만들기]` 강조 버튼 + 삭제 모드 버튼 + 하단 QR 타일 갤러리. ② QrTask에 `showOnHome` 플래그 추가로 홈/히스토리 데이터 독립 관리. ③ 꾸미기 화면 이탈 시 `flushPendingPush()` → 썸네일 캡처 → 홈 갤러리 리로드로 변경 즉시 반영. |
+| **Function UX Effect** | 홈에 내 작업물 갤러리가 타일로 바로 보임 → 탭하면 확대 미리보기 + 5개 액션(저장/공유/편집/이름변경/삭제). 삭제 모드에서 다중 선택 + 모두선택 지원. 꾸미기 화면은 `<-` + `저장` 으로 단순화. |
+| **Core Value** | 앱의 강점(꾸미기)을 홈 1-depth 로 노출 + "저장 버튼 없는 자동 템플릿화" + 홈/히스토리 독립 관리 + 편집 후 즉시 반영 보장. |
 
 ---
 
@@ -108,28 +109,33 @@ Home (10 타일 grid)
 - **QrTask** 는 이미 "작업번호" 로 사용 중 — `createQrTaskUseCase` 가 `/qr-result` 진입 시 1회 호출되어 `taskId` 발급.
 - **UserQrTemplate** 는 수동 [템플릿 저장] 버튼으로만 생성되는 별도 엔티티 — QrTask 와 스타일 데이터 **중복**.
 
-### 3.2 데이터 모델 diff 요약
+### 3.2 데이터 모델 diff 요약 (구현 반영)
 
-| 현재 | 변경 후 |
+| 현재 | 변경 후 (구현 완료) |
 |------|---------|
-| `QrTask { id, createdAt, updatedAt, kind, meta, customization, isFavorite }` | `QrTask { id, createdAt, updatedAt, kind, name, meta, customization, isFavorite, thumbnailBytes? }` |
+| `QrTask { id, createdAt, updatedAt, kind, meta, customization, isFavorite }` | `QrTask { id, createdAt, updatedAt, kind, name, meta, customization, isFavorite, thumbnailBytes?, showOnHome }` |
+| 홈/히스토리 동일 데이터 소스 | **`showOnHome: bool` 플래그로 독립 관리** — 홈 삭제 시 `showOnHome = false`, 히스토리 유지 |
 | `UserQrTemplate { id, name, createdAt, ... 30+ 필드 ... }` | **엔티티/repo/datasource/usecase 전체 삭제** |
 | Hive box: `qr_tasks` + `user_qr_templates` | Hive box: `qr_tasks` 만. `user_qr_templates` box 는 앱 시작 시 삭제 (Hive.deleteBoxFromDisk) |
 | `default_templates.json`: 3 categories × N templates | `default_templates.json`: flat 3 templates (카테고리 제거) |
+| `QrTask.currentSchemaVersion = 1` | **`currentSchemaVersion = 2`** (name, showOnHome 추가) |
 
 ---
 
 ## 4. Functional Requirements
 
-### FR-01. Home 신규 레이아웃
-- AppBar (help·history·account) 및 Drawer(settings·info) 유지
+### FR-01. Home 신규 레이아웃 ✅ 구현 완료
+- AppBar: scanner·help·history·account 아이콘 + Drawer(settings·info) 유지
 - Body = Column
-  - 상단: `ElevatedButton.icon(Icons.add, "새로 만들기")` — full-width, 높이 ≥ 64px, primary color
-  - 하단: QrTask 리스트 (`listQrTasksUseCase` + `qrTaskListNotifierProvider` 재사용)
+  - 상단 CTA Row:
+    - `ElevatedButton.icon("새로 만들기")` — Expanded, 높이 64px, primary color (아이콘 `Icons.add`)
+    - 삭제 모드 버튼: 비활성 시 `IconButton.filled(Icons.delete_outline)`, 활성 시 "모두선택"/"확인" + X 취소
+  - 하단: QrTask 타일 갤러리 (`listHomeVisibleUseCaseProvider` 사용 — `showOnHome == true` 만 표시)
+    - `GridView.builder` + `SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 120)`
     - 정렬: `updatedAt desc`
-    - 빈 상태: 일러스트 + "첫 QR 을 만들어 보세요" 문구
-    - 카드: 썸네일 + 이름(`YYYY-MM-DD HH:mm`) + 태그 타입 라벨
-- 편집 모드(타일 숨기기)는 팝업 내부로 이전
+    - 빈 상태: QR 아이콘 + 안내 문구
+    - 타일(`QrTaskGalleryTile`): 100x100 썸네일 + 이름 라벨, 삭제 모드 시 체크 오버레이
+  - 삭제 모드: `_deleteMode` + `_selectedIds` 상태, 홈 삭제 = `hideFromHomeUseCase` (히스토리 유지)
 
 ### FR-02. 새로 만들기 Bottom Sheet
 - `showModalBottomSheet(isScrollControlled: true, ...)` — 화면 높이 ~70%
@@ -143,18 +149,19 @@ Home (10 타일 grid)
 - NFC 쓰기 진입 경로 → 메인 QR 목록 아이템 액션으로만 제공
 - app_picker / ios_input / 10개 tag-screen = **총 12개 파일 수정**
 
-### FR-04. QR 꾸미기 하단 버튼 제거
-- `_ActionButtons` 위젯 제거
-- `qr_result_screen.dart` 에서 `onSaveGallery` / `onSaveTemplate` / `onShare` 핸들러 및 관련 state (`action.saveStatus`, `action.shareStatus`) 제거
-- `QrActionState` 의 save/share 관련 필드 정리 (readability alert 는 유지)
-- 뒤로가기 시 기존 persistence 가 이미 작동하므로 "나가면 저장됨" UX 유지
+### FR-04. QR 꾸미기 화면 AppBar 재구성 ✅ 구현 완료
+- AppBar leading: `IconButton(Icons.arrow_back)` — 편집기 모드 시 편집기 취소, 비편집기 시 저장+pop
+- AppBar actions: `TextButton("저장")` — `_confirmAndPop` 호출 (편집기 모드에서는 숨김)
+- `PopScope(canPop: false)` + `onPopInvokedWithResult` 로 모든 뒤로가기 인터셉트
+- **`_confirmAndPop` 흐름**: `flushPendingPush()` (debounce 즉시 실행) → `_recapture()` (썸네일 캡처+영속) → `Navigator.pop`
+- 하단 3버튼(이미지저장/템플릿저장/공유) 제거 완료
 
-### FR-05. 자동 템플릿화
-- 별도 로직 추가 불요 — 현재 이미 QrTask 의 customization 이 debounced 자동 저장 중
-- 단, **thumbnailBytes** 를 QrTask 에 직접 보관 필요 (홈 목록 썸네일 표시용)
-  - `QrTask` 에 `thumbnailBytes: Uint8List?` 필드 추가
-  - `qr_result_screen` 의 `_captureThumbnailToState` 훅에서 QrTask 로 persist
-  - 또는 별도 `UpdateQrTaskThumbnailUseCase` 추가 (권장)
+### FR-05. 자동 템플릿화 + 편집 후 홈 반영 ✅ 구현 완료
+- QrTask customization: 기존 debounced(500ms) 자동 저장 유지
+- **`flushPendingPush()`** 신규 추가: pop 직전 보류 중인 debounce를 즉시 실행 → 마지막 변경 손실 방지
+- `thumbnailBytes`: `UpdateQrTaskThumbnailUseCase` 로 QrTask에 persist
+- `_captureThumbnailToState`: 렌더링 300ms 후 RepaintBoundary 캡처 → state + Hive 동시 저장
+- **홈 갱신**: `_editAgain`이 `await context.push(...)` 후 `onChanged()` 호출 → 홈 갤러리 리로드
 
 ### FR-06. 자동 이름 + rename
 - `CreateQrTaskUseCase` 가 기본 name = `DateFormat('yyyy-MM-dd HH:mm').format(now)` 으로 발급
@@ -177,13 +184,17 @@ Home (10 타일 grid)
   - 하단: "나의 작업" = QrTask 리스트 (현재 `_MyTemplateCard` 재사용)
 - 탭 개수 감소 → `TabController(length)` 갱신 필요
 
-### FR-09. 목록 아이템 액션 Bottom Sheet
-- 탭 시 bottom sheet 오픈 — 4개 action ListTile
-  1. `Icons.save_alt` 이미지 저장 → `SaveQrToGalleryUseCase` (주의: QR 위젯을 목록 맥락에서 렌더링·캡처 필요 → 기존 `qrServiceProvider.captureQrImage` 를 **off-screen 렌더링** 으로 호출, 디자인 문서에서 상세)
-  2. `Icons.share` 공유 → `ShareQrImageUseCase`
-  3. `Icons.nfc` NFC 쓰기 → `context.push('/nfc-writer', extra: { ...task.meta.toArgs(), editTaskId })` — deep link 재구성
-  4. `Icons.palette` 다시 꾸미기 → `context.push('/qr-result', extra: { editTaskId })`
-- long-press 또는 overflow `⋮` → 삭제 / 이름 변경 / 즐겨찾기 토글
+### FR-09. 목록 아이템 액션 Bottom Sheet ✅ 구현 완료
+- 타일 탭 시 `QrTaskActionSheet` bottom sheet — `SingleChildScrollView` + `Column`
+  - **확대 미리보기**: 최대 220px, `Transform.scale(1.15)` 로 캡처 여백 제거, `Clip.antiAlias`
+  - 이름 표시: `Text(task.name, fontWeight: w600, maxLines: 1)`
+  - 5개 action ListTile:
+    1. `Icons.save_alt` 이미지 저장 → `saveQrToGalleryUseCaseProvider` (thumbnailBytes 직접 사용)
+    2. `Icons.share` 공유 → `shareQrImageUseCaseProvider`
+    3. `Icons.palette` 다시 꾸미기 → `await context.push('/qr-result', extra: { editTaskId, ... })` + `onChanged()`
+    4. `Icons.edit` 이름 변경 → `showRenameDialog` + `renameQrTaskUseCaseProvider`
+    5. `Icons.delete_outline` 삭제 (빨간색) → 확인 다이얼로그 + `deleteQrTaskUseCaseProvider`
+- NFC 쓰기는 별도 진입 경로로 분리 (본 액션시트 미포함)
 
 ---
 
@@ -191,49 +202,55 @@ Home (10 타일 grid)
 
 - **성능**: 홈 목록 200개까지 스크롤 60fps. 썸네일은 `Uint8List` 직접 디코드(Image.memory) — cache 불필요.
 - **데이터 안정성**: UserQrTemplate Hive box 삭제 시 실패하더라도 앱 실행에 영향 없도록 best-effort (pre-release 라 마이그레이션 스크립트 없음)
-- **일관성**: 홈 목록과 꾸미기 탭 하단 "나의 작업" 은 같은 `qrTaskListNotifierProvider` 를 구독 → 변경 즉시 양쪽 반영
+- **일관성**: 홈 목록 = `listHomeVisibleUseCaseProvider` (showOnHome==true), 히스토리 = 전체 QrTask. 꾸미기 화면 이탈 시 `flushPendingPush()` + `_recapture()` + `onChanged()` 로 즉시 반영 보장
 - **접근성**: `[새로 만들기]` 버튼 tooltip/semantic label 지원
 - **l10n**: 신규 문자열 모두 `app_ko.arb` 에 key 추가. 나머지 9개 locale 은 ko fallback.
 
 ---
 
-## 6. 요구사항 → 영향 파일 매핑
+## 6. 요구사항 → 영향 파일 매핑 (구현 상태 반영)
 
-| # | 작업 | 파일 | 추정 변경 |
-|---|------|------|-----------|
-| 1 | Home 재구성 | `lib/features/home/home_screen.dart` | rewrite (~150줄) |
-| 2 | 새로 만들기 팝업 | `lib/features/home/widgets/create_picker_sheet.dart` (신규) | +200줄 |
-| 3 | 타일 편집 기능 이전 | `lib/features/home/home_screen.dart` → sheet 내부 | move |
+| # | 작업 | 파일 | 상태 |
+|---|------|------|------|
+| 1 | Home 재구성 (갤러리+삭제모드) | `lib/features/home/home_screen.dart` | ✅ 완료 (~390줄) |
+| 2 | 새로 만들기 팝업 | `lib/features/home/widgets/create_picker_sheet.dart` | ✅ 완료 |
+| 3 | QR 타일 갤러리 카드 | `lib/features/home/widgets/qr_task_gallery_card.dart` (신규) | ✅ 완료 |
 | 4 | tag-screen 단일 CTA × 12 | `app_picker_screen.dart`, `ios_input_screen.dart`, 10 × `*_tag_screen.dart` | 각 ~20줄 |
 | 5 | output-selector 제거 | `lib/features/output_selector/`, `router.dart:9,43` | delete |
-| 6 | 꾸미기 하단 버튼 제거 | `lib/features/qr_result/qr_result_screen/action_buttons.dart`, `qr_result_screen.dart` | -150줄 |
-| 7 | QrAction 상태 정리 | `domain/state/qr_action_state.dart`, `notifier/action_setters.dart` | -50줄 (readability 유지) |
-| 8 | QrTask entity + name + thumbnailBytes | `qr_task/domain/entities/qr_task.dart`, `data/models/qr_task_model.dart` + `.g.dart` regen | +40줄 |
-| 9 | RenameQrTaskUseCase 신규 | `qr_task/domain/usecases/rename_qr_task_usecase.dart` | +30줄 |
-| 10 | UpdateQrTaskThumbnail usecase | `qr_task/domain/usecases/update_qr_task_thumbnail_usecase.dart` | +30줄 |
-| 11 | UserQrTemplate 계층 삭제 | `qr_result/{domain,data}/` 내 user_qr_template* 전부 | -800줄 |
-| 12 | Hive box 삭제 로직 | `core/di/hive_config.dart` (or bootstrap) | +15줄 |
-| 13 | default_templates.json 축소 | `assets/default_templates.json` | rewrite (~50줄) |
-| 14 | All/MyTemplates 탭 통합 | `qr_result/tabs/all_templates_tab.dart`, `my_templates_tab.dart` 또는 신규 `templates_tab.dart` | rewrite ~250줄 |
-| 15 | 탭 인덱스/컨트롤러 업데이트 | `qr_result_screen.dart` TabBar 정의부 | ~20줄 |
-| 16 | 목록 액션 sheet | `features/home/widgets/qr_task_action_sheet.dart` (신규) | +150줄 |
-| 17 | 이름 변경 dialog | `features/qr_task/presentation/widgets/rename_dialog.dart` (신규) | +80줄 |
-| 18 | l10n ko 키 추가 | `lib/l10n/app_ko.arb` | +20 keys |
-| 19 | l10n regen | `lib/l10n/app_localizations*.dart` (flutter gen-l10n) | auto |
-| 20 | 신규 UseCase provider 등록 | `qr_task_providers.dart` | +10줄 |
+| 6 | 꾸미기 AppBar 재구성 | `lib/features/qr_result/qr_result_screen.dart` — `<-` + `저장` | ✅ 완료 |
+| 7 | QrTask entity (name, showOnHome, schema v2) | `qr_task/domain/entities/qr_task.dart` | ✅ 완료 |
+| 8 | 홈/히스토리 분리 usecases | `hide_from_home_usecase.dart`, `list_home_visible_usecase.dart`, `hide_all_from_home_usecase.dart` (3개 신규) | ✅ 완료 |
+| 9 | Repository 확장 | `qr_task_repository.dart` + `qr_task_repository_impl.dart` — 3개 메서드 추가 | ✅ 완료 |
+| 10 | RenameQrTaskUseCase | `qr_task/domain/usecases/rename_qr_task_usecase.dart` | ✅ 완료 |
+| 11 | UpdateQrTaskThumbnailUseCase | `qr_task/domain/usecases/update_qr_task_thumbnail_usecase.dart` | ✅ 완료 |
+| 12 | 액션 시트 (미리보기+5액션) | `lib/features/home/widgets/qr_task_action_sheet.dart` (신규) | ✅ 완료 |
+| 13 | 이름 변경 dialog | `features/qr_task/presentation/widgets/rename_dialog.dart` | ✅ 완료 |
+| 14 | Provider 등록 | `qr_task_providers.dart` — 3개 신규 provider | ✅ 완료 |
+| 15 | flushPendingPush (debounce 즉시 실행) | `qr_result_provider.dart` | ✅ 완료 |
+| 16 | l10n ko 키 추가 | `lib/l10n/app_ko.arb` | ✅ 완료 |
+| 17 | 테스트 수정 | `test/.../qr_customization_test.dart` — schemaVersion 동적 참조 | ✅ 완료 |
+| 18 | UserQrTemplate 계층 삭제 | `qr_result/{domain,data}/` 내 user_qr_template* 전부 | 미착수 |
+| 19 | Hive box 삭제 로직 | `core/di/hive_config.dart` (or bootstrap) | 미착수 |
+| 20 | default_templates.json 축소 | `assets/default_templates.json` | 미착수 |
+| 21 | All/MyTemplates 탭 통합 | `qr_result/tabs/all_templates_tab.dart` | 미착수 |
 
-**합계**: 신규 ~800줄, 삭제 ~1100줄 → **net -300줄**. 구조 단순화 효과.
+**완료**: 17/21 항목. 잔여 4개는 UserQrTemplate 제거 및 빌트인 프리셋 축소 관련.
 
 ---
 
-## 7. Decisions Confirmed (사용자 선택)
+## 7. Decisions Confirmed (사용자 선택 + 구현 확정)
 
 | Decision | 확정값 |
 |----------|--------|
 | 메인 QR 목록 ↔ 나의 템플릿 데이터 | **QrTask 로 통합** (UserQrTemplate 제거, Hive box clear) |
+| **홈/히스토리 데이터 분리** | **`showOnHome` 플래그** — 홈 삭제 시 `showOnHome=false`, 히스토리 유지 |
 | 빌트인 3종 | **검정 · 레드(#E53935) · 인스타 그라디** |
-| 목록 아이템 액션 | **이미지 저장 · 공유 · NFC 쓰기 · 다시 꾸미기** (4종, 삭제/이름변경은 long-press / overflow) |
+| **홈 삭제 모드** | 휴지통 아이콘 → "모두선택" → 다중 선택 → "확인" → 삭제 확인 다이얼로그 |
+| 목록 아이템 액션 | **이미지 저장 · 공유 · 다시 꾸미기 · 이름 변경 · 삭제** (5종, 탭으로 액션시트 진입) |
+| **꾸미기 화면 AppBar** | leading: `<-`, actions: `저장` — 편집기 모드 시 `저장` 숨김 |
+| **미리보기 크기** | 최대 220px, `Transform.scale(1.15)` 로 캡처 여백 제거 |
 | 템플릿명 자동 생성 | **`YYYY-MM-DD HH:mm` 스탬프만** |
+| **편집 후 홈 반영** | `flushPendingPush()` → `_recapture()` → pop → `onChanged()` 체인 |
 
 ---
 
@@ -295,15 +312,21 @@ Home (10 타일 grid)
 
 ---
 
-## 11. Approval Checklist (Design phase 시작 조건)
+## 11. Approval Checklist
 
 - [x] 요구사항 이해 합의 (Checkpoint 1)
 - [x] 데이터 통합 방침 (QrTask 단일) 확정
 - [x] 빌트인 3종 정의 확정
-- [x] 목록 액션 4종 확정
+- [x] 목록 액션 5종 확정 (저장/공유/편집/이름변경/삭제)
 - [x] 자동 명명 규칙 확정
-- [ ] D1~D6 open decisions → Design phase 에서 확정
-- [ ] /pdca design main-screen-redesign 실행
+- [x] 홈/히스토리 독립 관리 (`showOnHome` 플래그) 확정
+- [x] 삭제 모드 UX (모두선택/확인) 확정
+- [x] 꾸미기 AppBar (`<-` + `저장`) 확정
+- [x] 편집 후 홈 반영 (`flushPendingPush` + `onChanged`) 확정
+- [x] 미리보기 크기 (220px + scale 1.15) 확정
+- [x] D1~D6 open decisions → Design phase 에서 확정 완료
+- [x] /pdca design main-screen-redesign 실행 완료
+- [x] Do phase 구현 진행 중 (17/21 항목 완료)
 
 ---
 

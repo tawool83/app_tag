@@ -6,7 +6,6 @@ import '../../features/splash/splash_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/app_picker/app_picker_screen.dart';
 import '../../features/ios_input/ios_input_screen.dart';
-import '../../features/output_selector/output_selector_screen.dart';
 import '../../features/qr_result/qr_result_screen.dart';
 import '../../features/nfc_writer/nfc_writer_screen.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
@@ -25,6 +24,7 @@ import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/scanner/presentation/screens/scanner_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/svg_storage/svg_storage_screen.dart';
 
 /// 향후 외부 deep link 수신 시 라우트 리다이렉션 처리.
 /// 현재는 no-op (앱이 deep link를 생성만 하고 수신하지 않음).
@@ -36,14 +36,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: _deepLinkRedirect,
     routes: [
       GoRoute(path: '/', builder: (_, _) => const SplashScreen()),
-      GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
+      GoRoute(path: '/home', builder: (_, state) => HomeScreen(key: ValueKey(state.extra))),
       GoRoute(path: '/app-picker', builder: (_, _) => const AppPickerScreen()),
       GoRoute(path: '/ios-input', builder: (_, _) => const IosInputScreen()),
-      GoRoute(
-        path: '/output-selector',
-        builder: (_, _) => const OutputSelectorScreen(),
-      ),
-      GoRoute(
+GoRoute(
         path: '/qr-result',
         builder: (_, _) => const QrResultScreen(),
       ),
@@ -109,6 +105,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+      GoRoute(path: '/svg-storage', builder: (_, _) => const SvgStorageScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (_, _) => const SignUpScreen()),
       GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen()),

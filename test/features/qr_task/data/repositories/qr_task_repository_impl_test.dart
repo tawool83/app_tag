@@ -26,6 +26,7 @@ QrTask _entity({
       createdAt: createdAt ?? DateTime.utc(2026, 1, 1),
       updatedAt: updatedAt ?? createdAt ?? DateTime.utc(2026, 1, 1),
       kind: kind,
+      name: 'task-$id',
       meta: QrTaskMeta(appName: 'app-$id', deepLink: 'link-$id', platform: 'android'),
       customization: const QrCustomization(),
     );

@@ -11,4 +11,5 @@ abstract class QrOutputRepository {
     double sizeCm = 5.0,
     String? printTitle,
   });
+  Future<Result<String>> saveAsSvg(String svgString, String appName);
 }

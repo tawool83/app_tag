@@ -26,6 +26,21 @@ abstract class QrTaskRepository {
   /// 메타만 갱신 (updatedAt 자동 갱신).
   Future<Result<void>> updateMeta(String id, QrTaskMeta meta);
 
+  /// QrTask 전체 갱신 (name, thumbnailBytes 등).
+  Future<Result<void>> update(QrTask task);
+
+  /// 홈 화면에서만 숨김 (히스토리 유지).
+  Future<Result<void>> hideFromHome(String id);
+
+  /// 홈 화면에 표시할 항목만 조회 (showOnHome == true, updatedAt desc).
+  Future<Result<List<QrTask>>> listHomeVisible();
+
+  /// 홈 화면 전체 숨김 (히스토리 유지).
+  Future<Result<void>> hideAllFromHome();
+
+  /// 즐겨찾기 토글 (isFavorite 반전). updatedAt 미갱신.
+  Future<Result<void>> toggleFavorite(String id);
+
   Future<Result<void>> delete(String id);
   Future<Result<void>> clearAll();
 }

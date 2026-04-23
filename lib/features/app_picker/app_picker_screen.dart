@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/deep_link_constants.dart';
 import '../../core/extensions/context_extensions.dart';
 import '../../l10n/app_localizations.dart';
-import '../../core/widgets/output_action_buttons.dart';
 import 'domain/entities/app_info.dart';
 import 'presentation/providers/app_picker_providers.dart';
 
@@ -32,14 +31,6 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
       return;
     }
     context.push('/qr-result', extra: _buildArgs());
-  }
-
-  void _onNfc() {
-    if (_selectedApp == null) {
-      context.showSnack(AppLocalizations.of(context)!.msgSelectApp);
-      return;
-    }
-    context.push('/nfc-writer', extra: _buildArgs());
   }
 
   @override
@@ -111,12 +102,19 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
             ),
           ),
 
-          // ── QR / NFC 버튼 ────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: OutputActionButtons(
-              onQrPressed: _onQr,
-              onNfcPressed: _onNfc,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _onQr,
+                icon: const Icon(Icons.palette),
+                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
             ),
           ),
         ],
