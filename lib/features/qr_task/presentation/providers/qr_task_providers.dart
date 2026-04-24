@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
+import '../../../../core/error/result.dart';
+
 export 'qr_task_list_notifier.dart' show qrTaskListNotifierProvider, QrTaskListNotifier;
 
 import '../../data/datasources/hive_qr_task_datasource.dart';
@@ -83,3 +85,11 @@ final listHomeVisibleUseCaseProvider = Provider<ListHomeVisibleUseCase>(
 final hideAllFromHomeUseCaseProvider = Provider<HideAllFromHomeUseCase>(
   (ref) => HideAllFromHomeUseCase(ref.watch(qrTaskRepositoryProvider)),
 );
+
+/// 즐겨찾기 QR Task 목록 (템플릿 탭 "내 즐겨찾기" 섹션용).
+/// 홈에 보이는 task 중 isFavorite=true 만 필터. QR 편집 화면 진입 시마다 재로드.
+final favoriteTasksProvider = FutureProvider.autoDispose((ref) async {
+  final result = await ref.read(listHomeVisibleUseCaseProvider)();
+  final tasks = result.valueOrNull ?? const [];
+  return tasks.where((t) => t.isFavorite).toList();
+});

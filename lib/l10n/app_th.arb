@@ -197,7 +197,6 @@
   "msgPrintFailed": "พิมพ์ล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครื่องพิมพ์",
   "labelReadability": "อัตราการอ่าน",
   "screenTemplateMyTemplates": "เทมเพลตของฉัน",
-  "actionNoStyle": "ไม่มีสไตล์",
   "dialogDeleteTemplateTitle": "ลบเทมเพลต",
   "dialogDeleteTemplateContent": "คุณต้องการลบ \"{name}\" หรือไม่?",
   "@dialogDeleteTemplateContent": {

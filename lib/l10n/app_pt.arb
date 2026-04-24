@@ -197,7 +197,6 @@
   "msgPrintFailed": "Falha na impressão. Verifique a conexão da impressora.",
   "labelReadability": "Legibilidade",
   "screenTemplateMyTemplates": "Meus Modelos",
-  "actionNoStyle": "Sem estilo",
   "dialogDeleteTemplateTitle": "Excluir Modelo",
   "dialogDeleteTemplateContent": "Deseja excluir \"{name}\"?",
   "@dialogDeleteTemplateContent": {

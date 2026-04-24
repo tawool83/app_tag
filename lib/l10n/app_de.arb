@@ -197,7 +197,6 @@
   "msgPrintFailed": "Druck fehlgeschlagen. Bitte überprüfen Sie die Druckerverbindung.",
   "labelReadability": "Lesbarkeit",
   "screenTemplateMyTemplates": "Meine Vorlagen",
-  "actionNoStyle": "Kein Stil",
   "dialogDeleteTemplateTitle": "Vorlage löschen",
   "dialogDeleteTemplateContent": "Möchten Sie '{name}' löschen?",
   "@dialogDeleteTemplateContent": {

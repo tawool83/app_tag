@@ -498,7 +498,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get screenTemplateMyTemplates => 'เทมเพลตของฉัน';
 
   @override
-  String get actionNoStyle => 'ไม่มีสไตล์';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => 'ลบเทมเพลต';

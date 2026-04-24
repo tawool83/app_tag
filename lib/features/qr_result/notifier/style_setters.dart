@@ -17,13 +17,17 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
   }
 
   void setRoundFactor(double factor) {
-    state = state.copyWith(style: state.style.copyWith(roundFactor: factor));
+    state = state.copyWith(
+      style: state.style.copyWith(roundFactor: factor),
+      template: state.template.copyWith(clearActiveTemplateId: true),
+    );
     _schedulePush();
   }
 
   void setEyeOuter(QrEyeOuter outer) {
     state = state.copyWith(
       style: state.style.copyWith(eyeOuter: outer, clearRandomEyeSeed: true),
+      template: state.template.copyWith(clearActiveTemplateId: true),
     );
     _schedulePush();
   }
@@ -31,6 +35,7 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
   void setEyeInner(QrEyeInner inner) {
     state = state.copyWith(
       style: state.style.copyWith(eyeInner: inner, clearRandomEyeSeed: true),
+      template: state.template.copyWith(clearActiveTemplateId: true),
     );
     _schedulePush();
   }
@@ -38,6 +43,7 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
   void regenerateEyeSeed() {
     state = state.copyWith(
       style: state.style.copyWith(randomEyeSeed: math.Random().nextInt(0xFFFFFF) + 1),
+      template: state.template.copyWith(clearActiveTemplateId: true),
     );
     _schedulePush();
   }
@@ -68,13 +74,17 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
   }
 
   void setQuietZoneColor(Color color) {
-    state = state.copyWith(style: state.style.copyWith(quietZoneColor: color));
+    state = state.copyWith(
+      style: state.style.copyWith(quietZoneColor: color),
+      template: state.template.copyWith(clearActiveTemplateId: true),
+    );
     _schedulePush();
   }
 
   void setDotStyle(QrDotStyle style) {
     state = state.copyWith(
       style: state.style.copyWith(dotStyle: style, clearCustomDotParams: true),
+      template: state.template.copyWith(clearActiveTemplateId: true),
     );
     _schedulePush();
   }
@@ -84,6 +94,7 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
       style: params == null
           ? state.style.copyWith(clearCustomDotParams: true)
           : state.style.copyWith(customDotParams: params),
+      template: state.template.copyWith(clearActiveTemplateId: true),
     );
     _schedulePush();
   }
@@ -93,17 +104,24 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
       style: params == null
           ? state.style.copyWith(clearCustomEyeParams: true)
           : state.style.copyWith(customEyeParams: params, clearRandomEyeSeed: true),
+      template: state.template.copyWith(clearActiveTemplateId: true),
     );
     _schedulePush();
   }
 
   void setBoundaryParams(QrBoundaryParams params) {
-    state = state.copyWith(style: state.style.copyWith(boundaryParams: params));
+    state = state.copyWith(
+      style: state.style.copyWith(boundaryParams: params),
+      template: state.template.copyWith(clearActiveTemplateId: true),
+    );
     _schedulePush();
   }
 
   void setAnimationParams(QrAnimationParams params) {
-    state = state.copyWith(style: state.style.copyWith(animationParams: params));
+    state = state.copyWith(
+      style: state.style.copyWith(animationParams: params),
+      template: state.template.copyWith(clearActiveTemplateId: true),
+    );
     _schedulePush();
   }
 }

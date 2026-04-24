@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/error/result.dart';
+import '../qr_task/domain/entities/qr_task.dart';
 import '../qr_task/domain/entities/qr_task_kind.dart';
 import '../qr_task/domain/entities/qr_task_meta.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
@@ -273,8 +274,12 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     _recapture();
   }
 
-  void _onTemplateClear() {
-    ref.read(qrResultProvider.notifier).clearTemplate();
+  /// 즐겨찾기 QR Task 를 템플릿처럼 적용.
+  /// customization 전체 복제 + activeTemplateId 는 clear (사용자 커스텀 의미).
+  void _onFavoriteSelected(QrTask task) {
+    final notifier = ref.read(qrResultProvider.notifier);
+    notifier.loadFromCustomization(task.customization);
+    notifier.clearTemplate();
     SettingsService.saveActiveTemplateId(null);
     _recapture();
   }
@@ -362,7 +367,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                   manifest: _templateManifest,
                   activeTemplateId: state.template.activeTemplateId,
                   onTemplateSelected: _onTemplateSelected,
-                  onTemplateClear: _onTemplateClear,
+                  onFavoriteSelected: _onFavoriteSelected,
                   onChanged: _recapture,
                 ),
                 // 1: 모양 (도트 + 눈 + 외곽 + 애니메이션)

@@ -197,7 +197,6 @@
   "msgPrintFailed": "打印失败。请检查打印机连接。",
   "labelReadability": "识别率",
   "screenTemplateMyTemplates": "我的模板",
-  "actionNoStyle": "无样式",
   "dialogDeleteTemplateTitle": "删除模板",
   "dialogDeleteTemplateContent": "确定要删除「{name}」吗？",
   "@dialogDeleteTemplateContent": {

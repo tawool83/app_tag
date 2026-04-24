@@ -197,7 +197,6 @@
   "msgPrintFailed": "Error de impresión. Verifique la conexión de la impresora.",
   "labelReadability": "Legibilidad",
   "screenTemplateMyTemplates": "Mis Plantillas",
-  "actionNoStyle": "Sin estilo",
   "dialogDeleteTemplateTitle": "Eliminar Plantilla",
   "dialogDeleteTemplateContent": "¿Desea eliminar \"{name}\"?",
   "@dialogDeleteTemplateContent": {

@@ -505,7 +505,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get screenTemplateMyTemplates => 'Mis Plantillas';
 
   @override
-  String get actionNoStyle => 'Sin estilo';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => 'Eliminar Plantilla';

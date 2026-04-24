@@ -197,7 +197,6 @@
   "msgPrintFailed": "印刷に失敗しました。プリンター接続を確認してください。",
   "labelReadability": "認識率",
   "screenTemplateMyTemplates": "マイテンプレート",
-  "actionNoStyle": "スタイルなし",
   "dialogDeleteTemplateTitle": "テンプレート削除",
   "dialogDeleteTemplateContent": "「{name}」を削除しますか？",
   "@dialogDeleteTemplateContent": {

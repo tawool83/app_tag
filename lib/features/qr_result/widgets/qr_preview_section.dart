@@ -43,24 +43,6 @@ class QrPreviewSection extends ConsumerWidget {
     final state = ref.watch(qrResultProvider);
     final previewMode = ref.watch(shapePreviewModeProvider);
 
-    // 전용 미리보기 위젯 결정
-    final Widget previewContent = switch (previewMode) {
-      ShapePreviewMode.fullQr || ShapePreviewMode.dedicatedAnim =>
-        QrLayerStack(deepLink: deepLink, size: 160),
-      ShapePreviewMode.dedicatedDot => _DotShapePreview(
-          params: state.style.customDotParams ?? state.style.dotStyle.toDotShapeParams(),
-          color: state.style.qrColor,
-        ),
-      ShapePreviewMode.dedicatedEye => _EyeShapePreview(
-          params: state.style.customEyeParams ?? const EyeShapeParams(),
-          color: state.style.qrColor,
-        ),
-      ShapePreviewMode.dedicatedBoundary => _BoundaryShapePreview(
-          params: state.style.boundaryParams,
-          color: state.style.qrColor,
-        ),
-    };
-
     // 고정 높이: QR 160 + padding 24 = 184 + deepLink 텍스트 ~18 = ~202
     // 미리보기 모드 전환 시 레이아웃 점프 방지
     const previewBoxHeight = 184.0;
@@ -80,9 +62,20 @@ class QrPreviewSection extends ConsumerWidget {
                   color: Colors.white,
                   padding: const EdgeInsets.all(12),
                   child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: previewContent,
+                    // 2-layer: fullQr 항상 bottom, dedicated overlay top.
+                    // dedicated 진입 = 즉시 show, 이탈 = 500ms fade-out (비대칭).
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: QrLayerStack(deepLink: deepLink, size: 160),
+                        ),
+                        _OverlayedDedicatedPreview(
+                          mode: previewMode,
+                          state: state,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -98,6 +91,107 @@ class QrPreviewSection extends ConsumerWidget {
           maxLines: 1,
         ),
       ],
+    );
+  }
+}
+
+// ── Overlayed Dedicated Preview (비대칭 fade 제어) ───────────────────────────
+//
+// Layer 2 — dedicated 미리보기 overlay.
+//   진입(→ dedicated*): 즉시 opacity=1 (fade 없음)
+//   이탈(→ fullQr):     opacity 1→0 over 500ms
+//   완전 fade 완료 시 내부 위젯 언마운트.
+// AnimatedSwitcher 를 쓰지 않으므로 key 충돌 없음.
+
+class _OverlayedDedicatedPreview extends StatefulWidget {
+  final ShapePreviewMode mode;
+  final QrResultState state;
+
+  const _OverlayedDedicatedPreview({required this.mode, required this.state});
+
+  @override
+  State<_OverlayedDedicatedPreview> createState() =>
+      _OverlayedDedicatedPreviewState();
+}
+
+class _OverlayedDedicatedPreviewState extends State<_OverlayedDedicatedPreview>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fade;
+  ShapePreviewMode? _activeMode;
+
+  static bool _isDedicated(ShapePreviewMode m) =>
+      m == ShapePreviewMode.dedicatedDot ||
+      m == ShapePreviewMode.dedicatedEye ||
+      m == ShapePreviewMode.dedicatedBoundary;
+
+  @override
+  void initState() {
+    super.initState();
+    _fade = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+      value: _isDedicated(widget.mode) ? 1.0 : 0.0,
+    );
+    _fade.addStatusListener(_onFadeStatus);
+    if (_isDedicated(widget.mode)) _activeMode = widget.mode;
+  }
+
+  @override
+  void didUpdateWidget(_OverlayedDedicatedPreview old) {
+    super.didUpdateWidget(old);
+    if (_isDedicated(widget.mode)) {
+      // dedicated 진입 또는 mode 간 전환, 혹은 드래그 중 param 업데이트.
+      // 즉시 show (value=1). 기존 reverse 진행 중이면 취소.
+      _activeMode = widget.mode;
+      _fade.value = 1.0;
+    } else if (_isDedicated(old.mode)) {
+      // dedicated → fullQr 이탈 → 500ms fade out.
+      _fade.reverse();
+    }
+  }
+
+  void _onFadeStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && mounted) {
+      setState(() => _activeMode = null);
+    }
+  }
+
+  @override
+  void dispose() {
+    _fade.removeStatusListener(_onFadeStatus);
+    _fade.dispose();
+    super.dispose();
+  }
+
+  Widget _buildDedicatedFor(ShapePreviewMode mode) {
+    final s = widget.state.style;
+    return switch (mode) {
+      ShapePreviewMode.dedicatedDot => _DotShapePreview(
+          params: s.customDotParams ?? s.dotStyle.toDotShapeParams(),
+          color: s.qrColor,
+        ),
+      ShapePreviewMode.dedicatedEye => _EyeShapePreview(
+          params: s.customEyeParams ?? const EyeShapeParams(),
+          color: s.qrColor,
+        ),
+      ShapePreviewMode.dedicatedBoundary => _BoundaryShapePreview(
+          params: s.boundaryParams,
+          color: s.qrColor,
+        ),
+      _ => const SizedBox.shrink(),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mode = _activeMode;
+    if (mode == null) return const SizedBox.shrink();
+    return FadeTransition(
+      opacity: _fade,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: _buildDedicatedFor(mode),
+      ),
     );
   }
 }
@@ -149,13 +243,40 @@ class _EyeShapePreview extends StatelessWidget {
 
   const _EyeShapePreview({required this.params, required this.color});
 
+  static const _labelStyle = TextStyle(
+    fontSize: 13,
+    color: Color(0xFF424242), // grey.shade800 — 밝은 배경 위 가독성
+    fontWeight: FontWeight.w700,
+  );
+
+  Widget _chip(String label) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        decoration: BoxDecoration(
+          color: const Color(0xE6FFFF00), // white 90%
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(label, style: _labelStyle),
+      );
+
   @override
   Widget build(BuildContext context) {
+    // 슬라이더 Q1~Q4 의 위치를 미리보기 사분면에 "1,2,3,4" 숫자 라벨로 표시.
+    // Q1 = top-right(1), Q2 = top-left(2), Q3 = bottom-left(3), Q4 = bottom-right(4).
     return SizedBox(
       width: 160,
       height: 160,
-      child: CustomPaint(
-        painter: _EyePreviewPainter(params: params, color: color),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _EyePreviewPainter(params: params, color: color),
+            ),
+          ),
+          Positioned(top: 4, right: 6, child: _chip('1')),
+          Positioned(top: 4, left: 6, child: _chip('2')),
+          Positioned(bottom: 4, left: 6, child: _chip('3')),
+          Positioned(bottom: 4, right: 6, child: _chip('4')),
+        ],
       ),
     );
   }

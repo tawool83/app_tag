@@ -31,66 +31,7 @@ class QrTaskActionSheet extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // 확대 미리보기 + 즐겨찾기 별 토글
-        StatefulBuilder(
-          builder: (context, setStarState) {
-            var isFav = task.isFavorite;
-            const maxSide = 220.0;
-            const thumbScale = 1.15;
-            return Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
-                  child: Center(
-                    child: Container(
-                      width: maxSide,
-                      height: maxSide,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: task.thumbnailBytes != null
-                          ? Transform.scale(
-                              scale: thumbScale,
-                              child: Image.memory(task.thumbnailBytes!, fit: BoxFit.contain),
-                            )
-                          : Center(
-                              child: Icon(Icons.qr_code,
-                                  size: maxSide * 0.4, color: Colors.grey),
-                            ),
-                    ),
-                  ),
-                ),
-                // 별 아이콘 — 미리보기 우측 상단
-                Positioned(
-                  top: 16,
-                  right: 32,
-                  child: GestureDetector(
-                    onTap: () async {
-                      await ref.read(toggleFavoriteUseCaseProvider)(task.id);
-                      setStarState(() => isFav = !isFav);
-                      onChanged();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: isFav
-                            ? Colors.amber
-                            : Colors.white.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        isFav ? Icons.star : Icons.star_border,
-                        color: isFav ? Colors.white : Colors.grey,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+        _PreviewWithStar(task: task, onChanged: onChanged),
         // 이름 + 연필 아이콘 (이름 변경)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -270,5 +211,84 @@ class QrTaskActionSheet extends ConsumerWidget {
       await ref.read(deleteQrTaskUseCaseProvider)(task.id);
       onChanged();
     }
+  }
+}
+
+/// 확대 미리보기 + 우상단 즐겨찾기 별 토글.
+/// 별 상태를 로컬 State 에 보관하여 탭 즉시 UI 반영 (StatefulBuilder 로는
+/// 매 builder 재실행 시 초기값이 복원되어 토글이 무효화됨).
+class _PreviewWithStar extends ConsumerStatefulWidget {
+  final QrTask task;
+  final VoidCallback onChanged;
+
+  const _PreviewWithStar({required this.task, required this.onChanged});
+
+  @override
+  ConsumerState<_PreviewWithStar> createState() => _PreviewWithStarState();
+}
+
+class _PreviewWithStarState extends ConsumerState<_PreviewWithStar> {
+  late bool _isFav = widget.task.isFavorite;
+
+  @override
+  Widget build(BuildContext context) {
+    const maxSide = 220.0;
+    const thumbScale = 1.15;
+    final task = widget.task;
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(32, 16, 32, 8),
+          child: Center(
+            child: Container(
+              width: maxSide,
+              height: maxSide,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: task.thumbnailBytes != null
+                  ? Transform.scale(
+                      scale: thumbScale,
+                      child: Image.memory(task.thumbnailBytes!,
+                          fit: BoxFit.contain),
+                    )
+                  : Center(
+                      child: Icon(Icons.qr_code,
+                          size: maxSide * 0.4, color: Colors.grey),
+                    ),
+            ),
+          ),
+        ),
+        // 별 아이콘 — 미리보기 우측 상단
+        Positioned(
+          top: 16,
+          right: 32,
+          child: GestureDetector(
+            onTap: () async {
+              await ref.read(toggleFavoriteUseCaseProvider)(task.id);
+              if (!mounted) return;
+              setState(() => _isFav = !_isFav);
+              widget.onChanged();
+            },
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: _isFav
+                    ? Colors.amber
+                    : Colors.white.withValues(alpha: 0.9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _isFav ? Icons.star : Icons.star_border,
+                color: _isFav ? Colors.white : Colors.grey,
+                size: 24,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

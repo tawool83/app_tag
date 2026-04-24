@@ -510,7 +510,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get screenTemplateMyTemplates => 'Meine Vorlagen';
 
   @override
-  String get actionNoStyle => 'Kein Stil';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => 'Vorlage löschen';

@@ -493,7 +493,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get screenTemplateMyTemplates => '나의 템플릿';
 
   @override
-  String get actionNoStyle => '스타일 없음';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => '템플릿 삭제';

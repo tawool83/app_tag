@@ -1056,11 +1056,11 @@ abstract class AppLocalizations {
   /// **'나의 템플릿'**
   String get screenTemplateMyTemplates;
 
-  /// No description provided for @actionNoStyle.
+  /// No description provided for @templateSectionFavorites.
   ///
   /// In ko, this message translates to:
-  /// **'스타일 없음'**
-  String get actionNoStyle;
+  /// **'내 즐겨찾기'**
+  String get templateSectionFavorites;
 
   /// No description provided for @dialogDeleteTemplateTitle.
   ///

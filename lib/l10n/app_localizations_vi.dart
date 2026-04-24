@@ -498,7 +498,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get screenTemplateMyTemplates => 'Mẫu của tôi';
 
   @override
-  String get actionNoStyle => 'Không có kiểu';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => 'Xóa mẫu';

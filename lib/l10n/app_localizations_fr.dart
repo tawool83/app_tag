@@ -507,7 +507,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get screenTemplateMyTemplates => 'Mes Modèles';
 
   @override
-  String get actionNoStyle => 'Sans style';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => 'Supprimer le Modèle';

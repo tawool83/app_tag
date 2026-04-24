@@ -197,7 +197,6 @@
   "msgPrintFailed": "Print failed. Please check the printer connection.",
   "labelReadability": "Readability",
   "screenTemplateMyTemplates": "My Templates",
-  "actionNoStyle": "No Style",
   "dialogDeleteTemplateTitle": "Delete Template",
   "dialogDeleteTemplateContent": "Are you sure you want to delete \"{name}\"?",
   "@dialogDeleteTemplateContent": {

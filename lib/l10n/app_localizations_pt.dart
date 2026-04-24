@@ -505,7 +505,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get screenTemplateMyTemplates => 'Meus Modelos';
 
   @override
-  String get actionNoStyle => 'Sem estilo';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => 'Excluir Modelo';

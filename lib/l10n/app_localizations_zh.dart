@@ -493,7 +493,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get screenTemplateMyTemplates => '我的模板';
 
   @override
-  String get actionNoStyle => '无样式';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => '删除模板';

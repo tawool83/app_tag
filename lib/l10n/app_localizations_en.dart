@@ -500,7 +500,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get screenTemplateMyTemplates => 'My Templates';
 
   @override
-  String get actionNoStyle => 'No Style';
+  String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
   String get dialogDeleteTemplateTitle => 'Delete Template';

@@ -197,7 +197,6 @@
   "msgPrintFailed": "In thất bại. Vui lòng kiểm tra kết nối máy in.",
   "labelReadability": "Khả năng đọc",
   "screenTemplateMyTemplates": "Mẫu của tôi",
-  "actionNoStyle": "Không có kiểu",
   "dialogDeleteTemplateTitle": "Xóa mẫu",
   "dialogDeleteTemplateContent": "Bạn có muốn xóa \"{name}\" không?",
   "@dialogDeleteTemplateContent": {
