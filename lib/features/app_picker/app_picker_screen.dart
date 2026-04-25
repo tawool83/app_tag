@@ -43,6 +43,15 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.screenAppPickerTitle),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilledButton(
+              onPressed: _onQr,
+              child: Text(l10n.actionNext),
+            ),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
@@ -102,21 +111,6 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _onQr,
-                icon: const Icon(Icons.palette),
-                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

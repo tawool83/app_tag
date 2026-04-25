@@ -77,7 +77,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // ── 삭제 모드 ────────────────────────────────────────────────────────
 
-  void _enterDeleteMode() {
+  Future<void> _enterDeleteMode() async {
+    await _loadTasks();
     setState(() {
       _deleteMode = true;
       _selectedIds.clear();

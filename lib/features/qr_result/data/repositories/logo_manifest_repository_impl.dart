@@ -109,6 +109,27 @@ class LogoManifestRepositoryImpl implements LogoManifestRepository {
     }
   }
 
+  @override
+  Future<Result<String>> loadSvgContent(String compositeId) async {
+    final manifestRes = await load();
+    if (manifestRes is Err<LogoManifest>) return Err(manifestRes.failure);
+    final manifest = (manifestRes as Success<LogoManifest>).value;
+    final asset = manifest.findByCompositeId(compositeId);
+    if (asset == null) {
+      return Err(UnexpectedFailure('Logo asset not found: $compositeId'));
+    }
+    try {
+      final svgStr = await _bundle.loadString(asset.assetPath);
+      return Success(svgStr);
+    } catch (e, st) {
+      return Err(UnexpectedFailure(
+        'Failed to load SVG: $e',
+        cause: e,
+        stackTrace: st,
+      ));
+    }
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────
 
   LogoManifest _parseManifest(Map<String, dynamic> json) {

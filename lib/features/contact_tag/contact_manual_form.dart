@@ -46,6 +46,8 @@ class _ContactManualFormScreenState extends State<ContactManualFormScreen> {
         'platform': 'universal',
         'appIconBytes': null,
         'tagType': 'contact',
+        if (widget.prefill?['editTaskId'] != null)
+          'editTaskId': widget.prefill!['editTaskId'],
       };
 
   void _onQr() {
@@ -56,7 +58,18 @@ class _ContactManualFormScreenState extends State<ContactManualFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenContactManualTitle)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.screenContactManualTitle),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilledButton(
+              onPressed: _onQr,
+              child: Text(AppLocalizations.of(context)!.actionNext),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
@@ -88,21 +101,6 @@ class _ContactManualFormScreenState extends State<ContactManualFormScreen> {
                           return null;
                         }),
                   ],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _onQr,
-                icon: const Icon(Icons.palette),
-                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
             ),

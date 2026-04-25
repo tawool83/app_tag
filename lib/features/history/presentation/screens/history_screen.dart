@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../qr_task/domain/entities/qr_task.dart';
 import '../../../qr_task/domain/entities/qr_task_kind.dart';
+import '../../../qr_task/domain/usecases/qr_task_edit_router.dart';
 import '../../../qr_task/presentation/providers/qr_task_providers.dart';
 import '../../../scan_history/domain/entities/scan_history_entry.dart';
 import '../../../scan_history/scan_history_provider.dart';
@@ -143,14 +144,7 @@ class _CreatedHistoryTab extends ConsumerWidget {
             isFavoriteExtractor: (t) => t.isFavorite,
             onTap: (t) {
               if (t.kind == QrTaskKind.qr) {
-                context.push('/qr-result', extra: {
-                  'editTaskId': t.id,
-                  'appName': t.meta.appName,
-                  'deepLink': t.meta.deepLink,
-                  'platform': t.meta.platform,
-                  'packageName': t.meta.packageName,
-                  'tagType': t.meta.tagType,
-                });
+                QrTaskEditRouter.push(context, t);
               }
             },
             onDelete: (t) =>

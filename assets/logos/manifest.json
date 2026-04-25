@@ -36,13 +36,7 @@
       "name_ko": "브랜드",
       "icons": [
         { "id": "apple",      "file": "apple.svg" },
-        { "id": "android",    "file": "android.svg" },
-        { "id": "google",     "file": "google.svg" },
-        { "id": "microsoft",  "file": "microsoft.svg" },
-        { "id": "amazon",     "file": "amazon.svg" },
-        { "id": "paypal",     "file": "paypal.svg" },
-        { "id": "visa",       "file": "visa.svg" },
-        { "id": "mastercard", "file": "mastercard.svg" }
+        { "id": "android",    "file": "android.svg" }
       ]
     },
     {

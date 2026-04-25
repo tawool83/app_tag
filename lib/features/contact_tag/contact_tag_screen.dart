@@ -86,6 +86,8 @@ class _ContactTagScreenState extends State<ContactTagScreen> {
       'platform': 'universal',
       'appIconBytes': null,
       'tagType': 'contact',
+      if (widget.prefill?['editTaskId'] != null)
+        'editTaskId': widget.prefill!['editTaskId'],
     });
   }
 

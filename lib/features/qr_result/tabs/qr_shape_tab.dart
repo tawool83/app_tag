@@ -6,7 +6,6 @@ import 'dart:ui' as dart_ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../domain/entities/qr_animation_params.dart';
 import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_dot_style.dart';
 import '../domain/entities/qr_margin_pattern.dart';
@@ -27,13 +26,11 @@ part 'qr_shape_tab/shared.dart';
 part 'qr_shape_tab/dot_preset_row.dart';
 part 'qr_shape_tab/eye_row.dart';
 part 'qr_shape_tab/boundary_preset_row.dart';
-part 'qr_shape_tab/animation_preset_row.dart';
 part 'qr_shape_tab/dot_editor.dart';
 part 'qr_shape_tab/eye_editor.dart';
 part 'qr_shape_tab/boundary_editor.dart';
-part 'qr_shape_tab/animation_editor.dart';
 
-/// [모양] 탭: 도트 + 눈 + 외곽 + 애니메이션 프리셋 행 + "+" 편집기.
+/// [모양] 탭: 도트 + 눈 + 외곽 프리셋 행 + "+" 편집기.
 class QrShapeTab extends ConsumerStatefulWidget {
   final ValueChanged<QrEyeOuter> onEyeOuterChanged;
   final ValueChanged<QrEyeInner> onEyeInnerChanged;
@@ -62,14 +59,12 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
   DotShapeParams _editDot = const DotShapeParams();
   EyeShapeParams _editEye = const EyeShapeParams();
   QrBoundaryParams _editBoundary = const QrBoundaryParams();
-  QrAnimationParams _editAnim = const QrAnimationParams();
 
   // 사용자 프리셋
   LocalUserShapePresetDatasource? _datasource;
   List<UserShapePreset> _dotPresets = [];
   List<UserShapePreset> _eyePresets = [];
   List<UserShapePreset> _boundaryPresets = [];
-  List<UserShapePreset> _animPresets = [];
 
   // 현재 선택된 사용자 프리셋 ID (null = 빌트인 또는 미선택)
   String? _selectedDotPresetId;
@@ -104,7 +99,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
       _dotPresets = _datasource!.readAll(ShapePresetType.dot);
       _eyePresets = _datasource!.readAll(ShapePresetType.eye);
       _boundaryPresets = _datasource!.readAll(ShapePresetType.boundary);
-      _animPresets = _datasource!.readAll(ShapePresetType.animation);
     });
   }
 
@@ -129,8 +123,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
           _editEye = state.style.customEyeParams ?? const EyeShapeParams();
         case _EditorType.boundary:
           _editBoundary = state.style.boundaryParams;
-        case _EditorType.animation:
-          _editAnim = state.style.animationParams;
       }
     });
     widget.onEditorModeChanged?.call(true);
@@ -141,7 +133,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
     _EditorType.dot => l10n.labelCustomDot,
     _EditorType.eye => l10n.labelCustomEye,
     _EditorType.boundary => l10n.labelCustomBoundary,
-    _EditorType.animation => l10n.labelCustomAnimation,
     null => null,
   };
 
@@ -179,8 +170,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
         notifier.setCustomEyeParams(_editEye);
       case _EditorType.boundary:
         notifier.setBoundaryParams(_editBoundary);
-      case _EditorType.animation:
-        notifier.setAnimationParams(_editAnim);
     }
     ref.read(shapePreviewModeProvider.notifier).state = ShapePreviewMode.fullQr;
     setState(() { _activeEditor = null; _editingPresetId = null; });
@@ -312,8 +301,7 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
           _loadPresets();
         }
       case _EditorType.boundary:
-      case _EditorType.animation:
-        break; // 다른 타입은 아직 미지원
+        break; // boundary 는 아직 미지원
     }
   }
 
@@ -362,11 +350,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
         preset = UserShapePreset(
           id: id, name: id.substring(0, 8), type: ShapePresetType.boundary,
           createdAt: now, boundaryParams: _editBoundary,
-        );
-      case _EditorType.animation:
-        preset = UserShapePreset(
-          id: id, name: id.substring(0, 8), type: ShapePresetType.animation,
-          createdAt: now, animParams: _editAnim,
         );
     }
     await _datasource!.save(preset);
@@ -520,36 +503,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
               _loadPresets();
             },
           ),
-          const SizedBox(height: 20),
-          const Divider(height: 1),
-          const SizedBox(height: 16),
-
-          // ⑥ 애니메이션
-          _sectionLabel(l10n.labelAnimation),
-          const SizedBox(height: 10),
-          _AnimationPresetRow(
-            selected: state.style.animationParams.type,
-            onSelected: (type) {
-              final preset = switch (type) {
-                QrAnimationType.none => const QrAnimationParams(),
-                QrAnimationType.wave => QrAnimationParams.wave,
-                QrAnimationType.rainbow => QrAnimationParams.rainbow,
-                QrAnimationType.pulse => QrAnimationParams.pulse,
-                QrAnimationType.sequential => QrAnimationParams.sequential,
-                QrAnimationType.rotationWave => QrAnimationParams.rotationWave,
-              };
-              ref.read(qrResultProvider.notifier).setAnimationParams(preset);
-            },
-            presets: _animPresets,
-            onAdd: () => _openEditor(_EditorType.animation),
-            onPresetSelect: (p) {
-              ref.read(qrResultProvider.notifier).setAnimationParams(p.animParams!);
-            },
-            onPresetDelete: (p) async {
-              await _datasource?.delete(ShapePresetType.animation, p.id);
-              _loadPresets();
-            },
-          ),
           const SizedBox(height: 16),
         ],
       ),
@@ -569,7 +522,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
                 _EditorType.dot => '',
                 _EditorType.eye => l10n.labelCustomEye,
                 _EditorType.boundary => l10n.labelCustomBoundary,
-                _EditorType.animation => l10n.labelCustomAnimation,
               },
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
@@ -610,14 +562,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
               onDragEnd: (p) {
                 ref.read(qrResultProvider.notifier).setBoundaryParams(p);
                 ref.read(shapePreviewModeProvider.notifier).state = ShapePreviewMode.fullQr;
-              },
-            ),
-            _EditorType.animation => _AnimationEditor(
-              params: _editAnim,
-              onChanged: (p) {
-                setState(() => _editAnim = p);
-                // 애니메이션은 항상 전체 QR에서 미리보기
-                ref.read(qrResultProvider.notifier).setAnimationParams(p);
               },
             ),
           },

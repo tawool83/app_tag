@@ -15,4 +15,7 @@ abstract class LogoManifestRepository {
   /// - [size] : 한 변 픽셀 (기본 96)
   /// - 결과는 LRU 캐시 (최대 32 개)
   Future<Result<Uint8List>> rasterize(String compositeId, {double size = 96});
+
+  /// Composite id("social/twitter") → SVG 문자열 로드 (인라인 임베딩용).
+  Future<Result<String>> loadSvgContent(String compositeId);
 }

@@ -48,6 +48,8 @@ class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
         'platform': 'universal',
         'appIconBytes': null,
         'tagType': 'clipboard',
+        if (widget.prefill?['editTaskId'] != null)
+          'editTaskId': widget.prefill!['editTaskId'],
       };
 
   void _onQr() {
@@ -58,68 +60,58 @@ class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenClipboardTitle)),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_isEmpty)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.amber.shade200),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.info_outline, color: Colors.amber),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(AppLocalizations.of(context)!.msgClipboardEmpty),
-                            ),
-                          ],
-                        ),
-                      ),
-                    Text(AppLocalizations.of(context)!.labelContent, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _controller,
-                      maxLines: 5,
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.hintClipboardText,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.msgContentRequired : null,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.screenClipboardTitle),
+        actions: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _onQr,
-                icon: const Icon(Icons.palette),
-                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-              ),
+            padding: const EdgeInsets.only(right: 8),
+            child: FilledButton(
+              onPressed: _onQr,
+              child: Text(AppLocalizations.of(context)!.actionNext),
             ),
           ),
         ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_isEmpty)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.amber),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(AppLocalizations.of(context)!.msgClipboardEmpty),
+                      ),
+                    ],
+                  ),
+                ),
+              Text(AppLocalizations.of(context)!.labelContent, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _controller,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.hintClipboardText,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.msgContentRequired : null,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

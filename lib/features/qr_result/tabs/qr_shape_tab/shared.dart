@@ -115,36 +115,12 @@ class _PresetIconPainter extends CustomPainter {
       } else {
         canvas.drawRect(Offset.zero & size, paint..style = PaintingStyle.stroke..strokeWidth = 1.5);
       }
-    } else if (preset.animParams != null) {
-      final tp = _animTextPainters[preset.animParams!.type] ??=
-          _buildAnimTextPainter(preset.animParams!.type);
-      tp.paint(canvas, Offset((size.width - tp.width) / 2, (size.height - tp.height) / 2));
     }
   }
 
   @override
   bool shouldRepaint(_PresetIconPainter old) => preset != old.preset;
 
-  // 애니메이션 타입별 TextPainter 공유 캐시 (6종 고정, 레이아웃 비용 절감).
-  static final Map<QrAnimationType, TextPainter> _animTextPainters = {};
-
-  static TextPainter _buildAnimTextPainter(QrAnimationType type) {
-    final text = switch (type) {
-      QrAnimationType.none => 'Off',
-      QrAnimationType.wave => '~',
-      QrAnimationType.rainbow => '🌈',
-      QrAnimationType.pulse => '♥',
-      QrAnimationType.sequential => '►',
-      QrAnimationType.rotationWave => '↻',
-    };
-    return TextPainter(
-      text: TextSpan(
-        text: text,
-        style: const TextStyle(fontSize: 16, color: Colors.black87),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-  }
 }
 
 // ── 공용 슬라이더 행 ──────────────────────────────────────────────────────────

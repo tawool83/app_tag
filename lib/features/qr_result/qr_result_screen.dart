@@ -11,9 +11,7 @@ import '../qr_task/domain/entities/qr_task.dart';
 import '../qr_task/domain/entities/qr_task_kind.dart';
 import '../qr_task/domain/entities/qr_task_meta.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
-import 'domain/entities/qr_template.dart';
 import 'domain/entities/sticker_config.dart' show StickerText;
-import 'presentation/providers/qr_result_providers.dart';
 import '../../core/services/settings_service.dart';
 import '../../core/constants/app_config.dart' show validateQrData;
 import 'qr_result_provider.dart';
@@ -41,7 +39,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   final _colorTabKey = GlobalKey<QrColorTabState>();
   final _shapeTabKey = GlobalKey<QrShapeTabState>();
   late TabController _tabController;
-  QrTemplateManifest _templateManifest = QrTemplateManifest.empty;
+  final _nameController = TextEditingController();
+  final _nameFocusNode = FocusNode();
+  String? _nameHint; // 자동 생성된 날짜/시간 (placeholder용)
 
   // 편집기 모드 (탭/하단 버튼 숨김용)
   bool _colorEditorMode = false;
@@ -56,6 +56,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     // 탭: 템플릿 / 모양 / 색상 / 로고 / 텍스트
     _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(_onTabChanged);
+    _nameFocusNode.addListener(() {
+      if (mounted) setState(() {});
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final args =
@@ -93,6 +96,13 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           notifier.loadFromCustomization(task.customization);
           notifier.setCurrentTaskId(task.id);
           notifier.setTagType(task.meta.tagType);
+          // 자동 생성 이름(날짜 포맷)이면 placeholder로, 커스텀 이름이면 text로
+          final datePattern = RegExp(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$');
+          if (datePattern.hasMatch(task.name)) {
+            _nameHint = task.name;
+          } else {
+            _nameController.text = task.name;
+          }
         }
       } else {
         final platform = args['platform'] as String;
@@ -111,17 +121,19 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
         );
         if (!mounted) return;
         final task = createResult.valueOrNull;
-        if (task != null) notifier.setCurrentTaskId(task.id);
+        if (task != null) {
+          notifier.setCurrentTaskId(task.id);
+          _nameHint = task.name; // 자동 생성 날짜/시간은 placeholder로
+        }
       }
 
       // 신규 발급일 때만 디폴트 설정 적용 (편집 복원에서는 JSON 값 우선)
       if (!isEditMode) {
         final lastSize = await SettingsService.getLastPrintSizeCm();
-        final embedIcon = await SettingsService.getQrEmbedIcon();
         final savedEmoji = await SettingsService.getQrCenterEmoji();
 
         notifier.setPrintSizeCm(lastSize);
-        notifier.setEmbedIcon(embedIcon);
+        notifier.setEmbedIcon(false);
         notifier.setTagType(tagType);
 
         // 하단 텍스트 기본값: 앱 이름으로 pre-fill (아직 설정되지 않은 경우)
@@ -153,12 +165,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       // 이미지 캡처 (UI 미리보기용) — JSON 저장과 별개
       _captureThumbnailToState();
 
-      ref.read(getDefaultTemplatesUseCaseProvider)().then((result) {
-        final manifest = result.valueOrNull;
-        if (manifest != null && mounted) {
-          setState(() => _templateManifest = manifest);
-        }
-      });
     });
   }
 
@@ -179,6 +185,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
 
   @override
   void dispose() {
+    _nameFocusNode.dispose();
+    _nameController.dispose();
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
@@ -197,6 +205,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
 
   /// 뒤로가기 — 커스터마이제이션 flush + 썸네일 캡처 후 pop.
   Future<void> _confirmAndPop() async {
+    await _persistName();
     await ref.read(qrResultProvider.notifier).flushPendingPush();
     await _recapture();
     if (mounted) Navigator.of(context).pop();
@@ -204,6 +213,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
 
   /// 저장 — 커스터마이제이션 flush + 썸네일 캡처 완료 후 홈으로 이동.
   Future<void> _saveAndGoHome() async {
+    await _persistName();
     await ref.read(qrResultProvider.notifier).flushPendingPush();
     final bytes = await _captureThumbnail();
     if (bytes != null) {
@@ -211,6 +221,16 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       await _persistThumbnailAsync(bytes);
     }
     if (mounted) context.go('/home', extra: DateTime.now().millisecondsSinceEpoch);
+  }
+
+  /// 이름이 변경되었으면 저장. 빈 값이면 기본 이름 유지.
+  Future<void> _persistName() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return; // 입력 없으면 기존(자동 생성) 이름 유지
+    final taskId = ref.read(qrResultProvider.notifier).currentTaskId;
+    if (taskId != null) {
+      await ref.read(renameQrTaskUseCaseProvider)(taskId, name);
+    }
   }
 
   /// QR 위젯이 렌더링된 후 미리보기 이미지 캡처 + QrTask에 영속.
@@ -258,29 +278,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     }
   }
 
-  Future<void> _onTemplateSelected(QrTemplate template) async {
-    Uint8List? iconBytes;
-    if (template.style.centerIcon.type == 'url' &&
-        template.style.centerIcon.url != null) {
-      final result = await ref
-          .read(loadTemplateImageUseCaseProvider)(template.style.centerIcon.url!);
-      iconBytes = result.valueOrNull;
-    }
-    if (!mounted) return;
-    ref
-        .read(qrResultProvider.notifier)
-        .applyTemplate(template, centerIconBytes: iconBytes);
-    SettingsService.saveActiveTemplateId(template.id);
-    _recapture();
-  }
-
   /// 즐겨찾기 QR Task 를 템플릿처럼 적용.
-  /// customization 전체 복제 + activeTemplateId 는 clear (사용자 커스텀 의미).
   void _onFavoriteSelected(QrTask task) {
-    final notifier = ref.read(qrResultProvider.notifier);
-    notifier.loadFromCustomization(task.customization);
-    notifier.clearTemplate();
-    SettingsService.saveActiveTemplateId(null);
+    ref.read(qrResultProvider.notifier).loadFromCustomization(task.customization);
     _recapture();
   }
 
@@ -290,7 +290,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
         GoRouterState.of(context).extra as Map<String, dynamic>;
     final deepLink = args['deepLink'] as String;
 
-    final state = ref.watch(qrResultProvider);
+    ref.watch(qrResultProvider);
     final l10n = AppLocalizations.of(context)!;
 
     // 편집기 활성 시 AppBar 타이틀
@@ -310,9 +310,27 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           _confirmAndPop();
         }
       },
-      child: Scaffold(
+      child: GestureDetector(
+        onTap: () => _nameFocusNode.unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Scaffold(
       appBar: AppBar(
-        title: Text(editorTitle ?? l10n.screenQrResultTitle),
+        title: editorTitle != null
+            ? Text(editorTitle)
+            : TextField(
+                controller: _nameController,
+                focusNode: _nameFocusNode,
+                showCursor: _nameFocusNode.hasFocus,
+                style: Theme.of(context).textTheme.titleLarge,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: _nameHint ?? l10n.screenQrResultTitle,
+                  suffixIcon: Icon(Icons.edit, size: 16, color: Colors.grey.shade400),
+                  suffixIconConstraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+              ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _isEditorActive ? _cancelActiveEditor : _confirmAndPop,
@@ -364,9 +382,6 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
               children: [
                 // 0: 템플릿 (나의 템플릿 + 전체 템플릿 통합)
                 AllTemplatesTab(
-                  manifest: _templateManifest,
-                  activeTemplateId: state.template.activeTemplateId,
-                  onTemplateSelected: _onTemplateSelected,
                   onFavoriteSelected: _onFavoriteSelected,
                   onChanged: _recapture,
                 ),
@@ -410,6 +425,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
 
         ],
       ),
+    ),
     ),
     );
   }

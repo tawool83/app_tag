@@ -45,6 +45,8 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
         'platform': 'universal',
         'appIconBytes': null,
         'tagType': 'email',
+        if (widget.prefill?['editTaskId'] != null)
+          'editTaskId': widget.prefill!['editTaskId'],
       };
 
   void _onQr() {
@@ -55,7 +57,18 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenEmailTitle)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.screenEmailTitle),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilledButton(
+              onPressed: _onQr,
+              child: Text(AppLocalizations.of(context)!.actionNext),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
@@ -107,21 +120,6 @@ class _EmailTagScreenState extends State<EmailTagScreen> {
                       ),
                     ),
                   ],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _onQr,
-                icon: const Icon(Icons.palette),
-                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
             ),

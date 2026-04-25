@@ -130,7 +130,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/default_templates.json
     - assets/img/
     - assets/logos/manifest.json
     - assets/logos/social/

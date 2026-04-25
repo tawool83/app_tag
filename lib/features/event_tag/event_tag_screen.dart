@@ -99,6 +99,8 @@ class _EventTagScreenState extends State<EventTagScreen> {
       'platform': 'universal',
       'appIconBytes': null,
       'tagType': 'event',
+      if (widget.prefill?['editTaskId'] != null)
+        'editTaskId': widget.prefill!['editTaskId'],
     };
   }
 
@@ -115,7 +117,18 @@ class _EventTagScreenState extends State<EventTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenEventTitle)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.screenEventTitle),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilledButton(
+              onPressed: _onQr,
+              child: Text(AppLocalizations.of(context)!.actionNext),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
@@ -208,21 +221,6 @@ class _EventTagScreenState extends State<EventTagScreen> {
                       ),
                     ),
                   ],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _onQr,
-                icon: const Icon(Icons.palette),
-                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
             ),

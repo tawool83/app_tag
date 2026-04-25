@@ -29,7 +29,6 @@ import 'utils/customization_mapper.dart';
 part 'notifier/action_setters.dart';
 part 'notifier/style_setters.dart';
 part 'notifier/logo_setters.dart';
-part 'notifier/template_setters.dart';
 part 'notifier/meta_setters.dart';
 
 final qrServiceProvider = Provider<QrService>((ref) => QrService());
@@ -96,14 +95,12 @@ class QrResultState {
 /// - [_ActionSetters] — capture/save/share/print
 /// - [_StyleSetters]  — color/dot/eye/boundary/animation/quietZone
 /// - [_LogoSetters]   — embed/emoji/logo-image/logo-text/assetId
-/// - [_TemplateSetters] — apply/clear template
 /// - [_MetaSetters]   — printSize/tagType/editorMode/sticker
 class QrResultNotifier extends StateNotifier<QrResultState>
     with
         _ActionSetters,
         _StyleSetters,
         _LogoSetters,
-        _TemplateSetters,
         _MetaSetters {
   @override
   final Ref _ref;

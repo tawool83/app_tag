@@ -186,6 +186,8 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
       'platform': 'universal',
       'appIconBytes': null,
       'tagType': 'location',
+      if (widget.prefill?['editTaskId'] != null)
+        'editTaskId': widget.prefill!['editTaskId'],
     };
   }
 
@@ -200,7 +202,18 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenLocationTitle)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.screenLocationTitle),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilledButton(
+              onPressed: _onQr,
+              child: Text(AppLocalizations.of(context)!.actionNext),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // ── 지도 영역 ──────────────────────────────────────────────
@@ -411,21 +424,6 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _onQr,
-                icon: const Icon(Icons.palette),
-                label: Text(AppLocalizations.of(context)!.actionStartCustomize),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

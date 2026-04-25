@@ -1062,6 +1062,12 @@ abstract class AppLocalizations {
   /// **'내 즐겨찾기'**
   String get templateSectionFavorites;
 
+  /// No description provided for @templateEmptyFavorites.
+  ///
+  /// In ko, this message translates to:
+  /// **'즐겨찾기한 QR이 없습니다.\n홈 화면에서 QR을 즐겨찾기에 추가해 보세요.'**
+  String get templateEmptyFavorites;
+
   /// No description provided for @dialogDeleteTemplateTitle.
   ///
   /// In ko, this message translates to:
@@ -2219,6 +2225,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'QR 만들기'**
   String get actionStartCustomize;
+
+  /// No description provided for @actionNext.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음'**
+  String get actionNext;
 
   /// No description provided for @actionCreateNew.
   ///

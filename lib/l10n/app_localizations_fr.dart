@@ -510,6 +510,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get templateSectionFavorites => '내 즐겨찾기';
 
   @override
+  String get templateEmptyFavorites =>
+      '즐겨찾기한 QR이 없습니다.\n홈 화면에서 QR을 즐겨찾기에 추가해 보세요.';
+
+  @override
   String get dialogDeleteTemplateTitle => 'Supprimer le Modèle';
 
   @override
@@ -1096,6 +1100,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get actionStartCustomize => 'QR 만들기';
+
+  @override
+  String get actionNext => '다음';
 
   @override
   String get actionCreateNew => '새로 만들기';

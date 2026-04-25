@@ -5,6 +5,7 @@ import 'package:qr/qr.dart';
 import '../../qr_task/domain/entities/qr_gradient_data.dart';
 import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_shape_params.dart';
+import '../domain/entities/svg_logo_params.dart';
 import 'qr_matrix_helper.dart';
 
 /// QR 데이터 + 스타일 파라미터 → SVG 문자열 생성.
@@ -24,6 +25,14 @@ class QrSvgGenerator {
     int colorArgb = 0xFF000000,
     QrGradientData? gradient,
     double cellSize = 10.0,
+    // ── 로고 임베딩 ──
+    String? logoSvgContent,
+    String? logoBase64Png,
+    SvgLogoText? logoText,
+    SvgLogoStyle? logoStyle,
+    // ── 상/하단 텍스트 ──
+    SvgStickerText? topText,
+    SvgStickerText? bottomText,
   }) {
     final qrCode = QrCode.fromData(
       data: data,
@@ -38,10 +47,17 @@ class QrSvgGenerator {
       typeNumber: qrCode.typeNumber,
     );
 
+    // ── viewBox 확장 (상/하단 텍스트) ──
+    final topH = topText != null ? topText.fontSize * 1.6 : 0.0;
+    final bottomH = bottomText != null ? bottomText.fontSize * 1.6 : 0.0;
+    final svgHeight = totalSize + topH + bottomH;
+
     final buf = StringBuffer();
-    buf.writeln('<svg xmlns="http://www.w3.org/2000/svg"');
-    buf.writeln('     viewBox="0 0 ${_f(totalSize)} ${_f(totalSize)}"');
-    buf.writeln('     width="${_f(totalSize)}" height="${_f(totalSize)}">');
+    buf.writeln('<?xml version="1.0" encoding="UTF-8"?>');
+    buf.writeln('<svg xmlns="http://www.w3.org/2000/svg"'
+        ' xmlns:xlink="http://www.w3.org/1999/xlink"');
+    buf.writeln('     viewBox="0 ${_f(-topH)} ${_f(totalSize)} ${_f(svgHeight)}"');
+    buf.writeln('     width="${_f(totalSize)}" height="${_f(svgHeight)}">');
 
     // ── defs (gradient + clipPath) ──
     final hasGradient = gradient != null && gradient.colorsArgb.length >= 2;
@@ -101,6 +117,36 @@ class QrSvgGenerator {
     }
 
     buf.writeln('  </g>');
+
+    // ── 로고 임베딩 (QR 그룹 위에 렌더링) ──
+    if (logoStyle != null) {
+      buf.write(_buildLogoSection(
+        totalSize, logoStyle, logoSvgContent, logoBase64Png, logoText,
+      ));
+    }
+
+    // ── 상/하단 스티커 텍스트 ──
+    if (topText != null) {
+      buf.writeln('  <text'
+          ' x="${_f(totalSize / 2)}" y="${_f(-topH / 2)}"'
+          ' text-anchor="middle" dominant-baseline="central"'
+          ' font-family="${topText.fontFamily}"'
+          ' font-size="${_f(topText.fontSize)}"'
+          ' font-weight="600"'
+          ' fill="${_colorHex(topText.colorArgb)}"'
+          '>${_escapeXml(topText.content)}</text>');
+    }
+    if (bottomText != null) {
+      buf.writeln('  <text'
+          ' x="${_f(totalSize / 2)}" y="${_f(totalSize + bottomH / 2)}"'
+          ' text-anchor="middle" dominant-baseline="central"'
+          ' font-family="${bottomText.fontFamily}"'
+          ' font-size="${_f(bottomText.fontSize)}"'
+          ' font-weight="600"'
+          ' fill="${_colorHex(bottomText.colorArgb)}"'
+          '>${_escapeXml(bottomText.content)}</text>');
+    }
+
     buf.writeln('</svg>');
     return buf.toString();
   }
@@ -548,6 +594,162 @@ class QrSvgGenerator {
   }
 
   static double _lerp(double a, double b, double t) => a + (b - a) * t;
+
+  // ── Logo section ──
+
+  static String _buildLogoSection(
+    double totalSize,
+    SvgLogoStyle style,
+    String? svgContent,
+    String? base64Png,
+    SvgLogoText? text,
+  ) {
+    final logoSize = totalSize * style.sizeRatio;
+    final double logoX;
+    final double logoY;
+    if (style.position == 'bottomRight') {
+      final pad = totalSize * 0.02;
+      logoX = totalSize - logoSize - pad;
+      logoY = totalSize - logoSize - pad;
+    } else {
+      logoX = (totalSize - logoSize) / 2;
+      logoY = (totalSize - logoSize) / 2;
+    }
+
+    final sb = StringBuffer();
+
+    // 배경 도형
+    sb.write(_buildLogoBackground(logoX, logoY, logoSize, style));
+
+    // 로고 콘텐츠 (우선순위: SVG 인라인 > Base64 이미지 > 텍스트)
+    if (svgContent != null && svgContent.isNotEmpty) {
+      sb.write(_buildInlineSvgLogo(logoX, logoY, logoSize, svgContent));
+    } else if (base64Png != null && base64Png.isNotEmpty) {
+      sb.write(_buildBase64ImageLogo(logoX, logoY, logoSize, base64Png));
+    } else if (text != null && text.content.isNotEmpty) {
+      sb.write(_buildTextLogo(logoX, logoY, logoSize, text));
+    }
+
+    return sb.toString();
+  }
+
+  static String _buildLogoBackground(
+    double x, double y, double size, SvgLogoStyle style,
+  ) {
+    if (style.background == 'none') return '';
+    final bgColor = _colorHex(style.backgroundColorArgb ?? 0xFFFFFFFF);
+    final pad = size * 0.1;
+    final cx = x + size / 2;
+    final cy = y + size / 2;
+    return switch (style.background) {
+      'circle' =>
+        '  <circle cx="${_f(cx)}" cy="${_f(cy)}" r="${_f(size / 2 + pad)}" fill="$bgColor"/>\n',
+      'square' =>
+        '  <rect x="${_f(x - pad)}" y="${_f(y - pad)}"'
+            ' width="${_f(size + pad * 2)}" height="${_f(size + pad * 2)}"'
+            ' rx="4" fill="$bgColor"/>\n',
+      'roundedRectangle' =>
+        '  <rect x="${_f(x - pad)}" y="${_f(y - pad)}"'
+            ' width="${_f(size + pad * 2)}" height="${_f(size + pad * 2)}"'
+            ' rx="10" fill="$bgColor"/>\n',
+      'rectangle' =>
+        '  <rect x="${_f(x - pad)}" y="${_f(y - pad)}"'
+            ' width="${_f(size + pad * 2)}" height="${_f(size + pad * 2)}"'
+            ' rx="2" fill="$bgColor"/>\n',
+      _ => '',
+    };
+  }
+
+  static String _buildInlineSvgLogo(
+    double x, double y, double size, String svgContent,
+  ) {
+    final viewBox = _parseViewBox(svgContent);
+    final scaleX = size / viewBox[2];
+    final scaleY = size / viewBox[3];
+    final scale = min(scaleX, scaleY);
+
+    var inner = _extractSvgInner(svgContent);
+    // id 충돌 방지: 접두사 추가
+    inner = inner.replaceAllMapped(
+      RegExp(r'id="([^"]+)"'),
+      (m) => 'id="logo-${m.group(1)}"',
+    );
+    inner = inner.replaceAllMapped(
+      RegExp(r'url\(#([^)]+)\)'),
+      (m) => 'url(#logo-${m.group(1)})',
+    );
+    // xlink:href="#..." 참조도 치환
+    inner = inner.replaceAllMapped(
+      RegExp(r'xlink:href="#([^"]+)"'),
+      (m) => 'xlink:href="#logo-${m.group(1)}"',
+    );
+    inner = inner.replaceAllMapped(
+      RegExp(r'href="#([^"]+)"'),
+      (m) => 'href="#logo-${m.group(1)}"',
+    );
+
+    // viewBox offset 보정
+    final offsetX = x - viewBox[0] * scale;
+    final offsetY = y - viewBox[1] * scale;
+
+    return '  <g transform="translate(${_f(offsetX)},${_f(offsetY)}) scale(${_f(scale)})">\n'
+        '    $inner\n'
+        '  </g>\n';
+  }
+
+  static String _buildBase64ImageLogo(
+    double x, double y, double size, String base64Png,
+  ) {
+    return '  <image'
+        ' href="data:image/png;base64,$base64Png"'
+        ' x="${_f(x)}" y="${_f(y)}"'
+        ' width="${_f(size)}" height="${_f(size)}"'
+        ' preserveAspectRatio="xMidYMid meet"/>\n';
+  }
+
+  static String _buildTextLogo(
+    double x, double y, double size, SvgLogoText text,
+  ) {
+    return '  <text'
+        ' x="${_f(x + size / 2)}" y="${_f(y + size / 2)}"'
+        ' text-anchor="middle" dominant-baseline="central"'
+        ' font-family="${text.fontFamily}"'
+        ' font-size="${_f(text.fontSize)}"'
+        ' font-weight="600"'
+        ' fill="${_colorHex(text.colorArgb)}"'
+        '>${_escapeXml(text.content)}</text>\n';
+  }
+
+  /// SVG 문자열에서 viewBox 값 파싱. 폴백 [0, 0, 96, 96].
+  static List<double> _parseViewBox(String svg) {
+    final match = RegExp(r'viewBox="([^"]+)"').firstMatch(svg);
+    if (match == null) return [0, 0, 96, 96];
+    final parts = match.group(1)!.trim().split(RegExp(r'[\s,]+'));
+    if (parts.length < 4) return [0, 0, 96, 96];
+    try {
+      return parts.map(double.parse).toList();
+    } catch (_) {
+      return [0, 0, 96, 96];
+    }
+  }
+
+  /// SVG 문자열에서 내부 요소만 추출 (xml 선언, svg 루트 태그 제거).
+  static String _extractSvgInner(String svg) {
+    var s = svg.replaceAll(RegExp(r'<\?xml[^?]*\?>'), '');
+    s = s.replaceFirst(RegExp(r'<svg[^>]*>'), '');
+    s = s.replaceFirst(RegExp(r'</svg>\s*$'), '');
+    return s.trim();
+  }
+
+  /// XML 특수문자 이스케이프.
+  static String _escapeXml(String text) {
+    return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
+  }
 
   /// 소수점 2자리 포맷 (SVG 파일 크기 최적화).
   static String _f(double v) {
