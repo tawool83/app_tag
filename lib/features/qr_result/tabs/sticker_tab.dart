@@ -57,13 +57,6 @@ class StickerTab extends ConsumerWidget {
               onSelectionChanged: (selection) {
                 final v = selection.first;
                 ref.read(qrResultProvider.notifier).setLogoType(v);
-                // 텍스트 유형 → 자동 center 위치
-                if (v == LogoType.text &&
-                    sticker.logoPosition != LogoPosition.center) {
-                  ref.read(qrResultProvider.notifier).setSticker(
-                        sticker.copyWith(logoPosition: LogoPosition.center),
-                      );
-                }
                 onChanged();
               },
               style: ButtonStyle(

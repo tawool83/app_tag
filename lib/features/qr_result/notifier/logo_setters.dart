@@ -34,10 +34,30 @@ mixin _LogoSetters on StateNotifier<QrResultState> {
 
   /// 드롭다운에서 로고 타입 변경. "없음" 선택 시 embedIcon=false 동기화.
   /// `null` 은 레거시 데이터 경로이며 UI 에서는 직접 설정되지 않는다.
+  ///
+  /// 타입 전환 시 충돌 상태 정리:
+  /// - text → 비text: bandMode 리셋 (띠 배경은 텍스트 전용)
+  /// - 비text → text: logoBackground 리셋 (텍스트 전용 토글로 재선택)
   void setLogoType(LogoType? type) {
     final isRealType = type != null && type != LogoType.none;
+    final prev = state.sticker.logoType;
+    var sticker = state.sticker.copyWith(logoType: type);
+
+    // 텍스트 → 비텍스트: bandMode 리셋
+    if (prev == LogoType.text && type != LogoType.text) {
+      sticker = sticker.copyWith(bandMode: BandMode.none);
+    }
+    // 비텍스트 → 텍스트: logoBackground 리셋 + 위치를 center 로 초기화
+    // (텍스트 🚫 모드는 center 전용; 사각/원형 선택 후 사용자가 위치 변경 가능)
+    if (prev != LogoType.text && type == LogoType.text) {
+      sticker = sticker.copyWith(
+        logoBackground: LogoBackground.none,
+        logoPosition: LogoPosition.center,
+      );
+    }
+
     state = state.copyWith(
-      sticker: state.sticker.copyWith(logoType: type),
+      sticker: sticker,
       logo: state.logo.copyWith(embedIcon: isRealType),
     );
     _schedulePush();

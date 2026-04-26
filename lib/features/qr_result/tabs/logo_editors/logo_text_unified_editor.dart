@@ -22,6 +22,7 @@ class LogoTextUnifiedEditor extends ConsumerWidget {
       text: sticker.logoText,
       bandMode: sticker.bandMode,
       logoBackground: sticker.logoBackground,
+      logoPosition: sticker.logoPosition,
       bgColor: sticker.logoBackgroundColor,
       isEvenSpacing: sticker.centerTextEvenSpacing,
       onTextChanged: (t) {
@@ -53,6 +54,11 @@ class LogoTextUnifiedEditor extends ConsumerWidget {
         notifier.setSticker(current.copyWith(logoBackground: v));
         onChanged();
       },
+      onLogoPositionChanged: (v) {
+        final current = ref.read(qrResultProvider).sticker;
+        notifier.setSticker(current.copyWith(logoPosition: v));
+        onChanged();
+      },
       onBgColorChanged: (c) {
         notifier.setLogoBackgroundColor(c);
         onChanged();
@@ -71,12 +77,14 @@ class _CenterEditor extends StatefulWidget {
   final StickerText? text;
   final BandMode bandMode;
   final LogoBackground logoBackground;
+  final LogoPosition logoPosition;
   final Color? bgColor;
   final bool isEvenSpacing;
   final ValueChanged<StickerText?> onTextChanged;
   final ValueChanged<Color> onTextColorChanged;
   final ValueChanged<BandMode> onBandModeChanged;
   final ValueChanged<LogoBackground> onLogoBackgroundChanged;
+  final ValueChanged<LogoPosition> onLogoPositionChanged;
   final ValueChanged<Color?> onBgColorChanged;
   final ValueChanged<bool> onEvenSpacingChanged;
 
@@ -84,12 +92,14 @@ class _CenterEditor extends StatefulWidget {
     required this.text,
     required this.bandMode,
     required this.logoBackground,
+    required this.logoPosition,
     required this.bgColor,
     required this.isEvenSpacing,
     required this.onTextChanged,
     required this.onTextColorChanged,
     required this.onBandModeChanged,
     required this.onLogoBackgroundChanged,
+    required this.onLogoPositionChanged,
     required this.onBgColorChanged,
     required this.onEvenSpacingChanged,
   });
@@ -247,8 +257,10 @@ class _CenterEditorState extends State<_CenterEditor> {
               child: _BackgroundToggles(
                 bandMode: widget.bandMode,
                 logoBackground: widget.logoBackground,
+                logoPosition: widget.logoPosition,
                 onBandModeChanged: widget.onBandModeChanged,
                 onLogoBackgroundChanged: widget.onLogoBackgroundChanged,
+                onLogoPositionChanged: widget.onLogoPositionChanged,
               ),
             ),
             if (_hasBg) ...[
@@ -307,14 +319,18 @@ class _ColorSwatch extends StatelessWidget {
 class _BackgroundToggles extends StatelessWidget {
   final BandMode bandMode;
   final LogoBackground logoBackground;
+  final LogoPosition logoPosition;
   final ValueChanged<BandMode> onBandModeChanged;
   final ValueChanged<LogoBackground> onLogoBackgroundChanged;
+  final ValueChanged<LogoPosition> onLogoPositionChanged;
 
   const _BackgroundToggles({
     required this.bandMode,
     required this.logoBackground,
+    required this.logoPosition,
     required this.onBandModeChanged,
     required this.onLogoBackgroundChanged,
+    required this.onLogoPositionChanged,
   });
 
   bool get _isNone =>
@@ -351,46 +367,85 @@ class _BackgroundToggles extends StatelessWidget {
     }
   }
 
+  bool get _hasShape =>
+      logoBackground == LogoBackground.square ||
+      logoBackground == LogoBackground.circle;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final primary = Theme.of(context).colorScheme.primary;
 
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _ToggleChip(
-          label: '🚫',
-          icon: null,
-          isActive: _isNone,
-          activeColor: Colors.grey.shade700,
-          onTap: _selectNone,
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            _ToggleChip(
+              label: '🚫',
+              icon: null,
+              isActive: _isNone,
+              activeColor: Colors.grey.shade700,
+              onTap: _selectNone,
+            ),
+            _ToggleChip(
+              label: l10n.labelBandHorizontal,
+              icon: Icons.view_day_outlined,
+              isActive: bandMode == BandMode.horizontal,
+              activeColor: primary,
+              onTap: () => _selectBand(BandMode.horizontal),
+            ),
+            _ToggleChip(
+              label: l10n.labelBandVertical,
+              icon: Icons.view_week_outlined,
+              isActive: bandMode == BandMode.vertical,
+              activeColor: primary,
+              onTap: () => _selectBand(BandMode.vertical),
+            ),
+            _ToggleChip(
+              label: l10n.optionSquare,
+              icon: Icons.crop_square,
+              isActive: logoBackground == LogoBackground.square,
+              activeColor: primary,
+              onTap: () => _selectShape(LogoBackground.square),
+            ),
+            _ToggleChip(
+              label: l10n.optionCircle,
+              icon: Icons.circle_outlined,
+              isActive: logoBackground == LogoBackground.circle,
+              activeColor: primary,
+              onTap: () => _selectShape(LogoBackground.circle),
+            ),
+          ],
         ),
-        _ToggleChip(
-          icon: Icons.view_day_outlined,
-          isActive: bandMode == BandMode.horizontal,
-          activeColor: primary,
-          onTap: () => _selectBand(BandMode.horizontal),
-        ),
-        _ToggleChip(
-          icon: Icons.view_week_outlined,
-          isActive: bandMode == BandMode.vertical,
-          activeColor: primary,
-          onTap: () => _selectBand(BandMode.vertical),
-        ),
-        _ToggleChip(
-          icon: Icons.crop_square,
-          isActive: logoBackground == LogoBackground.square,
-          activeColor: primary,
-          onTap: () => _selectShape(LogoBackground.square),
-        ),
-        _ToggleChip(
-          icon: Icons.circle_outlined,
-          isActive: logoBackground == LogoBackground.circle,
-          activeColor: primary,
-          onTap: () => _selectShape(LogoBackground.circle),
-        ),
+        // ── 사각/원형 선택 시 위치 선택 행 ──
+        if (_hasShape) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Text(
+                l10n.labelLogoTabPosition,
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+              const SizedBox(width: 8),
+              _ToggleChip(
+                label: l10n.optionCenter,
+                isActive: logoPosition == LogoPosition.center,
+                activeColor: primary,
+                onTap: () => onLogoPositionChanged(LogoPosition.center),
+              ),
+              const SizedBox(width: 6),
+              _ToggleChip(
+                label: l10n.optionBottomRight,
+                isActive: logoPosition == LogoPosition.bottomRight,
+                activeColor: primary,
+                onTap: () => onLogoPositionChanged(LogoPosition.bottomRight),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
