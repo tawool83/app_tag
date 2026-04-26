@@ -108,13 +108,6 @@ class _PresetIconPainter extends CustomPainter {
     } else if (preset.eyeParams != null) {
       final bounds = Rect.fromCenter(center: center, width: size.width * 0.8, height: size.height * 0.8);
       SuperellipsePath.paintEye(canvas, bounds, preset.eyeParams!, paint);
-    } else if (preset.boundaryParams != null) {
-      final clipPath = QrBoundaryClipper.buildClipPath(size, preset.boundaryParams!);
-      if (clipPath != null) {
-        canvas.drawPath(clipPath, paint..style = PaintingStyle.stroke..strokeWidth = 1.5);
-      } else {
-        canvas.drawRect(Offset.zero & size, paint..style = PaintingStyle.stroke..strokeWidth = 1.5);
-      }
     }
   }
 

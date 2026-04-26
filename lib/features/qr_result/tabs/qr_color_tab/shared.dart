@@ -1,5 +1,66 @@
 part of '../qr_color_tab.dart';
 
+// ── 색상 적용 대상 칩 ─────────────────────────────────────────────────────
+
+class _ColorTargetChips extends StatelessWidget {
+  final WidgetRef ref;
+  final AppLocalizations l10n;
+
+  const _ColorTargetChips({required this.ref, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    final mode = ref.watch(colorTargetModeProvider);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: SizedBox(
+        width: double.infinity,
+        child: SegmentedButton<ColorTargetMode>(
+          segments: [
+            ButtonSegment(
+              value: ColorTargetMode.both,
+              label: Text(l10n.colorTargetBoth),
+            ),
+            ButtonSegment(
+              value: ColorTargetMode.qrOnly,
+              label: Text(l10n.colorTargetQr),
+            ),
+            ButtonSegment(
+              value: ColorTargetMode.bgOnly,
+              label: Text(l10n.colorTargetBg),
+            ),
+          ],
+          selected: {mode},
+          onSelectionChanged: (selection) {
+            final value = selection.first;
+            final prev = ref.read(colorTargetModeProvider);
+            // "동시" → "QR" or "배경" 전환 시 bg 값을 현재 qr 값으로 포크
+            if (prev == ColorTargetMode.both && value != ColorTargetMode.both) {
+              final style = ref.read(qrResultProvider).style;
+              final notifier = ref.read(qrResultProvider.notifier);
+              if (style.bgColor == null) {
+                notifier.setBgColor(style.qrColor);
+              }
+              final activeGrad = ref.read(qrResultProvider).template.templateGradient
+                  ?? style.customGradient;
+              if (style.bgGradient == null && activeGrad != null) {
+                notifier.setBgGradient(activeGrad);
+              }
+            }
+            ref.read(colorTargetModeProvider.notifier).state = value;
+          },
+          style: ButtonStyle(
+            textStyle: WidgetStatePropertyAll(
+              const TextStyle(fontSize: 13),
+            ),
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── 섹션 헤더 ──────────────────────────────────────────────────────────────
 
 /// 섹션 라벨 + 선택적 삭제 아이콘 (user preset 이 있을 때만 표시).
@@ -249,3 +310,4 @@ class _LabeledDropdown<T> extends StatelessWidget {
     );
   }
 }
+

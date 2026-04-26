@@ -8,7 +8,7 @@ import '../domain/entities/sticker_config.dart';
 import '../qr_result_provider.dart' show qrResultProvider;
 import 'logo_editors/logo_image_editor.dart';
 import 'logo_editors/logo_library_editor.dart';
-import 'logo_editors/logo_text_editor.dart';
+import 'logo_editors/logo_text_unified_editor.dart';
 
 /// [로고] 탭:
 ///  Row 1: [유형 드롭다운]   [위치 segment]
@@ -41,139 +41,98 @@ class StickerTab extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Row 1: 유형 드롭다운 | 위치 ────────────────────────────────────
-          // 유형은 콘텐츠 폭(96~200dp), 위치는 Expanded 로 남은 폭 확보 → 위치 옵션 한 줄 유지.
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Flexible(
-                flex: 0,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 96, maxWidth: 200),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _SectionLabel(l10n.labelLogoType),
-                      const SizedBox(height: 8),
-                      Container(
-                        height: 36,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<LogoType>(
-                            value: currentType,
-                            isDense: true,
-                            items: [
-                              DropdownMenuItem(
-                                value: LogoType.none,
-                                child: Text(l10n.optionNone,
-                                    style: const TextStyle(fontSize: 13)),
-                              ),
-                              DropdownMenuItem(
-                                value: LogoType.logo,
-                                child: Text(l10n.optionLogoTypeLogo,
-                                    style: const TextStyle(fontSize: 13)),
-                              ),
-                              DropdownMenuItem(
-                                value: LogoType.image,
-                                child: Text(l10n.optionLogoTypeImage,
-                                    style: const TextStyle(fontSize: 13)),
-                              ),
-                              DropdownMenuItem(
-                                value: LogoType.text,
-                                child: Text(l10n.optionLogoTypeText,
-                                    style: const TextStyle(fontSize: 13)),
-                              ),
-                            ],
-                            onChanged: (v) {
-                              if (v != null) {
-                                ref
-                                    .read(qrResultProvider.notifier)
-                                    .setLogoType(v);
-                                onChanged();
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+          // ── 유형 토글 ────────────────────────────────────────────────────
+          _SectionLabel(l10n.labelLogoType),
+          const SizedBox(height: 6),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<LogoType>(
+              segments: [
+                ButtonSegment(value: LogoType.none, label: Text(l10n.optionNone)),
+                ButtonSegment(value: LogoType.logo, label: Text(l10n.optionLogoTypeLogo)),
+                ButtonSegment(value: LogoType.image, label: Text(l10n.optionLogoTypeImage)),
+                ButtonSegment(value: LogoType.text, label: Text(l10n.optionLogoTypeText)),
+              ],
+              selected: {currentType},
+              onSelectionChanged: (selection) {
+                final v = selection.first;
+                ref.read(qrResultProvider.notifier).setLogoType(v);
+                // 텍스트 유형 → 자동 center 위치
+                if (v == LogoType.text &&
+                    sticker.logoPosition != LogoPosition.center) {
+                  ref.read(qrResultProvider.notifier).setSticker(
+                        sticker.copyWith(logoPosition: LogoPosition.center),
+                      );
+                }
+                onChanged();
+              },
+              style: ButtonStyle(
+                textStyle: WidgetStatePropertyAll(
+                  const TextStyle(fontSize: 13),
                 ),
+                visualDensity: VisualDensity.compact,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionLabel(l10n.labelLogoTabPosition),
-                    const SizedBox(height: 8),
-                    _SegmentRow<LogoPosition>(
-                      enabled: !isNoneType,
-                      selected: sticker.logoPosition,
-                      options: [
-                        (LogoPosition.center, l10n.optionCenter),
-                        (LogoPosition.bottomRight, l10n.optionBottomRight),
-                      ],
-                      onChanged: (v) =>
-                          update(sticker.copyWith(logoPosition: v)),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
 
-          if (!isNoneType) ...[
-            const SizedBox(height: 16),
-
-            // ── Row 2: 배경 | 색상 ─────────────────────────────────────────
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _SectionLabel(l10n.labelLogoTabBackground),
-                      const SizedBox(height: 8),
-                      _SegmentRow<LogoBackground>(
-                        selected: _normalizedBackground(
-                            sticker.logoBackground, isTextType),
-                        options: isTextType
-                            ? [
-                                (LogoBackground.none, l10n.optionNone),
-                                (LogoBackground.rectangle,
-                                    l10n.optionRectangle),
-                                (LogoBackground.roundedRectangle,
-                                    l10n.optionRoundedRectangle),
-                              ]
-                            : [
-                                (LogoBackground.none, l10n.optionNone),
-                                (LogoBackground.square, l10n.optionSquare),
-                                (LogoBackground.circle, l10n.optionCircle),
-                              ],
-                        onChanged: (v) =>
-                            update(sticker.copyWith(logoBackground: v)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                _BackgroundColorColumn(
-                  enabled: sticker.logoBackground != LogoBackground.none,
-                  currentColor: sticker.logoBackgroundColor,
-                  onColorChanged: (c) {
-                    ref
-                        .read(qrResultProvider.notifier)
-                        .setLogoBackgroundColor(c);
-                    onChanged();
-                  },
-                ),
+          // ── 위치 (텍스트 유형은 항상 center → 숨김) ──────────────────────
+          if (!isTextType && !isNoneType) ...[
+            const SizedBox(height: 12),
+            _SectionLabel(l10n.labelLogoTabPosition),
+            const SizedBox(height: 6),
+            _SegmentRow<LogoPosition>(
+              selected: sticker.logoPosition,
+              options: [
+                (LogoPosition.center, l10n.optionCenter),
+                (LogoPosition.bottomRight, l10n.optionBottomRight),
               ],
+              onChanged: (v) => update(sticker.copyWith(logoPosition: v)),
             ),
+          ],
+
+          if (!isNoneType) ...[
+            // 텍스트 유형: 배경은 각 위치 편집기에서 독립 제어 → 공통 배경 숨김
+            if (!isTextType) ...[
+              const SizedBox(height: 16),
+
+              // ── Row 2: 배경 | 색상 ─────────────────────────────────────────
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SectionLabel(l10n.labelLogoTabBackground),
+                        const SizedBox(height: 8),
+                        _SegmentRow<LogoBackground>(
+                          selected: _normalizedBackground(
+                              sticker.logoBackground, isTextType),
+                          options: [
+                            (LogoBackground.none, l10n.optionNone),
+                            (LogoBackground.square, l10n.optionSquare),
+                            (LogoBackground.circle, l10n.optionCircle),
+                          ],
+                          onChanged: (v) =>
+                              update(sticker.copyWith(logoBackground: v)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _BackgroundColorColumn(
+                    enabled: sticker.logoBackground != LogoBackground.none,
+                    currentColor: sticker.logoBackgroundColor,
+                    onColorChanged: (c) {
+                      ref
+                          .read(qrResultProvider.notifier)
+                          .setLogoBackgroundColor(c);
+                      onChanged();
+                    },
+                  ),
+                ],
+              ),
+            ],
 
             const SizedBox(height: 20),
             const Divider(height: 1),
@@ -186,7 +145,7 @@ class StickerTab extends ConsumerWidget {
               children: [
                 LogoLibraryEditor(onChanged: onChanged),
                 LogoImageEditor(onChanged: onChanged),
-                LogoTextEditor(onChanged: onChanged),
+                LogoTextUnifiedEditor(onChanged: onChanged),
               ],
             ),
           ],
@@ -239,8 +198,8 @@ class _BackgroundColorColumn extends StatelessWidget {
           child: ColorPicker(
             pickerColor: temp,
             onColorChanged: (c) => temp = c,
-            enableAlpha: false,
-            labelTypes: const [],
+            enableAlpha: true,
+            hexInputBar: true,
             paletteType: PaletteType.hueWheel,
           ),
         ),

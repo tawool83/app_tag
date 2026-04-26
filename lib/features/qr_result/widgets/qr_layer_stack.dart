@@ -1,9 +1,12 @@
+import 'dart:math' show min;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr/qr.dart';
+import '../domain/entities/color_target_mode.dart';
 import '../domain/entities/logo_source.dart' show LogoType;
 import '../domain/entities/qr_dot_style.dart' show QrDotStyleToParams;
-import '../domain/entities/qr_shape_params.dart';
+import '../domain/entities/qr_eye_shapes.dart' show eyeEnumsToParams;
 import '../domain/entities/sticker_config.dart';
 import '../qr_result_provider.dart';
 import '../utils/logo_clear_zone.dart';
@@ -37,8 +40,15 @@ class QrLayerStack extends ConsumerStatefulWidget {
 }
 
 class _QrLayerStackState extends ConsumerState<QrLayerStack>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   AnimationController? _animController;
+
+  // ── 레이어 강조 플래시 ──
+  late final AnimationController _flashController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 400),
+  );
+  ColorTargetMode? _flashTarget;
 
   // (deepLink, ecLevel) 키가 같을 때 QrImage 재사용 — 애니메이션 중 parent rebuild 로
   // 60fps 재계산되던 QrCode.fromData() 를 제거해 매 프레임 비용을 0 에 가깝게 낮춘다.
@@ -63,6 +73,7 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
   @override
   void dispose() {
     _animController?.dispose();
+    _flashController.dispose();
     super.dispose();
   }
 
@@ -79,15 +90,56 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
   }
 
   /// CustomQrPainter를 사용할지 여부 판단.
-  /// customDotParams 는 PrettyQrView 경로(PolarDotSymbol)로 처리되므로 제외.
+  ///
+  /// 로고가 QR 중앙에 embed 되는 경우에도 CustomQrPainter 를 사용한다.
+  /// PrettyQrView 의 PrettyQrDecorationImage(embedded) 는 이미지 포맷(JPEG 등)에
+  /// 따라 clear 영역이 일관되지 않을 수 있으므로, 자체 clearZone 로직으로 통일.
   bool _useCustomPainter(QrResultState state) {
-    return state.style.customEyeParams != null ||
+    final hasEmbeddedLogo = state.logo.embedIcon &&
+        centerImageProvider(state) != null &&
+        state.sticker.logoPosition == LogoPosition.center;
+    final hasBand = _hasBand(state.sticker);
+    // 사각/원형 텍스트 — ClearZone 필요 (🚫 모드는 ClearZone 없음)
+    final hasTextClearZone = _hasTextClearZone(state.sticker);
+    return hasEmbeddedLogo ||
+        hasBand ||
+        hasTextClearZone ||
+        state.style.customEyeParams != null ||
         !state.style.boundaryParams.isDefault ||
         state.style.animationParams.isAnimated;
   }
 
+  void _triggerFlash(ColorTargetMode mode) {
+    _flashTarget = mode;
+    _flashController.forward(from: 0);
+  }
+
+  /// 특정 레이어에 대해 플래시가 활성 상태인지 판단.
+  bool _shouldFlash(ColorTargetMode layer) {
+    if (_flashTarget == null) return false;
+    if (_flashTarget == ColorTargetMode.both) return true;
+    return _flashTarget == layer;
+  }
+
+  Widget _buildFlashOverlay(ColorTargetMode layer) {
+    if (!_shouldFlash(layer)) return const SizedBox.shrink();
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0.25, end: 0.0).animate(
+        CurvedAnimation(parent: _flashController, curve: Curves.easeOut),
+      ),
+      child: Container(
+        color: Colors.blue,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 색상 대상 모드 변경 감지 → 플래시 트리거
+    ref.listen<ColorTargetMode>(colorTargetModeProvider, (prev, next) {
+      if (prev != next) _triggerFlash(next);
+    });
+
     final state = ref.watch(qrResultProvider);
     final sticker = state.sticker;
     final iconProvider = centerImageProvider(state);
@@ -119,67 +171,130 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
       );
     }
 
-    // ── Layer 1+2: QR + 로고 (size×size) ─────────────────────────────
-    final Widget qrAndLogo = SizedBox(
+    // band 모드 판정
+    final hasBand = _hasBand(sticker);
+
+    final bgColor = state.style.quietZoneColor == Colors.transparent
+        ? null
+        : state.style.quietZoneColor;
+
+    // ── Layer 구조: Column(상단텍스트 → QR 정사각 → 하단텍스트) ─────────
+    // 상/하단 텍스트는 QR 바깥에 배치. 배경 Container 가 전체를 감쌈.
+    final Widget qrSquare = SizedBox(
       width: widget.size,
       height: widget.size,
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
+          // QR 코드 + quiet zone
           Positioned.fill(
-            child: Container(
-              color: state.style.quietZoneColor == Colors.transparent
-                  ? null
-                  : state.style.quietZoneColor,
+            child: Padding(
               padding: EdgeInsets.all(quietPadding),
               child: qrWidget,
             ),
           ),
+          // QR 레이어 플래시
+          if (_shouldFlash(ColorTargetMode.qrOnly))
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.all(quietPadding),
+                child: _buildFlashOverlay(ColorTargetMode.qrOnly),
+              ),
+            ),
+          // 로고 (logo/image 유형)
           if (iconProvider != null)
             _LogoWidget(
               sticker: sticker,
               iconProvider: iconProvider,
               size: widget.size,
             )
-          else if (isTextLogo && sticker.logoText != null &&
-              !sticker.logoText!.isEmpty)
+          // 중앙 텍스트 — 사각/원형 배경
+          else if (isTextLogo && !hasBand &&
+              sticker.logoBackground != LogoBackground.none &&
+              sticker.logoText != null && !sticker.logoText!.isEmpty)
             _LogoWidget.text(
               sticker: sticker,
               size: widget.size,
+            ),
+          // 중앙 텍스트 (band 모드)
+          if (hasBand)
+            Positioned.fill(
+              child: Center(
+                child: _BandTextWidget(
+                  text: sticker.logoText!,
+                  qrSize: widget.size,
+                  bandMode: sticker.bandMode,
+                  evenSpacing: sticker.centerTextEvenSpacing,
+                ),
+              ),
+            ),
+          // 🚫 모드: 배경 없는 가로 텍스트 오버레이
+          if (_hasNoneTextOverlay(sticker))
+            Positioned.fill(
+              child: Center(
+                child: _NoneTextWidget(
+                  text: sticker.logoText!,
+                  qrSize: widget.size,
+                ),
+              ),
             ),
         ],
       ),
     );
 
-    // 상단/하단 텍스트는 캔버스 밖 Column으로 배치
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (sticker.hasTopText)
-          _StickerTextWidget(text: sticker.topText!, width: widget.size),
-        qrAndLogo,
-        if (sticker.hasBottomText)
-          _StickerTextWidget(text: sticker.bottomText!, width: widget.size),
-      ],
+    return AnimatedBuilder(
+      animation: _flashController,
+      builder: (_, __) => Stack(
+        children: [
+          Container(
+            color: bgColor,
+            child: qrSquare,
+          ),
+          // 배경 레이어 플래시 (전체 영역 — 텍스트 포함)
+          if (_shouldFlash(ColorTargetMode.bgOnly))
+            Positioned.fill(
+              child: _buildFlashOverlay(ColorTargetMode.bgOnly),
+            ),
+        ],
+      ),
     );
   }
 
   Widget _buildCustomQr(QrResultState state, double qrSize) {
-    // QR 매트릭스 생성
-    final embedInQr = state.logo.embedIcon &&
-        centerImageProvider(state) != null &&
-        state.sticker.logoPosition == LogoPosition.center;
+    final sticker = state.sticker;
+    final hasBand = _hasBand(sticker);
+    final hasTextCZ = _hasTextClearZone(sticker);
+
+    // QR 매트릭스 생성 — 로고가 QR 위에 겹칠 때 error correction H 강제
+    final hasLogo = state.logo.embedIcon &&
+        centerImageProvider(state) != null;
+    final embedCenter = hasLogo &&
+        sticker.logoPosition == LogoPosition.center;
     final ecLevel =
-        embedInQr ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
+        (hasLogo || hasBand || hasTextCZ)
+            ? QrErrorCorrectLevel.H
+            : QrErrorCorrectLevel.M;
     final qrImage = _qrImageFor(widget.deepLink, ecLevel);
 
-    // 로고/이미지 뒤 QR 도트를 비울 영역. text/bottomRight/embedIcon=false 에서는 null.
+    // 중앙 로고/이미지/텍스트(사각/원형) 뒤 QR 도트를 비울 영역
+    // bottomRight 는 도트 비움 불필요 (EC H 로만 보호)
     final clearZone = computeLogoClearZone(
       qrSize: Size.square(qrSize),
       iconSize: widget.size * 0.22,
-      sticker: state.sticker,
-      embedIcon: state.logo.embedIcon,
+      sticker: sticker,
+      embedIcon: embedCenter || hasTextCZ,
     );
+
+    // band ClearZone (🚫 모드는 ClearZone 없이 단순 오버레이)
+    ClearZone? bandCZ;
+    if (hasBand) {
+      bandCZ = computeBandClearZone(
+        qrSize: Size.square(qrSize),
+        bandMode: sticker.bandMode,
+        fontSize: sticker.logoText!.fontSize *
+            (widget.size * 0.22 / _LogoWidget._kRefIconSize),
+      );
+    }
 
     // 그라디언트 셰이더
     final activeGradient = state.template.templateGradient ?? state.style.customGradient;
@@ -196,11 +311,12 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
             qrImage: qrImage,
             color: color,
             dotParams: state.style.customDotParams ?? state.style.dotStyle.toDotShapeParams(),
-            eyeParams: state.style.customEyeParams ?? const EyeShapeParams(),
+            eyeParams: state.style.customEyeParams ?? eyeEnumsToParams(state.style.eyeOuter, state.style.eyeInner),
             boundaryParams: state.style.boundaryParams,
             animParams: state.style.animationParams,
             animValue: _animController!.value,
             clearZone: clearZone,
+            bandClearZone: bandCZ,
           ),
         ),
       );
@@ -211,10 +327,11 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
           qrImage: qrImage,
           color: color,
           dotParams: state.style.customDotParams ?? state.style.dotStyle.toDotShapeParams(),
-          eyeParams: state.style.customEyeParams ?? const EyeShapeParams(),
+          eyeParams: state.style.customEyeParams ?? eyeEnumsToParams(state.style.eyeOuter, state.style.eyeInner),
           boundaryParams: state.style.boundaryParams,
           animParams: state.style.animationParams,
           clearZone: clearZone,
+          bandClearZone: bandCZ,
         ),
       );
     }
@@ -253,10 +370,9 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
 
     final activeGradient =
         state.template.templateGradient ?? state.style.customGradient;
-    final patternColor = activeGradient != null
-        ? Colors.black.withValues(alpha: 0.4)
-        : state.style.qrColor.withValues(alpha: 0.4);
+    final frameBounds = Rect.fromLTWH(0, 0, totalSize, totalSize);
 
+    // ── QR 도트 색상/그라디언트 ──
     Widget qrWidget = qrPainter;
     if (activeGradient != null) {
       qrWidget = ShaderMask(
@@ -267,77 +383,170 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
       );
     }
 
-    final Widget frameAndQr = SizedBox(
-      width: totalSize,
-      height: totalSize,
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.hardEdge,
-        children: [
-          // Layer 0: 장식 프레임 + 마진 패턴
-          CustomPaint(
-            size: Size.square(totalSize),
-            painter: DecorativeFramePainter(
-              boundaryParams: state.style.boundaryParams,
-              qrAreaSize: qrAreaSize,
-              frameColor: state.style.quietZoneColor,
-              patternColor: patternColor,
-              dotParams: state.style.customDotParams ??
-                  state.style.dotStyle.toDotShapeParams(),
+    // ── 배경(패턴·테두리) 색상/그라디언트 ──
+    // bgColor/bgGradient 가 설정되면 배경 독립 색상, 아니면 QR 색상 따라감
+    final bgGradient = state.style.bgGradient
+        ?? (state.style.bgColor != null ? null : activeGradient);
+    final patternColor = state.style.bgColor ?? state.style.qrColor;
+    final Shader? bgShader = bgGradient != null
+        ? buildQrGradientShader(bgGradient, frameBounds)
+        : null;
+
+    final Widget frameAndQr = AnimatedBuilder(
+      animation: _flashController,
+      builder: (_, __) => SizedBox(
+        width: totalSize,
+        height: totalSize,
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.hardEdge,
+          children: [
+            // Layer 0: 장식 프레임 + 마진 패턴
+            CustomPaint(
+              size: Size.square(totalSize),
+              painter: DecorativeFramePainter(
+                boundaryParams: state.style.boundaryParams,
+                qrAreaSize: qrAreaSize,
+                frameColor: state.style.quietZoneColor,
+                patternColor: patternColor,
+                patternShader: bgShader,
+                borderColor: patternColor,
+                borderShader: bgShader,
+                dotParams: state.style.customDotParams ??
+                    state.style.dotStyle.toDotShapeParams(),
+              ),
             ),
-          ),
-          // Layer 1: QR 코드 (정사각형, 중앙)
-          Container(
-            width: qrAreaSize,
-            height: qrAreaSize,
-            color: state.style.quietZoneColor,
-            padding: EdgeInsets.all(quietPadding),
-            child: qrWidget,
-          ),
-          // Layer 2: 로고
-          if (iconProvider != null)
-            _LogoWidget(
-              sticker: sticker,
-              iconProvider: iconProvider,
-              size: totalSize,
-            )
-          else if (isTextLogo &&
-              sticker.logoText != null &&
-              !sticker.logoText!.isEmpty)
-            _LogoWidget.text(
-              sticker: sticker,
-              size: totalSize,
+            // 배경 레이어 플래시 (프레임 영역)
+            if (_shouldFlash(ColorTargetMode.bgOnly))
+              Positioned.fill(
+                child: _buildFlashOverlay(ColorTargetMode.bgOnly),
+              ),
+            // Layer 1: QR 코드 (정사각형, 중앙)
+            Container(
+              width: qrAreaSize,
+              height: qrAreaSize,
+              color: state.style.quietZoneColor,
+              padding: EdgeInsets.all(quietPadding),
+              child: qrWidget,
             ),
-        ],
+            // QR 레이어 플래시 (QR 영역만)
+            if (_shouldFlash(ColorTargetMode.qrOnly))
+              SizedBox(
+                width: qrAreaSize,
+                height: qrAreaSize,
+                child: _buildFlashOverlay(ColorTargetMode.qrOnly),
+              ),
+            // Layer 2: 로고/중앙 텍스트 (QR 영역 내)
+            SizedBox(
+              width: qrAreaSize,
+              height: qrAreaSize,
+              child: Stack(
+                clipBehavior: Clip.hardEdge,
+                children: [
+                  // 로고 (logo/image 유형)
+                  if (iconProvider != null)
+                    _LogoWidget(
+                      sticker: sticker,
+                      iconProvider: iconProvider,
+                      size: qrAreaSize,
+                    )
+                  // 중앙 텍스트 — 사각/원형 배경
+                  else if (isTextLogo && !_hasBand(sticker) &&
+                      sticker.logoBackground != LogoBackground.none &&
+                      sticker.logoText != null &&
+                      !sticker.logoText!.isEmpty)
+                    _LogoWidget.text(
+                      sticker: sticker,
+                      size: qrAreaSize,
+                    ),
+                  // 중앙 텍스트 (band 모드)
+                  if (_hasBand(sticker))
+                    Positioned.fill(
+                      child: Center(
+                        child: _BandTextWidget(
+                          text: sticker.logoText!,
+                          qrSize: qrAreaSize,
+                          bandMode: sticker.bandMode,
+                          evenSpacing: sticker.centerTextEvenSpacing,
+                        ),
+                      ),
+                    ),
+                  // 🚫 모드: 배경 없는 가로 텍스트 오버레이
+                  if (_hasNoneTextOverlay(sticker))
+                    Positioned.fill(
+                      child: Center(
+                        child: _NoneTextWidget(
+                          text: sticker.logoText!,
+                          qrSize: qrAreaSize,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (sticker.hasTopText)
-          _StickerTextWidget(text: sticker.topText!, width: totalSize),
-        frameAndQr,
-        if (sticker.hasBottomText)
-          _StickerTextWidget(text: sticker.bottomText!, width: totalSize),
-      ],
-    );
+    return frameAndQr;
   }
 
+  static bool _hasBand(StickerConfig sticker) =>
+      sticker.bandMode != BandMode.none &&
+      sticker.logoType == LogoType.text &&
+      sticker.logoText != null &&
+      !sticker.logoText!.isEmpty;
+
+  /// 🚫 모드 텍스트 오버레이: bandMode==none, logoBackground==none, 텍스트 있음
+  static bool _hasNoneTextOverlay(StickerConfig sticker) =>
+      sticker.bandMode == BandMode.none &&
+      sticker.logoBackground == LogoBackground.none &&
+      sticker.logoType == LogoType.text &&
+      sticker.logoText != null &&
+      !sticker.logoText!.isEmpty;
+
+  /// 텍스트+사각/원형 배경: ClearZone 필요 (🚫 모드는 ClearZone 없음)
+  static bool _hasTextClearZone(StickerConfig sticker) =>
+      sticker.logoType == LogoType.text &&
+      sticker.logoText != null &&
+      !sticker.logoText!.isEmpty &&
+      sticker.bandMode == BandMode.none &&
+      (sticker.logoBackground == LogoBackground.square ||
+       sticker.logoBackground == LogoBackground.circle);
+
   Widget _buildFrameQrPainter(QrResultState state, double qrSize) {
-    final embedInQr = state.logo.embedIcon &&
-        centerImageProvider(state) != null &&
-        state.sticker.logoPosition == LogoPosition.center;
+    final sticker = state.sticker;
+    final hasBand = _hasBand(sticker);
+    final hasTextCZ = _hasTextClearZone(sticker);
+
+    final hasLogo = state.logo.embedIcon &&
+        centerImageProvider(state) != null;
+    final embedCenter = hasLogo &&
+        sticker.logoPosition == LogoPosition.center;
     final ecLevel =
-        embedInQr ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
+        (hasLogo || hasBand || hasTextCZ)
+            ? QrErrorCorrectLevel.H
+            : QrErrorCorrectLevel.M;
     final qrImage = _qrImageFor(widget.deepLink, ecLevel);
 
+    final qrAreaSize = widget.size / state.style.boundaryParams.frameScale;
     final clearZone = computeLogoClearZone(
       qrSize: Size.square(qrSize),
-      iconSize: widget.size * 0.22,
-      sticker: state.sticker,
-      embedIcon: state.logo.embedIcon,
+      iconSize: qrAreaSize * 0.22,
+      sticker: sticker,
+      embedIcon: embedCenter || hasTextCZ,
     );
+
+    ClearZone? bandCZ;
+    if (hasBand) {
+      bandCZ = computeBandClearZone(
+        qrSize: Size.square(qrSize),
+        bandMode: sticker.bandMode,
+        fontSize: sticker.logoText!.fontSize *
+            (qrAreaSize * 0.22 / _LogoWidget._kRefIconSize),
+      );
+    }
 
     final activeGradient =
         state.template.templateGradient ?? state.style.customGradient;
@@ -355,11 +564,12 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
             dotParams: state.style.customDotParams ??
                 state.style.dotStyle.toDotShapeParams(),
             eyeParams:
-                state.style.customEyeParams ?? const EyeShapeParams(),
+                state.style.customEyeParams ?? eyeEnumsToParams(state.style.eyeOuter, state.style.eyeInner),
             boundaryParams: state.style.boundaryParams,
             animParams: state.style.animationParams,
             animValue: _animController!.value,
             clearZone: clearZone,
+            bandClearZone: bandCZ,
           ),
         ),
       );
@@ -372,10 +582,11 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
           dotParams: state.style.customDotParams ??
               state.style.dotStyle.toDotShapeParams(),
           eyeParams:
-              state.style.customEyeParams ?? const EyeShapeParams(),
+              state.style.customEyeParams ?? eyeEnumsToParams(state.style.eyeOuter, state.style.eyeInner),
           boundaryParams: state.style.boundaryParams,
           animParams: state.style.animationParams,
           clearZone: clearZone,
+          bandClearZone: bandCZ,
         ),
       );
     }
@@ -384,32 +595,152 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
   }
 }
 
-// ── 스티커 텍스트 위젯 ─────────────────────────────────────────────────────────
 
-class _StickerTextWidget extends StatelessWidget {
+// ── 중앙 텍스트 띠(band) 위젯 ──────────────────────────────────────────────────
+
+class _BandTextWidget extends StatelessWidget {
   final StickerText text;
-  final double width;
+  final double qrSize;
+  final BandMode bandMode;
+  final bool evenSpacing;
 
-  const _StickerTextWidget({required this.text, required this.width});
+  const _BandTextWidget({
+    required this.text,
+    required this.qrSize,
+    required this.bandMode,
+    this.evenSpacing = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child: Text(
-          text.content,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: text.color,
-            fontFamily: text.fontFamily,
-            fontSize: text.fontSize,
-            fontWeight: FontWeight.w600,
-          ),
+    final maxBandDim = qrSize * 0.15;
+    final availWidth = qrSize * 0.8;
+    final availHeight = qrSize * 0.8;
+    final n = text.content.length.clamp(1, 999);
+
+    // 자동 피팅: 띠 영역 + 글자수로 최적 fontSize 계산
+    final double autoFontSize;
+    if (bandMode == BandMode.horizontal) {
+      final byHeight = maxBandDim * 0.85;
+      final byWidth = availWidth / n / 0.6;
+      autoFontSize = min(byHeight, byWidth).clamp(4.0, 200.0);
+    } else {
+      final byWidth = maxBandDim * 0.85;
+      final byHeight = availHeight / n / 1.2;
+      autoFontSize = min(byWidth, byHeight).clamp(4.0, 200.0);
+    }
+
+    final style = TextStyle(
+      color: text.color,
+      fontSize: autoFontSize,
+      fontWeight: FontWeight.w600,
+      height: 1.0,
+    );
+
+    if (bandMode == BandMode.vertical) {
+      return _buildVertical(style, availHeight, maxBandDim);
+    }
+    return _buildHorizontal(style, availWidth, maxBandDim);
+  }
+
+  Widget _buildHorizontal(TextStyle style, double availWidth, double maxBandDim) {
+    if (evenSpacing && text.content.length > 1) {
+      final gap = availWidth / text.content.length;
+      return SizedBox(
+        width: availWidth,
+        height: maxBandDim,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: text.content.characters.map((char) {
+            return SizedBox(
+              width: gap,
+              child: Center(child: Text(char, style: style)),
+            );
+          }).toList(),
         ),
+      );
+    }
+
+    return SizedBox(
+      width: availWidth,
+      height: maxBandDim,
+      child: Center(
+        child: Text(text.content, maxLines: 1, style: style),
+      ),
+    );
+  }
+
+  Widget _buildVertical(TextStyle style, double availHeight, double maxBandDim) {
+    if (evenSpacing && text.content.length > 1) {
+      final gap = availHeight / text.content.length;
+      return SizedBox(
+        width: maxBandDim,
+        height: availHeight,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: text.content.characters.map((char) {
+            return SizedBox(
+              height: gap,
+              child: Center(child: Text(char, style: style)),
+            );
+          }).toList(),
+        ),
+      );
+    }
+
+    final charHeight = availHeight / text.content.length.clamp(1, 999);
+    return SizedBox(
+      width: maxBandDim,
+      height: availHeight,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: text.content.characters.map((char) {
+          return SizedBox(
+            height: charHeight,
+            child: Center(child: Text(char, style: style)),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+// ── 🚫 모드 텍스트 (배경 없는 가로 오버레이, max 15%) ──────────────────────────
+
+class _NoneTextWidget extends StatelessWidget {
+  final StickerText text;
+  final double qrSize;
+
+  const _NoneTextWidget({
+    required this.text,
+    required this.qrSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final maxFontSize = qrSize * 0.15;
+    final availWidth = qrSize * 0.8;
+    final n = text.content.length.clamp(1, 999);
+
+    // 자동 피팅: max 15% 높이, 글자수 기반 너비 제한
+    final byHeight = maxFontSize;
+    final byWidth = availWidth / n / 0.6;
+    final autoFontSize = min(byHeight, byWidth).clamp(4.0, 200.0);
+
+    final style = TextStyle(
+      color: text.color,
+      fontSize: autoFontSize,
+      fontWeight: FontWeight.w600,
+      height: 1.0,
+    );
+
+    return SizedBox(
+      width: availWidth,
+      height: maxFontSize * 1.4,
+      child: Center(
+        child: Text(text.content, maxLines: 1, style: style),
       ),
     );
   }
@@ -453,13 +784,33 @@ class _LogoWidget extends StatelessWidget {
 
   /// 아이콘(이미지 or 텍스트) 컨텐츠 빌드.
   /// [wrapWidth] == true 이면 텍스트 폭에 맞춰 Intrinsic 으로 렌더 (rectangle 배경용).
+  ///
+  /// 텍스트 fontSize 는 기본 미리보기(QR size=160) 기준 절대값이므로,
+  /// 확대보기/다른 크기에서는 iconSize 비례로 스케일링하여 비율을 유지한다.
+  static const _kRefIconSize = 160.0 * 0.22; // 35.2 — 기본 미리보기 아이콘 크기
+
   Widget _buildContent(double iconSize, {bool wrapWidth = false}) {
     if (isText) {
       final t = sticker.logoText!;
+      final scale = iconSize / _kRefIconSize;
+      final hasBg = sticker.logoBackground == LogoBackground.square ||
+          sticker.logoBackground == LogoBackground.circle;
+
+      // 사각/원형 배경: 글자수 기반 자동 피팅
+      final double fontSize;
+      if (hasBg) {
+        final n = t.content.length.clamp(1, 999);
+        final byWidth = iconSize / n / 0.65;
+        final byHeight = iconSize * 0.85;
+        fontSize = min(byWidth, byHeight).clamp(4.0, 200.0);
+      } else {
+        fontSize = t.fontSize * scale;
+      }
+
       final textStyle = TextStyle(
         color: t.color,
         fontFamily: t.fontFamily,
-        fontSize: t.fontSize,
+        fontSize: fontSize,
         fontWeight: FontWeight.w600,
         height: 1.1,
       );

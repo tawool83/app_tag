@@ -4,12 +4,16 @@ class StickerTextSpec {
   final int colorArgb;
   final String fontFamily;
   final double fontSize;
+  final bool showBackground;
+  final int? backgroundColorArgb;
 
   const StickerTextSpec({
     required this.content,
     this.colorArgb = 0xFF000000,
     this.fontFamily = 'sans-serif',
     this.fontSize = 14,
+    this.showBackground = false,
+    this.backgroundColorArgb,
   });
 
   Map<String, dynamic> toJson() => {
@@ -17,6 +21,9 @@ class StickerTextSpec {
         'colorArgb': colorArgb,
         'fontFamily': fontFamily,
         'fontSize': fontSize,
+        if (showBackground) 'showBackground': true,
+        if (backgroundColorArgb != null)
+          'backgroundColorArgb': backgroundColorArgb,
       };
 
   factory StickerTextSpec.fromJson(Map<String, dynamic> json) => StickerTextSpec(
@@ -24,6 +31,9 @@ class StickerTextSpec {
         colorArgb: (json['colorArgb'] as num?)?.toInt() ?? 0xFF000000,
         fontFamily: json['fontFamily'] as String? ?? 'sans-serif',
         fontSize: (json['fontSize'] as num?)?.toDouble() ?? 14,
+        showBackground: json['showBackground'] as bool? ?? false,
+        backgroundColorArgb:
+            (json['backgroundColorArgb'] as num?)?.toInt(),
       );
 }
 
@@ -54,6 +64,12 @@ class StickerSpec {
   /// 배경 fill 색상 ARGB int. null = 기본 흰색.
   final int? logoBackgroundColorArgb;
 
+  /// 중앙 텍스트 "띠(band)" 모드: 'none' | 'horizontal' | 'vertical'.
+  final String bandMode;
+
+  /// 중앙 텍스트 균등 분할 모드.
+  final bool centerTextEvenSpacing;
+
   const StickerSpec({
     this.logoPosition = 'center',
     this.logoBackground = 'none',
@@ -64,6 +80,8 @@ class StickerSpec {
     this.logoImageBase64,
     this.logoText,
     this.logoBackgroundColorArgb,
+    this.bandMode = 'none',
+    this.centerTextEvenSpacing = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -77,6 +95,8 @@ class StickerSpec {
         if (logoText != null) 'logoText': logoText!.toJson(),
         if (logoBackgroundColorArgb != null)
           'logoBackgroundColorArgb': logoBackgroundColorArgb,
+        if (bandMode != 'none') 'bandMode': bandMode,
+        if (centerTextEvenSpacing) 'centerTextEvenSpacing': true,
       };
 
   factory StickerSpec.fromJson(Map<String, dynamic> json) => StickerSpec(
@@ -99,5 +119,9 @@ class StickerSpec {
         logoBackgroundColorArgb:
             (json['logoBackgroundColorArgb'] as num?)?.toInt() ??
                 (json['logoBackgroundBorderColorArgb'] as num?)?.toInt(),
+        // 레거시: centerTextBand: true → bandMode: 'horizontal'
+        bandMode: json['bandMode'] as String? ??
+            ((json['centerTextBand'] as bool? ?? false) ? 'horizontal' : 'none'),
+        centerTextEvenSpacing: json['centerTextEvenSpacing'] as bool? ?? false,
       );
 }

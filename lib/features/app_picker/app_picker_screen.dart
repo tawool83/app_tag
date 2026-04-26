@@ -53,9 +53,9 @@ class _AppPickerScreenState extends ConsumerState<AppPickerScreen> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: const Size.fromHeight(64),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: TextField(
               decoration: InputDecoration(
                 hintText: l10n.hintAppSearch,

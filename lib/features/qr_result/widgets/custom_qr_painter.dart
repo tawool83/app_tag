@@ -26,6 +26,7 @@ class CustomQrPainter extends CustomPainter {
   final double animValue; // 0.0~1.0 from AnimationController
   final ui.Gradient? gradient; // non-null이면 그라디언트 렌더링
   final ClearZone? clearZone; // non-null이면 해당 영역 cell draw skip (로고/이미지 뒤 비움)
+  final ClearZone? bandClearZone; // non-null이면 가로 스트립 영역 cell draw skip (띠 모드)
 
   late final QrMatrixHelper _helper;
 
@@ -44,6 +45,7 @@ class CustomQrPainter extends CustomPainter {
     this.animValue = 0.0,
     this.gradient,
     this.clearZone,
+    this.bandClearZone,
   }) {
     _helper = QrMatrixHelper(
       moduleCount: qrImage.moduleCount,
@@ -170,17 +172,22 @@ class CustomQrPainter extends CustomPainter {
     canvas.restore();
   }
 
-  /// cell 중심이 clearZone 내부인지 판정 (O(1)). null 이면 항상 false.
+  /// cell 중심이 clearZone 또는 bandClearZone 내부인지 판정 (O(1)).
   bool _isInClearZone(Offset cellCenter) {
     final cz = clearZone;
-    if (cz == null) return false;
-    if (cz.isCircular) {
-      final dx = cellCenter.dx - cz.rect.center.dx;
-      final dy = cellCenter.dy - cz.rect.center.dy;
-      final r = cz.rect.width / 2;
-      return dx * dx + dy * dy <= r * r;
+    if (cz != null) {
+      if (cz.isCircular) {
+        final dx = cellCenter.dx - cz.rect.center.dx;
+        final dy = cellCenter.dy - cz.rect.center.dy;
+        final r = cz.rect.width / 2;
+        if (dx * dx + dy * dy <= r * r) return true;
+      } else {
+        if (cz.rect.contains(cellCenter)) return true;
+      }
     }
-    return cz.rect.contains(cellCenter);
+    final bz = bandClearZone;
+    if (bz != null && bz.rect.contains(cellCenter)) return true;
+    return false;
   }
 
   Color _applyHueShift(Color base, double shift) {
@@ -199,7 +206,8 @@ class CustomQrPainter extends CustomPainter {
       animParams != old.animParams ||
       animValue != old.animValue ||
       gradient != old.gradient ||
-      clearZone != old.clearZone;
+      clearZone != old.clearZone ||
+      bandClearZone != old.bandClearZone;
 }
 
 class _ModuleCell {

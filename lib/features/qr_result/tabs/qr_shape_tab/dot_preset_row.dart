@@ -1,40 +1,61 @@
 part of '../qr_shape_tab.dart';
 
-// ── 도트 프리셋 행: [■][●] | [+][user...][...] ──────────────────────────────
+// ── 도트 빌트인 행: [■][●] ──────────────────────────────────────────────────
 
-class _DotPresetRow extends StatelessWidget {
-  final String? selectedPresetId;
-  // 빌트인 선택 하이라이트 기준. selectedPresetId == null && customDotParams == null 일 때만 non-null.
+class _DotBuiltinRow extends StatelessWidget {
   final QrDotStyle? selectedBuiltinStyle;
-  final List<UserShapePreset> userPresets;
   final ValueChanged<QrDotStyle> onBuiltinSelect;
+
+  const _DotBuiltinRow({
+    this.selectedBuiltinStyle,
+    required this.onBuiltinSelect,
+  });
+
+  static const _builtinPresets = <(String, QrDotStyle)>[
+    ('■', QrDotStyle.square),
+    ('●', QrDotStyle.circle),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: Row(
+        children: _builtinPresets.map((entry) {
+          final (label, style) = entry;
+          final isSelected = selectedBuiltinStyle == style;
+          return _DotChip(
+            label: label,
+            isSelected: isSelected,
+            onTap: () => onBuiltinSelect(style),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+// ── 도트 사용자 프리셋 행: [+][user...][...] ────────────────────────────────
+
+class _DotUserPresetRow extends StatelessWidget {
+  final String? selectedPresetId;
+  final List<UserShapePreset> userPresets;
   final VoidCallback onAdd;
   final ValueChanged<UserShapePreset> onUserSelect;
   final ValueChanged<UserShapePreset> onUserLongPress;
   final VoidCallback onShowAll;
 
-  const _DotPresetRow({
-    super.key,
+  const _DotUserPresetRow({
     required this.selectedPresetId,
-    this.selectedBuiltinStyle,
     required this.userPresets,
-    required this.onBuiltinSelect,
     required this.onAdd,
     required this.onUserSelect,
     required this.onUserLongPress,
     required this.onShowAll,
   });
 
-  // 빌트인: pretty_qr 네이티브 렌더 (초기 QR과 동일).
-  static const _builtinPresets = <(String, QrDotStyle)>[
-    ('■', QrDotStyle.square),
-    ('●', QrDotStyle.circle),
-  ];
-
-  // 칩/버튼 크기 상수
   static const _chipSize = 48.0;
   static const _gap = 8.0;
-  static const _dividerWidth = 17.0; // 1px line + left4 + right12
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +64,11 @@ class _DotPresetRow extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final totalWidth = constraints.maxWidth;
-          // 고정 영역: 빌트인(2칩) + 구분선 + "+" 버튼
-          final fixedWidth = _builtinPresets.length * (_chipSize + _gap)
-              + _dividerWidth
-              + (_chipSize + _gap); // "+" 버튼
+          // 고정: [+] 버튼
+          final fixedWidth = _chipSize + _gap;
           final remaining = totalWidth - fixedWidth;
-          // 사용자 슬롯 수 계산
           final maxSlots = (remaining / (_chipSize + _gap)).floor();
           final needMore = userPresets.length > maxSlots && maxSlots > 0;
-          // ··· 자리를 확보해야 하면 인라인은 1칸 줄임
           final inlineCount = needMore
               ? (maxSlots - 1).clamp(0, userPresets.length)
               : maxSlots.clamp(0, userPresets.length);
@@ -59,22 +76,7 @@ class _DotPresetRow extends StatelessWidget {
 
           return Row(
             children: [
-              // 빌트인 프리셋
-              ..._builtinPresets.map((entry) {
-                final (label, style) = entry;
-                final isSelected = selectedPresetId == null && selectedBuiltinStyle == style;
-                return _DotChip(
-                  label: label,
-                  isSelected: isSelected,
-                  onTap: () => onBuiltinSelect(style),
-                );
-              }),
-              // 구분선
-              Padding(
-                padding: const EdgeInsets.only(left: 4, right: 12),
-                child: Container(width: 1, height: 32, color: Colors.grey.shade300),
-              ),
-              // "+" 추가 버튼
+              // [+] 추가 버튼
               Padding(
                 padding: const EdgeInsets.only(right: _gap),
                 child: GestureDetector(
@@ -98,7 +100,7 @@ class _DotPresetRow extends StatelessWidget {
                     onTap: () => onUserSelect(p),
                     onLongPress: () => onUserLongPress(p),
                   )),
-              // ··· 더보기 버튼 (넘칠 때 마지막 슬롯 대체)
+              // ··· 더보기 버튼
               if (needMore)
                 Padding(
                   padding: const EdgeInsets.only(right: _gap),

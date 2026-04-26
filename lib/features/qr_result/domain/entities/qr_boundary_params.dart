@@ -1,3 +1,4 @@
+import 'qr_border_style.dart';
 import 'qr_margin_pattern.dart';
 
 enum QrBoundaryType { square, circle, superellipse, star, heart, hexagon, custom }
@@ -16,9 +17,17 @@ class QrBoundaryParams {
   final double roundness; // 꼭짓점 둥글기: 0.0~1.0 (star/hexagon 전용)
 
   // ── 프레임 모드 필드 ──
-  final double frameScale; // 프레임 크기 비율: 1.0~2.0 (1.0 = 프레임 없음)
+  final double frameScale; // 프레임 크기 비율: 1.0~3.0 (≤1.0 = clipPath 모드, >1.0 = 프레임 모드)
   final QrMarginPattern marginPattern; // 마진 장식 패턴
   final double patternDensity; // 패턴 밀도: 0.5~2.0
+
+  // ── 외곽선 스타일 ──
+  final QrBorderStyle borderStyle; // 외곽선 종류: solid(기본)/dashed/dotted/...
+  final int borderColorArgb; // 외곽선 색상 ARGB: 0xFF000000(검정)
+  final double borderWidth; // 외곽선 두께: 1.0~6.0 (기본 2.0)
+
+  // ── 마진 패턴 색상 ──
+  final int? patternColorArgb; // null = 자동 (qrColor * 0.4)
 
   const QrBoundaryParams({
     this.type = QrBoundaryType.square,
@@ -31,6 +40,10 @@ class QrBoundaryParams {
     this.frameScale = 1.0,
     this.marginPattern = QrMarginPattern.none,
     this.patternDensity = 1.0,
+    this.borderStyle = QrBorderStyle.solid,
+    this.borderColorArgb = 0xFF000000,
+    this.borderWidth = 2.0,
+    this.patternColorArgb,
   });
 
   // ── 기본 프리셋 (clipPath 모드 — 기존 호환) ──
@@ -92,6 +105,11 @@ class QrBoundaryParams {
     double? frameScale,
     QrMarginPattern? marginPattern,
     double? patternDensity,
+    QrBorderStyle? borderStyle,
+    int? borderColorArgb,
+    double? borderWidth,
+    int? patternColorArgb,
+    bool clearPatternColor = false,
   }) =>
       QrBoundaryParams(
         type: type ?? this.type,
@@ -104,6 +122,12 @@ class QrBoundaryParams {
         frameScale: frameScale ?? this.frameScale,
         marginPattern: marginPattern ?? this.marginPattern,
         patternDensity: patternDensity ?? this.patternDensity,
+        borderStyle: borderStyle ?? this.borderStyle,
+        borderColorArgb: borderColorArgb ?? this.borderColorArgb,
+        borderWidth: borderWidth ?? this.borderWidth,
+        patternColorArgb: clearPatternColor
+            ? null
+            : (patternColorArgb ?? this.patternColorArgb),
       );
 
   Map<String, dynamic> toJson() => {
@@ -117,11 +141,16 @@ class QrBoundaryParams {
         'frameScale': frameScale,
         'marginPattern': marginPattern.name,
         'patternDensity': patternDensity,
+        'borderStyle': borderStyle.name,
+        'borderColorArgb': borderColorArgb,
+        'borderWidth': borderWidth,
+        if (patternColorArgb != null) 'patternColorArgb': patternColorArgb,
       };
 
   factory QrBoundaryParams.fromJson(Map<String, dynamic> json) {
     final typeName = json['type'] as String? ?? 'square';
     final patternName = json['marginPattern'] as String?;
+    final borderStyleName = json['borderStyle'] as String?;
     return QrBoundaryParams(
       type: QrBoundaryType.values.firstWhere(
         (e) => e.name == typeName,
@@ -142,6 +171,15 @@ class QrBoundaryParams {
               orElse: () => QrMarginPattern.none,
             ),
       patternDensity: (json['patternDensity'] as num?)?.toDouble() ?? 1.0,
+      borderStyle: borderStyleName == null
+          ? QrBorderStyle.solid
+          : QrBorderStyle.values.firstWhere(
+              (e) => e.name == borderStyleName,
+              orElse: () => QrBorderStyle.solid,
+            ),
+      borderColorArgb: json['borderColorArgb'] as int? ?? 0xFF000000,
+      borderWidth: (json['borderWidth'] as num?)?.toDouble() ?? 2.0,
+      patternColorArgb: json['patternColorArgb'] as int?,
     );
   }
 
@@ -158,16 +196,21 @@ class QrBoundaryParams {
           roundness == other.roundness &&
           frameScale == other.frameScale &&
           marginPattern == other.marginPattern &&
-          patternDensity == other.patternDensity;
+          patternDensity == other.patternDensity &&
+          borderStyle == other.borderStyle &&
+          borderColorArgb == other.borderColorArgb &&
+          borderWidth == other.borderWidth &&
+          patternColorArgb == other.patternColorArgb;
 
   @override
   int get hashCode => Object.hash(
         type, superellipseN, starVertices, starInnerRadius,
         rotation, padding, roundness,
         frameScale, marginPattern, patternDensity,
+        borderStyle, borderColorArgb, borderWidth, patternColorArgb,
       );
 
   @override
   String toString() =>
-      'QrBoundaryParams(${type.name}, n:$superellipseN, rot:$rotation, frame:$frameScale, pattern:${marginPattern.name})';
+      'QrBoundaryParams(${type.name}, n:$superellipseN, rot:$rotation, frame:$frameScale, pattern:${marginPattern.name}, border:${borderStyle.name})';
 }

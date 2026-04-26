@@ -28,6 +28,10 @@ class QrStyleState {
   final QrAnimationParams animationParams;
   final Color quietZoneColor;
 
+  // ── 배경 전용 색상 (null = qrColor/customGradient 따라감) ──
+  final Color? bgColor;
+  final QrGradient? bgGradient;
+
   const QrStyleState({
     this.qrColor = const Color(0xFF000000),
     this.roundFactor = 0.0,
@@ -41,6 +45,8 @@ class QrStyleState {
     this.boundaryParams = const QrBoundaryParams(),
     this.animationParams = const QrAnimationParams(),
     this.quietZoneColor = Colors.white,
+    this.bgColor,
+    this.bgGradient,
   });
 
   QrStyleState copyWith({
@@ -60,6 +66,10 @@ class QrStyleState {
     QrBoundaryParams? boundaryParams,
     QrAnimationParams? animationParams,
     Color? quietZoneColor,
+    Color? bgColor,
+    bool clearBgColor = false,
+    QrGradient? bgGradient,
+    bool clearBgGradient = false,
   }) =>
       QrStyleState(
         qrColor: qrColor ?? this.qrColor,
@@ -81,6 +91,9 @@ class QrStyleState {
         boundaryParams: boundaryParams ?? this.boundaryParams,
         animationParams: animationParams ?? this.animationParams,
         quietZoneColor: quietZoneColor ?? this.quietZoneColor,
+        bgColor: clearBgColor ? null : (bgColor ?? this.bgColor),
+        bgGradient:
+            clearBgGradient ? null : (bgGradient ?? this.bgGradient),
       );
 
   @override
@@ -98,7 +111,9 @@ class QrStyleState {
           other.customEyeParams == customEyeParams &&
           other.boundaryParams == boundaryParams &&
           other.animationParams == animationParams &&
-          other.quietZoneColor == quietZoneColor;
+          other.quietZoneColor == quietZoneColor &&
+          other.bgColor == bgColor &&
+          other.bgGradient == bgGradient;
 
   @override
   int get hashCode => Object.hash(
@@ -114,5 +129,7 @@ class QrStyleState {
         boundaryParams,
         animationParams,
         quietZoneColor,
+        bgColor,
+        bgGradient,
       );
 }

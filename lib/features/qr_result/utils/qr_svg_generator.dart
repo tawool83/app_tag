@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:qr/qr.dart';
 
 import '../../qr_task/domain/entities/qr_gradient_data.dart';
+import '../domain/entities/qr_border_style.dart';
 import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/svg_logo_params.dart';
@@ -117,6 +118,11 @@ class QrSvgGenerator {
     }
 
     buf.writeln('  </g>');
+
+    // ── 외곽선 stroke (clipPath 모드) ──
+    if (hasClip && boundaryParams.borderStyle != QrBorderStyle.none) {
+      buf.write(_buildBorderStroke(totalSize, boundaryParams));
+    }
 
     // ── 로고 임베딩 (QR 그룹 위에 렌더링) ──
     if (logoStyle != null) {
@@ -457,6 +463,51 @@ class QrSvgGenerator {
     return sb.toString();
   }
 
+  static String _buildBorderStroke(double size, QrBoundaryParams params) {
+    final cx = size / 2;
+    final cy = size / 2;
+    final radius = size / 2;
+    final rot = params.rotation * pi / 180;
+
+    final pathData = switch (params.type) {
+      QrBoundaryType.circle =>
+        'M${_f(cx + radius)},${_f(cy)}A${_f(radius)},${_f(radius)} 0 1,0 ${_f(cx - radius)},${_f(cy)}A${_f(radius)},${_f(radius)} 0 1,0 ${_f(cx + radius)},${_f(cy)}Z',
+      QrBoundaryType.superellipse || QrBoundaryType.custom =>
+        _superellipsePathData(cx, cy, radius, radius, params.superellipseN,
+            rotationDeg: params.rotation),
+      QrBoundaryType.star =>
+        _starPathData(cx, cy, radius, params.starVertices,
+            params.starInnerRadius, rot, params.roundness),
+      QrBoundaryType.heart => _heartPathData(cx, cy, radius, rot),
+      QrBoundaryType.hexagon =>
+        _polygonPathData(cx, cy, radius, 6, rot, params.roundness),
+      QrBoundaryType.square => '',
+    };
+    if (pathData.isEmpty) return '';
+
+    final color = _colorHex(params.borderColorArgb);
+    final width = params.borderWidth;
+
+    final dashAttr = switch (params.borderStyle) {
+      QrBorderStyle.dashed => ' stroke-dasharray="8,4"',
+      QrBorderStyle.dotted => ' stroke-dasharray="2,2" stroke-linecap="round"',
+      QrBorderStyle.dashDot => ' stroke-dasharray="8,4,2,4"',
+      _ => '',
+    };
+
+    final sb = StringBuffer();
+    if (params.borderStyle == QrBorderStyle.double_) {
+      final w = width * 0.4;
+      final scale = 1.0 - (width * 3 / size);
+      sb.writeln('  <path d="$pathData" fill="none" stroke="$color" stroke-width="${_f(w)}"/>');
+      sb.writeln('  <path d="$pathData" fill="none" stroke="$color" stroke-width="${_f(w)}"'
+          ' transform="translate(${_f(cx)},${_f(cy)}) scale(${_f(scale)}) translate(${_f(-cx)},${_f(-cy)})"/>');
+    } else {
+      sb.writeln('  <path d="$pathData" fill="none" stroke="$color" stroke-width="${_f(width)}"$dashAttr/>');
+    }
+    return sb.toString();
+  }
+
   static String _starPathData(
     double cx, double cy, double radius, int n,
     double innerR, double rot, double roundness,
@@ -486,27 +537,22 @@ class QrSvgGenerator {
   }
 
   static String _heartPathData(double cx, double cy, double radius, double rot) {
-    final w = radius;
-    final h = radius;
+    final s = radius;
 
-    // Heart path (same math as QrBoundaryClipper)
+    // Heart path (same math as QrBoundaryClipper._heartPath)
     final sb = StringBuffer();
 
-    // SVG cubic bezier commands
-    sb.write('M${_f(cx)},${_f(cy + h * 0.7)}');
-    sb.write(' C${_f(cx - w)},${_f(cy + h * 0.1)} ${_f(cx - w)},${_f(cy - h * 0.5)} ${_f(cx - w * 0.5)},${_f(cy - h * 0.5)}');
-    sb.write(' C${_f(cx)},${_f(cy - h * 0.8)} ${_f(cx)},${_f(cy - h * 0.8)} ${_f(cx + w * 0.5)},${_f(cy - h * 0.5)}');
-    sb.write(' C${_f(cx + w)},${_f(cy - h * 0.5)} ${_f(cx + w)},${_f(cy + h * 0.1)} ${_f(cx)},${_f(cy + h * 0.7)}');
+    // 하단 꼭짓점
+    sb.write('M${_f(cx)},${_f(cy + s * 0.7)}');
+    // 하단 → 왼쪽 볼록
+    sb.write(' C${_f(cx - s * 0.95)},${_f(cy + s * 0.05)} ${_f(cx - s * 0.95)},${_f(cy - s * 0.55)} ${_f(cx - s * 0.45)},${_f(cy - s * 0.55)}');
+    // 왼쪽 볼록 → 중앙 dip
+    sb.write(' C${_f(cx - s * 0.15)},${_f(cy - s * 0.55)} ${_f(cx)},${_f(cy - s * 0.35)} ${_f(cx)},${_f(cy - s * 0.25)}');
+    // 중앙 dip → 오른쪽 볼록
+    sb.write(' C${_f(cx)},${_f(cy - s * 0.35)} ${_f(cx + s * 0.15)},${_f(cy - s * 0.55)} ${_f(cx + s * 0.45)},${_f(cy - s * 0.55)}');
+    // 오른쪽 볼록 → 하단
+    sb.write(' C${_f(cx + s * 0.95)},${_f(cy - s * 0.55)} ${_f(cx + s * 0.95)},${_f(cy + s * 0.05)} ${_f(cx)},${_f(cy + s * 0.7)}');
     sb.write('Z');
-
-    if (rot != 0) {
-      // SVG transform handles rotation; wrap in group
-      // But since we're inside clipPath, we embed rotation as transform
-      // Actually for clipPath, we return path data and let caller wrap in transform
-      // For simplicity, compute rotated coordinates
-      // This is a known limitation — heart rotation in SVG clipPath
-      // Return unrotated for now; boundary rotation is rarely combined with heart
-    }
 
     return sb.toString();
   }
@@ -707,14 +753,21 @@ class QrSvgGenerator {
         ' preserveAspectRatio="xMidYMid meet"/>\n';
   }
 
+  /// 텍스트 로고 SVG 생성.
+  ///
+  /// [text.fontSize] 는 기본 미리보기(QR widget size 160, iconSize 35.2px) 기준
+  /// 절대값이므로, SVG 로고 영역([size]) 에 비례하여 스케일링한다.
+  static const _kRefIconSize = 160.0 * 0.22; // 35.2
+
   static String _buildTextLogo(
     double x, double y, double size, SvgLogoText text,
   ) {
+    final scaledFontSize = text.fontSize * (size / _kRefIconSize);
     return '  <text'
         ' x="${_f(x + size / 2)}" y="${_f(y + size / 2)}"'
         ' text-anchor="middle" dominant-baseline="central"'
         ' font-family="${text.fontFamily}"'
-        ' font-size="${_f(text.fontSize)}"'
+        ' font-size="${_f(scaledFontSize)}"'
         ' font-weight="600"'
         ' fill="${_colorHex(text.colorArgb)}"'
         '>${_escapeXml(text.content)}</text>\n';

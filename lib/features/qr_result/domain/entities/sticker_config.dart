@@ -17,6 +17,14 @@ enum LogoPosition { center, bottomRight }
 /// ※ Hive 에는 index(int) 로 저장되므로 새 값은 반드시 enum **끝**에 추가.
 enum LogoBackground { none, square, circle, rectangle, roundedRectangle }
 
+/// 중앙 텍스트 띠 모드.
+/// - none: 띠 없음 (기존 오버레이)
+/// - horizontal: 가로 띠 (QR 수직 중앙, 전폭 스트립)
+/// - vertical: 세로 띠 (QR 수평 중앙, 전높이 스트립)
+///
+/// Hive 에는 index(int) 저장 → 새 값은 enum 끝에 추가.
+enum BandMode { none, horizontal, vertical }
+
 /// 스티커 텍스트 (상단 또는 하단 또는 로고 텍스트).
 class StickerText {
   final String content;
@@ -24,11 +32,19 @@ class StickerText {
   final String fontFamily; // 'sans-serif' | 'serif' | 'monospace'
   final double fontSize;   // 10 ~ 64
 
+  /// 텍스트 뒤에 배경 박스를 표시할지 여부.
+  final bool showBackground;
+
+  /// 배경 박스 색상. [showBackground] == true 일 때만 유효.
+  final Color backgroundColor;
+
   const StickerText({
     required this.content,
     this.color = const Color(0xFF000000),
     this.fontFamily = 'sans-serif',
     this.fontSize = 14,
+    this.showBackground = false,
+    this.backgroundColor = const Color(0xFFFFFFFF),
   });
 
   bool get isEmpty => content.trim().isEmpty;
@@ -38,12 +54,16 @@ class StickerText {
     Color? color,
     String? fontFamily,
     double? fontSize,
+    bool? showBackground,
+    Color? backgroundColor,
   }) =>
       StickerText(
         content: content ?? this.content,
         color: color ?? this.color,
         fontFamily: fontFamily ?? this.fontFamily,
         fontSize: fontSize ?? this.fontSize,
+        showBackground: showBackground ?? this.showBackground,
+        backgroundColor: backgroundColor ?? this.backgroundColor,
       );
 }
 
@@ -81,6 +101,14 @@ class StickerConfig {
   /// logoBackground == none 인 경우에는 의미 없음 (UI 에서도 disabled).
   final Color? logoBackgroundColor;
 
+  /// 중앙 텍스트 "띠(band)" 모드.
+  /// QR 도트 행/열을 clearing 하고 텍스트를 가로/세로로 표시.
+  final BandMode bandMode;
+
+  /// 중앙 텍스트 균등 분할 모드.
+  /// true 면 글자를 QR 너비에 맞춰 균등 간격으로 배치.
+  final bool centerTextEvenSpacing;
+
   const StickerConfig({
     this.logoPosition = LogoPosition.center,
     this.logoBackground = LogoBackground.none,
@@ -92,6 +120,8 @@ class StickerConfig {
     this.logoText,
     this.logoAssetPngBytes,
     this.logoBackgroundColor,
+    this.bandMode = BandMode.none,
+    this.centerTextEvenSpacing = false,
   });
 
   bool get hasTopText => topText != null && !topText!.isEmpty;
@@ -108,6 +138,8 @@ class StickerConfig {
     Object? logoText = _stickerSentinel,
     Object? logoAssetPngBytes = _stickerSentinel,
     Object? logoBackgroundColor = _stickerSentinel,
+    BandMode? bandMode,
+    bool? centerTextEvenSpacing,
   }) =>
       StickerConfig(
         logoPosition: logoPosition ?? this.logoPosition,
@@ -130,5 +162,7 @@ class StickerConfig {
         logoBackgroundColor: logoBackgroundColor == _stickerSentinel
             ? this.logoBackgroundColor
             : logoBackgroundColor as Color?,
+        bandMode: bandMode ?? this.bandMode,
+        centerTextEvenSpacing: centerTextEvenSpacing ?? this.centerTextEvenSpacing,
       );
 }

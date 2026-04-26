@@ -11,14 +11,17 @@ import 'polar_polygon.dart';
 class QrMarginPatternEngine {
   QrMarginPatternEngine._();
 
-  /// QR 도트 패턴: DotShapeParams 모양을 grid 로 반복 배치.
+  /// QR 도트 패턴: 실제 QR 코드 데이터 영역처럼 보이는 무작위 on/off 그리드.
+  ///
+  /// 고정 시드 RNG 로 ~50% 셀만 그려 실제 QR 모듈과 유사한 무작위 느낌을 낸다.
   static void drawQrDots(
     Canvas canvas,
     Size size,
     Color color,
     DotShapeParams? dotParams,
-    double density,
-  ) {
+    double density, {
+    Shader? shader,
+  }) {
     final dp = dotParams ?? const DotShapeParams();
     final spacing = (size.width * 0.04 / density).clamp(4.0, 16.0);
     final radius = spacing * 0.35;
@@ -26,9 +29,15 @@ class QrMarginPatternEngine {
       ..color = color
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
+    if (shader != null) paint.shader = shader;
+
+    final cols = (size.width / spacing).ceil();
+    final rows = (size.height / spacing).ceil();
+    final rng = _seededRng(cols * rows);
 
     for (double y = spacing / 2; y < size.height; y += spacing) {
       for (double x = spacing / 2; x < size.width; x += spacing) {
+        if (!rng.nextBool()) continue; // ~50% 확률로 skip → 무작위 QR 느낌
         final center = Offset(x, y);
         final path = PolarPolygon.buildPath(center, radius * dp.scale, dp);
         canvas.drawPath(path, paint);
@@ -41,14 +50,16 @@ class QrMarginPatternEngine {
     Canvas canvas,
     Size size,
     Color color,
-    double density,
-  ) {
+    double density, {
+    Shader? shader,
+  }) {
     final cellSize = (size.width * 0.05 / density).clamp(6.0, 20.0);
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
       ..isAntiAlias = true;
+    if (shader != null) paint.shader = shader;
     final cols = (size.width / cellSize).floor();
     final rows = (size.height / cellSize).floor();
     final rng = _seededRng(cols * rows);
@@ -74,8 +85,9 @@ class QrMarginPatternEngine {
     Canvas canvas,
     Size size,
     Color color,
-    double density,
-  ) {
+    double density, {
+    Shader? shader,
+  }) {
     final spacing = (size.width * 0.06 / density).clamp(6.0, 20.0);
     final amp = spacing * 0.4;
     final paint = Paint()
@@ -83,6 +95,7 @@ class QrMarginPatternEngine {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..isAntiAlias = true;
+    if (shader != null) paint.shader = shader;
     final path = Path();
     for (double y = 0; y < size.height; y += spacing) {
       path.moveTo(0, y);
@@ -101,8 +114,9 @@ class QrMarginPatternEngine {
     Canvas canvas,
     Size size,
     Color color,
-    double density,
-  ) {
+    double density, {
+    Shader? shader,
+  }) {
     final spacing = (size.width * 0.06 / density).clamp(8.0, 24.0);
     final amp = spacing * 0.3;
     final paint = Paint()
@@ -110,6 +124,7 @@ class QrMarginPatternEngine {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
       ..isAntiAlias = true;
+    if (shader != null) paint.shader = shader;
     final path = Path();
     for (double y = spacing; y < size.height; y += spacing) {
       path.moveTo(0, y);
@@ -125,14 +140,16 @@ class QrMarginPatternEngine {
     Canvas canvas,
     Size size,
     Color color,
-    double density,
-  ) {
+    double density, {
+    Shader? shader,
+  }) {
     final spacing = (size.width * 0.05 / density).clamp(6.0, 18.0);
     final dotR = spacing * 0.12;
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
+    if (shader != null) paint.shader = shader;
     for (double y = spacing / 2; y < size.height; y += spacing) {
       for (double x = spacing / 2; x < size.width; x += spacing) {
         canvas.drawCircle(Offset(x, y), dotR, paint);

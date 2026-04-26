@@ -63,7 +63,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             trailing: DropdownButton<String?>(
               value: currentCode,
               underline: const SizedBox.shrink(),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               items: _kSupportedLanguages.map((lang) {
                 return DropdownMenuItem<String?>(
                   value: lang.code,

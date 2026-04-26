@@ -15,9 +15,10 @@ import '../../../l10n/app_localizations.dart';
 import '../../color_palette/data/datasources/hive_color_palette_datasource.dart';
 import '../../color_palette/data/models/user_color_palette_model.dart';
 import '../../color_palette/domain/entities/user_color_palette.dart';
+import '../domain/entities/color_target_mode.dart';
 import '../domain/entities/qr_color_presets.dart';
 import '../domain/entities/qr_template.dart' show QrGradient;
-import '../qr_result_provider.dart' show qrResultProvider;
+import '../qr_result_provider.dart' show qrResultProvider, colorTargetModeProvider;
 
 part 'qr_color_tab/shared.dart';
 part 'qr_color_tab/solid_row.dart';
@@ -27,14 +28,12 @@ part 'qr_color_tab/color_grid_modal.dart';
 
 /// [색상] 탭: built-in 5개 + 사용자 단색/그라디언트 프리셋 + 그라디언트 편집기.
 class QrColorTab extends ConsumerStatefulWidget {
-  final ValueChanged<Color> onColorSelected;
-  final ValueChanged<QrGradient?> onGradientChanged;
+  final VoidCallback? onChanged;
   final ValueChanged<bool>? onEditorModeChanged;
 
   const QrColorTab({
     super.key,
-    required this.onColorSelected,
-    required this.onGradientChanged,
+    this.onChanged,
     this.onEditorModeChanged,
   });
 
@@ -104,6 +103,39 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
     });
   }
 
+  // ── 색상 라우팅 (모드별) ──────────────────────────────────────────────
+
+  void _applyColor(Color color) {
+    final notifier = ref.read(qrResultProvider.notifier);
+    final mode = ref.read(colorTargetModeProvider);
+    switch (mode) {
+      case ColorTargetMode.both:
+        notifier.setQrColor(color);
+        notifier.clearBgOverrides();
+      case ColorTargetMode.qrOnly:
+        notifier.setQrColor(color);
+      case ColorTargetMode.bgOnly:
+        notifier.setBgColor(color);
+        notifier.setBgGradient(null);
+    }
+    widget.onChanged?.call();
+  }
+
+  void _applyGradient(QrGradient? gradient) {
+    final notifier = ref.read(qrResultProvider.notifier);
+    final mode = ref.read(colorTargetModeProvider);
+    switch (mode) {
+      case ColorTargetMode.both:
+        notifier.setCustomGradient(gradient);
+        notifier.clearBgOverrides();
+      case ColorTargetMode.qrOnly:
+        notifier.setCustomGradient(gradient);
+      case ColorTargetMode.bgOnly:
+        notifier.setBgGradient(gradient);
+    }
+    widget.onChanged?.call();
+  }
+
   // ── 편집기 open/close ──────────────────────────────────────────────────
 
   void _openGradientEditor({String? editingId, UserColorPalette? preset}) {
@@ -162,8 +194,8 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
     if (existing != null) {
       await _datasource!.touchLastUsed(existing.id);
       setState(() => _selectedSolidPresetId = existing.id);
-      widget.onGradientChanged(null);
-      widget.onColorSelected(color);
+      _applyGradient(null);
+      _applyColor(color);
       _loadPresets();
       return;
     }
@@ -180,8 +212,8 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
     );
     await _datasource!.write(UserColorPaletteModel.fromEntity(preset));
     setState(() => _selectedSolidPresetId = id);
-    widget.onGradientChanged(null);
-    widget.onColorSelected(color);
+    _applyGradient(null);
+    _applyColor(color);
     _loadPresets();
   }
 
@@ -255,15 +287,15 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
 
   void _onBuiltinSolidSelect(Color c) {
     setState(() => _selectedSolidPresetId = null);
-    widget.onGradientChanged(null);
-    widget.onColorSelected(c);
+    _applyGradient(null);
+    _applyColor(c);
   }
 
   Future<void> _onUserSolidSelect(UserColorPalette p) async {
     if (p.solidColorArgb == null) return;
     setState(() => _selectedSolidPresetId = p.id);
-    widget.onGradientChanged(null);
-    widget.onColorSelected(Color(p.solidColorArgb!));
+    _applyGradient(null);
+    _applyColor(Color(p.solidColorArgb!));
     await _datasource?.touchLastUsed(p.id);
     _delayedReloadPresets();
   }
@@ -278,13 +310,13 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
 
   void _onBuiltinGradientSelect(QrGradient g) {
     setState(() => _selectedGradientPresetId = null);
-    widget.onGradientChanged(g);
+    _applyGradient(g);
   }
 
   Future<void> _onUserGradientSelect(UserColorPalette p) async {
     final g = _qrGradientFromPalette(p);
     setState(() => _selectedGradientPresetId = p.id);
-    widget.onGradientChanged(g);
+    _applyGradient(g);
     await _datasource?.touchLastUsed(p.id);
     _delayedReloadPresets();
   }
@@ -348,7 +380,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
       case _ColorGridDeleteResult(:final deletedIds):
         if (deletedIds.contains(_selectedGradientPresetId)) {
           setState(() => _selectedGradientPresetId = null);
-          widget.onGradientChanged(null);
+          _applyGradient(null);
         }
         for (final id in deletedIds) {
           await _datasource?.delete(id);
@@ -375,8 +407,8 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
           child: ColorPicker(
             pickerColor: temp,
             onColorChanged: (c) => temp = c,
-            enableAlpha: false,
-            labelTypes: const [],
+            enableAlpha: true,
+            hexInputBar: true,
             paletteType: cp.PaletteType.hueWheel,
           ),
         ),
@@ -566,7 +598,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
       angleDegrees: _angleDegrees,
       center: _gradientType == 'radial' ? _center : null,
     );
-    widget.onGradientChanged(gradient);
+    _applyGradient(gradient);
   }
 
   void _redistributeStopPositions() {
@@ -614,6 +646,13 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
     final state = ref.watch(qrResultProvider);
     final l10n = AppLocalizations.of(context)!;
 
+    // 배경 없으면 색상 대상을 QR 전체(both)로 자동 리셋
+    if (state.style.boundaryParams.isDefault &&
+        ref.read(colorTargetModeProvider) != ColorTargetMode.both) {
+      Future.microtask(() =>
+          ref.read(colorTargetModeProvider.notifier).state = ColorTargetMode.both);
+    }
+
     if (_showGradientEditor) {
       return _buildGradientEditor(l10n);
     }
@@ -626,6 +665,9 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── 적용 대상 칩 ──
+          if (!state.style.boundaryParams.isDefault)
+            _ColorTargetChips(ref: ref, l10n: l10n),
           // ── 단색 섹션 ──
           _SectionLabelWithDelete(
             label: l10n.tabColorSolid,
@@ -669,6 +711,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
             onShowAll: () =>
                 _showGradientGridModal(mode: _ColorGridMode.view),
           ),
+
         ],
       ),
     );

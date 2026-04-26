@@ -21,7 +21,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tileAppIos => '단축어';
 
   @override
-  String get tileClipboard => '클립보드';
+  String get tileClipboard => '텍스트';
 
   @override
   String get tileWebsite => '웹 사이트';
@@ -324,10 +324,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get msgEventEndBeforeStart => '종료 일시는 시작 일시 이후여야 합니다.';
 
   @override
-  String get screenClipboardTitle => '클립보드 태그';
+  String get screenClipboardTitle => '텍스트 태그';
 
   @override
-  String get msgClipboardEmpty => '클립보드가 비어 있습니다. 직접 입력하세요.';
+  String get msgClipboardEmpty => '클립보드가 비어 있습니다.';
 
   @override
   String get labelContent => '내용';
@@ -430,6 +430,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tabShape => '모양';
 
   @override
+  String get tabBackground => '배경';
+
+  @override
   String get tabColor => '색상';
 
   @override
@@ -520,6 +523,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tabColorGradient => '그라디언트';
 
   @override
+  String get colorTargetBoth => '동시';
+
+  @override
+  String get colorTargetQr => 'QR';
+
+  @override
+  String get colorTargetBg => '배경';
+
+  @override
   String get actionPickColor => '직접 선택';
 
   @override
@@ -592,10 +604,43 @@ class AppLocalizationsKo extends AppLocalizations {
   String get optionCircle => '원형';
 
   @override
-  String get labelTopText => '상단 텍스트';
+  String get labelTopText => '상단';
 
   @override
-  String get labelBottomText => '하단 텍스트';
+  String get labelCenterText => '중앙';
+
+  @override
+  String get labelBottomText => '하단';
+
+  @override
+  String get labelBandHorizontal => '가로띠';
+
+  @override
+  String get labelBandVertical => '세로띠';
+
+  @override
+  String get labelBgSquare => '사각';
+
+  @override
+  String get labelBgCircle => '원형';
+
+  @override
+  String get labelTextBackground => '배경';
+
+  @override
+  String get optionTextBgNone => '없음';
+
+  @override
+  String get optionTextBgFilled => '채움';
+
+  @override
+  String get labelTextBgColor => '배경색';
+
+  @override
+  String get labelTextColor => '글자색';
+
+  @override
+  String get labelTextSize => '크기';
 
   @override
   String get hintEnterText => '텍스트를 입력하세요';
@@ -936,6 +981,60 @@ class AppLocalizationsKo extends AppLocalizations {
   String get patternGrid => '격자';
 
   @override
+  String get labelFrameColors => '프레임 색상';
+
+  @override
+  String get labelBorderStyle => '선 종류';
+
+  @override
+  String get labelBorderColor => '선 색상';
+
+  @override
+  String get sliderBorderWidth => '선 두께';
+
+  @override
+  String get labelPatternColor => '패턴 색상';
+
+  @override
+  String get borderNone => '없음';
+
+  @override
+  String get borderSolid => '실선';
+
+  @override
+  String get borderDashed => '파선';
+
+  @override
+  String get borderDotted => '점선';
+
+  @override
+  String get borderDashDot => '일점쇄선';
+
+  @override
+  String get borderDouble => '이중선';
+
+  @override
+  String get boundaryNone => '없음';
+
+  @override
+  String get boundaryCircle => '원형';
+
+  @override
+  String get boundarySuperellipse => '슈퍼타원';
+
+  @override
+  String get boundaryStar => '별';
+
+  @override
+  String get boundaryHeart => '하트';
+
+  @override
+  String get boundaryHexagon => '육각형';
+
+  @override
+  String get labelFontFamily => '글꼴';
+
+  @override
   String get sliderSpeed => '속도';
 
   @override
@@ -1163,4 +1262,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String dialogDeleteSelectedContent(int count) {
     return '$count개의 QR을 삭제하시겠습니까?';
   }
+
+  @override
+  String get labelEvenSpacing => '균등 분할';
 }

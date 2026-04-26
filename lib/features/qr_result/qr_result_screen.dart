@@ -17,10 +17,10 @@ import '../../core/constants/app_config.dart' show validateQrData;
 import 'qr_result_provider.dart';
 import '../../l10n/app_localizations.dart';
 import 'tabs/all_templates_tab.dart';
+import 'tabs/qr_background_tab.dart';
 import 'tabs/qr_shape_tab.dart';
 import 'tabs/qr_color_tab.dart';
 import 'tabs/sticker_tab.dart';
-import 'tabs/text_tab.dart';
 import 'widgets/qr_preview_section.dart';
 
 // ── 파트 분리: qr_result_screen/ 하위로 이동한 헬퍼/위젯 ───────────────────
@@ -38,6 +38,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   final _repaintKey = GlobalKey();
   final _colorTabKey = GlobalKey<QrColorTabState>();
   final _shapeTabKey = GlobalKey<QrShapeTabState>();
+  final _backgroundTabKey = GlobalKey<QrBackgroundTabState>();
   late TabController _tabController;
   final _nameController = TextEditingController();
   final _nameFocusNode = FocusNode();
@@ -46,14 +47,15 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   // 편집기 모드 (탭/하단 버튼 숨김용)
   bool _colorEditorMode = false;
   bool _shapeEditorMode = false;
+  bool _backgroundEditorMode = false;
 
   /// 편집기 활성 여부
-  bool get _isEditorActive => _colorEditorMode || _shapeEditorMode;
+  bool get _isEditorActive => _colorEditorMode || _shapeEditorMode || _backgroundEditorMode;
 
   @override
   void initState() {
     super.initState();
-    // 탭: 템플릿 / 모양 / 색상 / 로고 / 텍스트
+    // 탭: 템플릿 / 모양 / 배경 / 색상 / 로고
     _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(_onTabChanged);
     _nameFocusNode.addListener(() {
@@ -176,8 +178,13 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
       _shapeTabKey.currentState?.confirmAndCloseEditor();
       setState(() => _shapeEditorMode = false);
     }
-    // 색상 탭(index 2) 이외로 이동하면 색상 편집기를 확인 처리
-    if (_colorEditorMode && _tabController.index != 2) {
+    // 배경 탭(index 2) 이외로 이동하면 배경 편집기를 확인 처리
+    if (_backgroundEditorMode && _tabController.index != 2) {
+      _backgroundTabKey.currentState?.confirmAndCloseEditor();
+      setState(() => _backgroundEditorMode = false);
+    }
+    // 색상 탭(index 3) 이외로 이동하면 색상 편집기를 확인 처리
+    if (_colorEditorMode && _tabController.index != 3) {
       _colorTabKey.currentState?.confirmAndCloseEditor();
       setState(() => _colorEditorMode = false);
     }
@@ -197,6 +204,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     if (_shapeEditorMode) {
       final closed = await _shapeTabKey.currentState?.cancelAndCloseEditor() ?? true;
       if (closed && mounted) setState(() => _shapeEditorMode = false);
+    } else if (_backgroundEditorMode) {
+      final closed = await _backgroundTabKey.currentState?.cancelAndCloseEditor() ?? true;
+      if (closed && mounted) setState(() => _backgroundEditorMode = false);
     } else if (_colorEditorMode) {
       _colorTabKey.currentState?.cancelAndCloseEditor();
       setState(() => _colorEditorMode = false);
@@ -296,9 +306,11 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     // 편집기 활성 시 AppBar 타이틀
     final editorTitle = _shapeEditorMode
         ? _shapeTabKey.currentState?.activeEditorLabel(l10n)
-        : _colorEditorMode
-            ? l10n.labelCustomGradient
-            : null;
+        : _backgroundEditorMode
+            ? _backgroundTabKey.currentState?.activeEditorLabel(l10n)
+            : _colorEditorMode
+                ? l10n.labelCustomGradient
+                : null;
 
     return PopScope(
       canPop: false,
@@ -366,9 +378,9 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
               tabs: [
                 Tab(text: l10n.tabTemplate),
                 Tab(text: l10n.tabShape),
+                Tab(text: l10n.tabBackground),
                 Tab(text: l10n.tabColor),
                 Tab(text: l10n.tabLogo),
-                Tab(text: l10n.tabText),
               ],
             ),
 
@@ -385,7 +397,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                   onFavoriteSelected: _onFavoriteSelected,
                   onChanged: _recapture,
                 ),
-                // 1: 모양 (도트 + 눈 + 외곽 + 애니메이션)
+                // 1: 모양 (도트 + 눈)
                 QrShapeTab(
                   key: _shapeTabKey,
                   onEyeOuterChanged: (s) {
@@ -400,25 +412,23 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                     setState(() => _shapeEditorMode = editing);
                   },
                 ),
+                // 2: 배경 (QR 전체 외곽)
+                QrBackgroundTab(
+                  key: _backgroundTabKey,
+                  onEditorModeChanged: (editing) {
+                    setState(() => _backgroundEditorMode = editing);
+                  },
+                ),
                 // 3: 색상 (단색 + 그라디언트 서브탭)
                 QrColorTab(
                   key: _colorTabKey,
-                  onColorSelected: (c) {
-                    ref.read(qrResultProvider.notifier).setQrColor(c);
-                    _recapture();
-                  },
-                  onGradientChanged: (g) {
-                    ref.read(qrResultProvider.notifier).setCustomGradient(g);
-                    _recapture();
-                  },
+                  onChanged: _recapture,
                   onEditorModeChanged: (editing) {
                     setState(() => _colorEditorMode = editing);
                   },
                 ),
                 // 4: 로고
                 StickerTab(onChanged: _recapture),
-                // 5: 텍스트
-                TextTab(onChanged: _recapture),
               ],
             ),
           ),

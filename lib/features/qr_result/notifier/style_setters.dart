@@ -109,6 +109,36 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
     _schedulePush();
   }
 
+  /// 배경 독립 색상/그라디언트 초기화 → qrColor/customGradient 따라감.
+  void clearBgOverrides() {
+    state = state.copyWith(
+      style: state.style.copyWith(clearBgColor: true, clearBgGradient: true),
+    );
+    _schedulePush();
+  }
+
+  void setBgColor(Color color) {
+    state = state.copyWith(
+      style: state.style.copyWith(bgColor: color),
+      template: state.template.copyWith(clearActiveTemplateId: true),
+    );
+    _schedulePush();
+  }
+
+  void setBgGradient(QrGradient? gradient) {
+    if (gradient != null) {
+      state = state.copyWith(
+        style: state.style.copyWith(bgGradient: gradient),
+        template: state.template.copyWith(clearActiveTemplateId: true),
+      );
+    } else {
+      state = state.copyWith(
+        style: state.style.copyWith(clearBgGradient: true),
+      );
+    }
+    _schedulePush();
+  }
+
   void setBoundaryParams(QrBoundaryParams params) {
     state = state.copyWith(
       style: state.style.copyWith(boundaryParams: params),

@@ -15,7 +15,6 @@ class ClipboardTagScreen extends StatefulWidget {
 class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isEmpty = false;
 
   @override
   void initState() {
@@ -23,17 +22,34 @@ class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
     final prefillText = widget.prefill?['text'] as String?;
     if (prefillText != null && prefillText.isNotEmpty) {
       _controller.text = prefillText;
-      return;
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
-      if (!mounted) return;
-      if (data == null || (data.text ?? '').isEmpty) {
-        setState(() => _isEmpty = true);
+  }
+
+  Future<void> _pasteFromClipboard() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    if (data == null || (data.text ?? '').isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.msgClipboardEmpty)),
+      );
+    } else {
+      final sel = _controller.selection;
+      final text = _controller.text;
+      final clip = data.text!;
+      if (sel.isValid && sel.start >= 0) {
+        final newText = text.replaceRange(sel.start, sel.end, clip);
+        _controller.value = TextEditingValue(
+          text: newText,
+          selection: TextSelection.collapsed(offset: sel.start + clip.length),
+        );
       } else {
-        _controller.text = data.text!;
+        // 커서 위치 없으면 끝에 추가
+        _controller.value = TextEditingValue(
+          text: text + clip,
+          selection: TextSelection.collapsed(offset: text.length + clip.length),
+        );
       }
-    });
+    }
   }
 
   @override
@@ -43,7 +59,7 @@ class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
   }
 
   Map<String, dynamic> _buildArgs() => {
-        'appName': '클립보드',
+        'appName': '텍스트',
         'deepLink': TagPayloadEncoder.clipboard(_controller.text.trim()),
         'platform': 'universal',
         'appIconBytes': null,
@@ -79,30 +95,27 @@ class _ClipboardTagScreenState extends State<ClipboardTagScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (_isEmpty)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.shade200),
+              Row(
+                children: [
+                  Text(AppLocalizations.of(context)!.labelContent, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: _pasteFromClipboard,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.content_paste, size: 18, color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 4),
+                        Text('클립보드', style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.primary)),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.amber),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(AppLocalizations.of(context)!.msgClipboardEmpty),
-                      ),
-                    ],
-                  ),
-                ),
-              Text(AppLocalizations.of(context)!.labelContent, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _controller,
-                maxLines: 5,
+                maxLines: 15,
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)!.hintClipboardText,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

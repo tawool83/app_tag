@@ -4,7 +4,7 @@
   "screenSplashSubtitle": "자신만의 QR 을 만들고 꾸미세요",
   "tileAppAndroid": "앱 실행",
   "tileAppIos": "단축어",
-  "tileClipboard": "클립보드",
+  "tileClipboard": "텍스트",
   "tileWebsite": "웹 사이트",
   "tileContact": "연락처",
   "tileWifi": "WiFi",
@@ -124,8 +124,8 @@
   "labelEventDescOptional": "설명 (선택)",
   "hintEventDesc": "이벤트 설명",
   "msgEventEndBeforeStart": "종료 일시는 시작 일시 이후여야 합니다.",
-  "screenClipboardTitle": "클립보드 태그",
-  "msgClipboardEmpty": "클립보드가 비어 있습니다. 직접 입력하세요.",
+  "screenClipboardTitle": "텍스트 태그",
+  "msgClipboardEmpty": "클립보드가 비어 있습니다.",
   "labelContent": "내용",
   "hintClipboardText": "태그에 저장할 텍스트",
   "msgContentRequired": "내용을 입력해주세요.",
@@ -159,6 +159,7 @@
   "screenQrResultTitle": "QR 코드",
   "tabTemplate": "템플릿",
   "tabShape": "모양",
+  "tabBackground": "배경",
   "tabColor": "색상",
   "tabLogo": "로고",
   "tabText": "텍스트",
@@ -214,6 +215,9 @@
   "msgNoSavedTemplatesHint": "하단 [템플릿 저장] 버튼으로 현재 스타일을 저장하세요.",
   "tabColorSolid": "단색",
   "tabColorGradient": "그라디언트",
+  "colorTargetBoth": "동시",
+  "colorTargetQr": "QR",
+  "colorTargetBg": "배경",
   "actionPickColor": "직접 선택",
   "labelRecommendedColors": "추천 색상",
   "labelGradientPresets": "그라디언트 프리셋",
@@ -238,8 +242,19 @@
   "optionNone": "없음",
   "optionSquare": "사각",
   "optionCircle": "원형",
-  "labelTopText": "상단 텍스트",
-  "labelBottomText": "하단 텍스트",
+  "labelTopText": "상단",
+  "labelCenterText": "중앙",
+  "labelBottomText": "하단",
+  "labelBandHorizontal": "가로띠",
+  "labelBandVertical": "세로띠",
+  "labelBgSquare": "사각",
+  "labelBgCircle": "원형",
+  "labelTextBackground": "배경",
+  "optionTextBgNone": "없음",
+  "optionTextBgFilled": "채움",
+  "labelTextBgColor": "배경색",
+  "labelTextColor": "글자색",
+  "labelTextSize": "크기",
   "hintEnterText": "텍스트를 입력하세요",
   "screenSettingsTitle": "설정",
   "drawerSvgStorage": "SVG 저장함",
@@ -359,6 +374,24 @@
   "patternZigzag": "지그재그",
   "patternWave": "물결",
   "patternGrid": "격자",
+  "labelFrameColors": "프레임 색상",
+  "labelBorderStyle": "선 종류",
+  "labelBorderColor": "선 색상",
+  "sliderBorderWidth": "선 두께",
+  "labelPatternColor": "패턴 색상",
+  "borderNone": "없음",
+  "borderSolid": "실선",
+  "borderDashed": "파선",
+  "borderDotted": "점선",
+  "borderDashDot": "일점쇄선",
+  "borderDouble": "이중선",
+  "boundaryNone": "없음",
+  "boundaryCircle": "원형",
+  "boundarySuperellipse": "슈퍼타원",
+  "boundaryStar": "별",
+  "boundaryHeart": "하트",
+  "boundaryHexagon": "육각형",
+  "labelFontFamily": "글꼴",
   "sliderSpeed": "속도",
   "sliderAmplitude": "강도",
   "sliderFrequency": "빈도",
@@ -383,7 +416,6 @@
   "optionRectangle": "사각",
   "optionRoundedRectangle": "원형",
   "labelLogoType": "유형",
-
   "tileScanner": "QR 스캐너",
   "scannerPermissionTitle": "카메라 권한 필요",
   "scannerPermissionDesc": "QR 코드를 스캔하려면 카메라 접근 권한이 필요합니다.",
@@ -419,23 +451,54 @@
   "hintTaskName": "작업 이름",
   "dialogDeleteTitle": "삭제",
   "dialogDeleteContent": "{name} 을(를) 삭제하시겠습니까?",
-  "@dialogDeleteContent": { "placeholders": { "name": { "type": "String" } } },
+  "@dialogDeleteContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "msgNoThumbnail": "미리보기 이미지가 없습니다",
   "msgSavedToGallery": "갤러리에 저장되었습니다",
   "msgSvgSaved": "SVG 파일이 저장되었습니다",
   "labelQr": "QR",
   "timeJustNow": "방금",
   "timeMinutesAgo": "{count}분 전",
-  "@timeMinutesAgo": { "placeholders": { "count": { "type": "int" } } },
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "timeHoursAgo": "{count}시간 전",
-  "@timeHoursAgo": { "placeholders": { "count": { "type": "int" } } },
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "timeDaysAgo": "{count}일 전",
-  "@timeDaysAgo": { "placeholders": { "count": { "type": "int" } } },
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "actionSelectAll": "모두선택",
   "actionDeleteAll": "모두삭제",
   "dialogDeleteAllTitle": "전체 삭제",
   "dialogDeleteAllContent": "모든 QR을 삭제하시겠습니까?",
   "dialogDeleteSelectedTitle": "선택 삭제",
   "dialogDeleteSelectedContent": "{count}개의 QR을 삭제하시겠습니까?",
-  "@dialogDeleteSelectedContent": { "placeholders": { "count": { "type": "int" } } }
+  "@dialogDeleteSelectedContent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelEvenSpacing": "균등 분할"
 }

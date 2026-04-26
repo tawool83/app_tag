@@ -101,29 +101,34 @@ class QrBoundaryClipper {
   static Path _heartPath(Offset center, double radius, double rot) {
     final cx = center.dx;
     final cy = center.dy;
-    final w = radius;
-    final h = radius;
+    final s = radius;
 
     final path = Path();
-    // 하트 상단 중앙에서 시작
-    path.moveTo(cx, cy + h * 0.7);
-    // 왼쪽 곡선
+    // 하단 꼭짓점
+    path.moveTo(cx, cy + s * 0.7);
+    // 하단 → 왼쪽 볼록
     path.cubicTo(
-      cx - w, cy + h * 0.1,
-      cx - w, cy - h * 0.5,
-      cx - w * 0.5, cy - h * 0.5,
+      cx - s * 0.95, cy + s * 0.05,
+      cx - s * 0.95, cy - s * 0.55,
+      cx - s * 0.45, cy - s * 0.55,
     );
-    // 상단 왼쪽 → 중앙
+    // 왼쪽 볼록 → 중앙 dip
     path.cubicTo(
-      cx, cy - h * 0.8,
-      cx, cy - h * 0.8,
-      cx + w * 0.5, cy - h * 0.5,
+      cx - s * 0.15, cy - s * 0.55,
+      cx, cy - s * 0.35,
+      cx, cy - s * 0.25,
     );
-    // 오른쪽 곡선
+    // 중앙 dip → 오른쪽 볼록
     path.cubicTo(
-      cx + w, cy - h * 0.5,
-      cx + w, cy + h * 0.1,
-      cx, cy + h * 0.7,
+      cx, cy - s * 0.35,
+      cx + s * 0.15, cy - s * 0.55,
+      cx + s * 0.45, cy - s * 0.55,
+    );
+    // 오른쪽 볼록 → 하단
+    path.cubicTo(
+      cx + s * 0.95, cy - s * 0.55,
+      cx + s * 0.95, cy + s * 0.05,
+      cx, cy + s * 0.7,
     );
     path.close();
 

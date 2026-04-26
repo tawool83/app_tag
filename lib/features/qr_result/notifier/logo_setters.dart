@@ -90,4 +90,20 @@ mixin _LogoSetters on StateNotifier<QrResultState> {
     );
     _schedulePush();
   }
+
+  /// 중앙 텍스트 "띠(band)" 모드 변경.
+  void setBandMode(BandMode mode) {
+    state = state.copyWith(
+      sticker: state.sticker.copyWith(bandMode: mode),
+    );
+    _schedulePush();
+  }
+
+  /// 중앙 텍스트 균등 분할 모드 토글.
+  void setCenterTextEvenSpacing(bool enabled) {
+    state = state.copyWith(
+      sticker: state.sticker.copyWith(centerTextEvenSpacing: enabled),
+    );
+    _schedulePush();
+  }
 }

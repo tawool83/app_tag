@@ -141,7 +141,7 @@ abstract class AppLocalizations {
   /// No description provided for @tileClipboard.
   ///
   /// In ko, this message translates to:
-  /// **'클립보드'**
+  /// **'텍스트'**
   String get tileClipboard;
 
   /// No description provided for @tileWebsite.
@@ -735,13 +735,13 @@ abstract class AppLocalizations {
   /// No description provided for @screenClipboardTitle.
   ///
   /// In ko, this message translates to:
-  /// **'클립보드 태그'**
+  /// **'텍스트 태그'**
   String get screenClipboardTitle;
 
   /// No description provided for @msgClipboardEmpty.
   ///
   /// In ko, this message translates to:
-  /// **'클립보드가 비어 있습니다. 직접 입력하세요.'**
+  /// **'클립보드가 비어 있습니다.'**
   String get msgClipboardEmpty;
 
   /// No description provided for @labelContent.
@@ -942,6 +942,12 @@ abstract class AppLocalizations {
   /// **'모양'**
   String get tabShape;
 
+  /// No description provided for @tabBackground.
+  ///
+  /// In ko, this message translates to:
+  /// **'배경'**
+  String get tabBackground;
+
   /// No description provided for @tabColor.
   ///
   /// In ko, this message translates to:
@@ -1104,6 +1110,24 @@ abstract class AppLocalizations {
   /// **'그라디언트'**
   String get tabColorGradient;
 
+  /// No description provided for @colorTargetBoth.
+  ///
+  /// In ko, this message translates to:
+  /// **'동시'**
+  String get colorTargetBoth;
+
+  /// No description provided for @colorTargetQr.
+  ///
+  /// In ko, this message translates to:
+  /// **'QR'**
+  String get colorTargetQr;
+
+  /// No description provided for @colorTargetBg.
+  ///
+  /// In ko, this message translates to:
+  /// **'배경'**
+  String get colorTargetBg;
+
   /// No description provided for @actionPickColor.
   ///
   /// In ko, this message translates to:
@@ -1251,14 +1275,80 @@ abstract class AppLocalizations {
   /// No description provided for @labelTopText.
   ///
   /// In ko, this message translates to:
-  /// **'상단 텍스트'**
+  /// **'상단'**
   String get labelTopText;
+
+  /// No description provided for @labelCenterText.
+  ///
+  /// In ko, this message translates to:
+  /// **'중앙'**
+  String get labelCenterText;
 
   /// No description provided for @labelBottomText.
   ///
   /// In ko, this message translates to:
-  /// **'하단 텍스트'**
+  /// **'하단'**
   String get labelBottomText;
+
+  /// No description provided for @labelBandHorizontal.
+  ///
+  /// In ko, this message translates to:
+  /// **'가로띠'**
+  String get labelBandHorizontal;
+
+  /// No description provided for @labelBandVertical.
+  ///
+  /// In ko, this message translates to:
+  /// **'세로띠'**
+  String get labelBandVertical;
+
+  /// No description provided for @labelBgSquare.
+  ///
+  /// In ko, this message translates to:
+  /// **'사각'**
+  String get labelBgSquare;
+
+  /// No description provided for @labelBgCircle.
+  ///
+  /// In ko, this message translates to:
+  /// **'원형'**
+  String get labelBgCircle;
+
+  /// No description provided for @labelTextBackground.
+  ///
+  /// In ko, this message translates to:
+  /// **'배경'**
+  String get labelTextBackground;
+
+  /// No description provided for @optionTextBgNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'없음'**
+  String get optionTextBgNone;
+
+  /// No description provided for @optionTextBgFilled.
+  ///
+  /// In ko, this message translates to:
+  /// **'채움'**
+  String get optionTextBgFilled;
+
+  /// No description provided for @labelTextBgColor.
+  ///
+  /// In ko, this message translates to:
+  /// **'배경색'**
+  String get labelTextBgColor;
+
+  /// No description provided for @labelTextColor.
+  ///
+  /// In ko, this message translates to:
+  /// **'글자색'**
+  String get labelTextColor;
+
+  /// No description provided for @labelTextSize.
+  ///
+  /// In ko, this message translates to:
+  /// **'크기'**
+  String get labelTextSize;
 
   /// No description provided for @hintEnterText.
   ///
@@ -1932,6 +2022,114 @@ abstract class AppLocalizations {
   /// **'격자'**
   String get patternGrid;
 
+  /// No description provided for @labelFrameColors.
+  ///
+  /// In ko, this message translates to:
+  /// **'프레임 색상'**
+  String get labelFrameColors;
+
+  /// No description provided for @labelBorderStyle.
+  ///
+  /// In ko, this message translates to:
+  /// **'선 종류'**
+  String get labelBorderStyle;
+
+  /// No description provided for @labelBorderColor.
+  ///
+  /// In ko, this message translates to:
+  /// **'선 색상'**
+  String get labelBorderColor;
+
+  /// No description provided for @sliderBorderWidth.
+  ///
+  /// In ko, this message translates to:
+  /// **'선 두께'**
+  String get sliderBorderWidth;
+
+  /// No description provided for @labelPatternColor.
+  ///
+  /// In ko, this message translates to:
+  /// **'패턴 색상'**
+  String get labelPatternColor;
+
+  /// No description provided for @borderNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'없음'**
+  String get borderNone;
+
+  /// No description provided for @borderSolid.
+  ///
+  /// In ko, this message translates to:
+  /// **'실선'**
+  String get borderSolid;
+
+  /// No description provided for @borderDashed.
+  ///
+  /// In ko, this message translates to:
+  /// **'파선'**
+  String get borderDashed;
+
+  /// No description provided for @borderDotted.
+  ///
+  /// In ko, this message translates to:
+  /// **'점선'**
+  String get borderDotted;
+
+  /// No description provided for @borderDashDot.
+  ///
+  /// In ko, this message translates to:
+  /// **'일점쇄선'**
+  String get borderDashDot;
+
+  /// No description provided for @borderDouble.
+  ///
+  /// In ko, this message translates to:
+  /// **'이중선'**
+  String get borderDouble;
+
+  /// No description provided for @boundaryNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'없음'**
+  String get boundaryNone;
+
+  /// No description provided for @boundaryCircle.
+  ///
+  /// In ko, this message translates to:
+  /// **'원형'**
+  String get boundaryCircle;
+
+  /// No description provided for @boundarySuperellipse.
+  ///
+  /// In ko, this message translates to:
+  /// **'슈퍼타원'**
+  String get boundarySuperellipse;
+
+  /// No description provided for @boundaryStar.
+  ///
+  /// In ko, this message translates to:
+  /// **'별'**
+  String get boundaryStar;
+
+  /// No description provided for @boundaryHeart.
+  ///
+  /// In ko, this message translates to:
+  /// **'하트'**
+  String get boundaryHeart;
+
+  /// No description provided for @boundaryHexagon.
+  ///
+  /// In ko, this message translates to:
+  /// **'육각형'**
+  String get boundaryHexagon;
+
+  /// No description provided for @labelFontFamily.
+  ///
+  /// In ko, this message translates to:
+  /// **'글꼴'**
+  String get labelFontFamily;
+
   /// No description provided for @sliderSpeed.
   ///
   /// In ko, this message translates to:
@@ -2369,6 +2567,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'{count}개의 QR을 삭제하시겠습니까?'**
   String dialogDeleteSelectedContent(int count);
+
+  /// No description provided for @labelEvenSpacing.
+  ///
+  /// In ko, this message translates to:
+  /// **'균등 분할'**
+  String get labelEvenSpacing;
 }
 
 class _AppLocalizationsDelegate

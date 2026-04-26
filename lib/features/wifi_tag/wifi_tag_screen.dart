@@ -107,9 +107,13 @@ class _WifiTagScreenState extends State<WifiTagScreen> {
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _securityType,
+                      initialValue: _securityType,
+                      isDense: true,
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                       items: _securityOptions(context)
                           .map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2)))

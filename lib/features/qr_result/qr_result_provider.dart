@@ -17,6 +17,7 @@ import 'data/services/qr_service.dart';
 import '../qr_task/domain/entities/qr_customization.dart';
 import '../qr_task/presentation/providers/qr_task_providers.dart';
 import 'presentation/providers/qr_result_providers.dart';
+import 'domain/entities/color_target_mode.dart';
 import 'domain/entities/qr_preview_mode.dart';
 import 'domain/state/qr_action_state.dart';
 import 'domain/state/qr_logo_state.dart';
@@ -36,6 +37,11 @@ final qrServiceProvider = Provider<QrService>((ref) => QrService());
 /// 현재 미리보기 모드. 슬라이더 onChanged 시 dedicated*, onChangeEnd 시 fullQr.
 final shapePreviewModeProvider = StateProvider<ShapePreviewMode>(
   (_) => ShapePreviewMode.fullQr,
+);
+
+/// 색상 탭 적용 대상 모드.
+final colorTargetModeProvider = StateProvider<ColorTargetMode>(
+  (_) => ColorTargetMode.both,
 );
 
 class QrResultState {
@@ -146,6 +152,12 @@ class QrResultNotifier extends StateNotifier<QrResultState>
           customEyeParams: CustomizationMapper.eyeParamsFromJson(c.customEyeParams),
           boundaryParams: CustomizationMapper.boundaryParamsFromJson(c.boundaryParams),
           animationParams: CustomizationMapper.animationParamsFromJson(c.animationParams),
+          bgColor: c.bgColorArgb != null
+              ? CustomizationMapper.colorFromArgb(c.bgColorArgb!)
+              : null,
+          clearBgColor: c.bgColorArgb == null,
+          bgGradient: CustomizationMapper.gradientFromData(c.bgGradient),
+          clearBgGradient: c.bgGradient == null,
         ),
         logo: state.logo.copyWith(
           embedIcon: c.embedIcon,

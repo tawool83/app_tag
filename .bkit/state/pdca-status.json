@@ -4,10 +4,12 @@
   "activeFeatures": [
     "logo-image-recrop-fix",
     "main-screen-redesign",
-    "svg-save"
+    "svg-save",
+    "logo-text-unification"
   ],
-  "primaryFeature": "svg-save",
-  "lastPhaseTransition": "plan → design (2026-04-23, main-screen-redesign)",
+  "primaryFeature": "logo-text-unification",
+  "archivedFeature": "boundary-editor-redesign",
+  "lastPhaseTransition": "design → do (2026-04-26, logo-text-unification)",
   "features": {
     "logo-image-recrop-fix": {
       "phase": "do",
@@ -58,6 +60,37 @@
       "archivedTo": "docs/archive/2026-04/logo-tab-dot-clearing/",
       "matchRate": 100,
       "iterationCount": 0
+    },
+    "boundary-editor-redesign": {
+      "phase": "archived",
+      "startedAt": "2026-04-25T00:00:00.000Z",
+      "archivedAt": "2026-04-26T00:00:00.000Z",
+      "archivedTo": "docs/archive/2026-04/boundary-editor-redesign/",
+      "matchRate": 100,
+      "iterationCount": 0
+    },
+    "logo-text-unification": {
+      "phase": "do",
+      "startedAt": "2026-04-26T00:00:00.000Z",
+      "planDoc": "docs/01-plan/features/logo-text-unification.plan.md",
+      "designDoc": "docs/02-design/features/logo-text-unification.design.md",
+      "filesModified": [
+        "lib/features/qr_result/domain/entities/sticker_config.dart",
+        "lib/features/qr_result/notifier/logo_setters.dart",
+        "lib/features/qr_result/utils/logo_clear_zone.dart",
+        "lib/features/qr_result/widgets/custom_qr_painter.dart",
+        "lib/features/qr_result/widgets/qr_layer_stack.dart",
+        "lib/features/qr_result/tabs/sticker_tab.dart",
+        "lib/features/qr_result/tabs/logo_editors/logo_text_unified_editor.dart",
+        "lib/features/qr_result/qr_result_screen.dart",
+        "lib/features/qr_task/domain/entities/sticker_spec.dart",
+        "lib/features/qr_result/utils/customization_mapper.dart",
+        "lib/l10n/app_ko.arb"
+      ],
+      "filesDeleted": [
+        "lib/features/qr_result/tabs/text_tab.dart",
+        "lib/features/qr_result/tabs/logo_editors/logo_text_editor.dart"
+      ]
     }
   },
   "pipeline": {
@@ -124,6 +157,12 @@
       "feature": "app-info-menu",
       "phase": "archived",
       "action": "Plan+Design+Analysis+Report archived (matchRate 100, 5/5 FR Pass, 0 iterations, 0 new + 5 modified files) → docs/archive/2026-04/app-info-menu/"
+    },
+    {
+      "timestamp": "2026-04-26T00:00:00.000Z",
+      "feature": "boundary-editor-redesign",
+      "phase": "archived",
+      "action": "Plan+Design+Analysis+Report archived (matchRate 100%, 0 iterations, 3 new + 11 modified files, +463 lines — 외곽 에디터 드롭다운+QrBorderStyle 6종+ColorTargetMode 색상 탭 통합+bgColor/bgGradient 독립 시스템+패턴 그라디언트) → docs/archive/2026-04/boundary-editor-redesign/"
     }
   ],
   "stateMachine": {

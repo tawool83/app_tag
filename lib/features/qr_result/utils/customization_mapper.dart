@@ -54,6 +54,8 @@ class CustomizationMapper {
       animationParams: state.style.animationParams.isAnimated
           ? state.style.animationParams.toJson()
           : null,
+      bgColorArgb: state.style.bgColor?.toARGB32(),
+      bgGradient: _gradientToData(state.style.bgGradient),
     );
   }
 
@@ -97,6 +99,8 @@ class CustomizationMapper {
       logoBackgroundColor: spec.logoBackgroundColorArgb != null
           ? Color(spec.logoBackgroundColorArgb!)
           : null,
+      bandMode: _bandModeFromName(spec.bandMode),
+      centerTextEvenSpacing: spec.centerTextEvenSpacing,
       // logoAssetPngBytes 는 영속화 안 됨 — 복원 시 repository.rasterize 로 재생성
     );
   }
@@ -160,6 +164,8 @@ class CustomizationMapper {
           s.logoText != null ? _stickerTextToSpec(s.logoText!) : null,
       logoBackgroundColorArgb:
           s.logoBackgroundColor?.toARGB32(),
+      bandMode: s.bandMode.name,
+      centerTextEvenSpacing: s.centerTextEvenSpacing,
     );
   }
 
@@ -188,6 +194,9 @@ class CustomizationMapper {
         colorArgb: t.color.toARGB32(),
         fontFamily: t.fontFamily,
         fontSize: t.fontSize,
+        showBackground: t.showBackground,
+        backgroundColorArgb:
+            t.showBackground ? t.backgroundColor.toARGB32() : null,
       );
 
   static StickerText _stickerTextFromSpec(StickerTextSpec s) => StickerText(
@@ -195,6 +204,10 @@ class CustomizationMapper {
         color: Color(s.colorArgb),
         fontFamily: s.fontFamily,
         fontSize: s.fontSize,
+        showBackground: s.showBackground,
+        backgroundColor: s.backgroundColorArgb != null
+            ? Color(s.backgroundColorArgb!)
+            : const Color(0xFFFFFFFF),
       );
 
   static LogoPosition _logoPositionFromName(String name) =>
@@ -202,4 +215,7 @@ class CustomizationMapper {
 
   static LogoBackground _logoBackgroundFromName(String name) =>
       enumFromName(LogoBackground.values, name, LogoBackground.none);
+
+  static BandMode _bandModeFromName(String name) =>
+      enumFromName(BandMode.values, name, BandMode.none);
 }

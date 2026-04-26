@@ -440,6 +440,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get tabShape => 'Forma';
 
   @override
+  String get tabBackground => '배경';
+
+  @override
   String get tabColor => 'Cor';
 
   @override
@@ -533,6 +536,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get tabColorGradient => 'Gradiente';
 
   @override
+  String get colorTargetBoth => '동시';
+
+  @override
+  String get colorTargetQr => 'QR';
+
+  @override
+  String get colorTargetBg => '배경';
+
+  @override
   String get actionPickColor => 'Escolher cor';
 
   @override
@@ -609,7 +621,40 @@ class AppLocalizationsPt extends AppLocalizations {
   String get labelTopText => 'Texto superior';
 
   @override
+  String get labelCenterText => '중앙';
+
+  @override
   String get labelBottomText => 'Texto inferior';
+
+  @override
+  String get labelBandHorizontal => '가로띠';
+
+  @override
+  String get labelBandVertical => '세로띠';
+
+  @override
+  String get labelBgSquare => '사각';
+
+  @override
+  String get labelBgCircle => '원형';
+
+  @override
+  String get labelTextBackground => '배경';
+
+  @override
+  String get optionTextBgNone => '없음';
+
+  @override
+  String get optionTextBgFilled => '채움';
+
+  @override
+  String get labelTextBgColor => '배경색';
+
+  @override
+  String get labelTextColor => '글자색';
+
+  @override
+  String get labelTextSize => '크기';
 
   @override
   String get hintEnterText => 'Insira o texto';
@@ -951,6 +996,60 @@ class AppLocalizationsPt extends AppLocalizations {
   String get patternGrid => '격자';
 
   @override
+  String get labelFrameColors => '프레임 색상';
+
+  @override
+  String get labelBorderStyle => '선 종류';
+
+  @override
+  String get labelBorderColor => '선 색상';
+
+  @override
+  String get sliderBorderWidth => '선 두께';
+
+  @override
+  String get labelPatternColor => '패턴 색상';
+
+  @override
+  String get borderNone => '없음';
+
+  @override
+  String get borderSolid => '실선';
+
+  @override
+  String get borderDashed => '파선';
+
+  @override
+  String get borderDotted => '점선';
+
+  @override
+  String get borderDashDot => '일점쇄선';
+
+  @override
+  String get borderDouble => '이중선';
+
+  @override
+  String get boundaryNone => '없음';
+
+  @override
+  String get boundaryCircle => '원형';
+
+  @override
+  String get boundarySuperellipse => '슈퍼타원';
+
+  @override
+  String get boundaryStar => '별';
+
+  @override
+  String get boundaryHeart => '하트';
+
+  @override
+  String get boundaryHexagon => '육각형';
+
+  @override
+  String get labelFontFamily => '글꼴';
+
+  @override
   String get sliderSpeed => 'Velocidade';
 
   @override
@@ -1178,4 +1277,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String dialogDeleteSelectedContent(int count) {
     return '$count개의 QR을 삭제하시겠습니까?';
   }
+
+  @override
+  String get labelEvenSpacing => '균등 분할';
 }

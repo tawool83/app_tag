@@ -40,6 +40,10 @@ class QrCustomization {
   final Map<String, dynamic>? boundaryParams;
   final Map<String, dynamic>? animationParams;
 
+  // ── 배경 독립 색상 ──
+  final int? bgColorArgb;
+  final QrGradientData? bgGradient;
+
   const QrCustomization({
     this.qrColorArgb = 0xFF000000,
     this.gradient,
@@ -59,6 +63,8 @@ class QrCustomization {
     this.customEyeParams,
     this.boundaryParams,
     this.animationParams,
+    this.bgColorArgb,
+    this.bgGradient,
   });
 
   Map<String, dynamic> toJson() => {
@@ -80,6 +86,8 @@ class QrCustomization {
         if (customEyeParams != null) 'customEyeParams': customEyeParams,
         if (boundaryParams != null) 'boundaryParams': boundaryParams,
         if (animationParams != null) 'animationParams': animationParams,
+        if (bgColorArgb != null) 'bgColorArgb': bgColorArgb,
+        if (bgGradient != null) 'bgGradient': bgGradient!.toJson(),
       };
 
   factory QrCustomization.fromJson(Map<String, dynamic> json) => QrCustomization(
@@ -108,6 +116,10 @@ class QrCustomization {
         customEyeParams: json['customEyeParams'] as Map<String, dynamic>?,
         boundaryParams: json['boundaryParams'] as Map<String, dynamic>?,
         animationParams: json['animationParams'] as Map<String, dynamic>?,
+        bgColorArgb: (json['bgColorArgb'] as num?)?.toInt(),
+        bgGradient: json['bgGradient'] != null
+            ? QrGradientData.fromJson(json['bgGradient'] as Map<String, dynamic>)
+            : null,
       );
 
   QrCustomization copyWith({
@@ -138,6 +150,10 @@ class QrCustomization {
     bool clearBoundaryParams = false,
     Map<String, dynamic>? animationParams,
     bool clearAnimationParams = false,
+    int? bgColorArgb,
+    bool clearBgColorArgb = false,
+    QrGradientData? bgGradient,
+    bool clearBgGradient = false,
   }) =>
       QrCustomization(
         qrColorArgb: qrColorArgb ?? this.qrColorArgb,
@@ -172,5 +188,9 @@ class QrCustomization {
         animationParams: clearAnimationParams
             ? null
             : (animationParams ?? this.animationParams),
+        bgColorArgb:
+            clearBgColorArgb ? null : (bgColorArgb ?? this.bgColorArgb),
+        bgGradient:
+            clearBgGradient ? null : (bgGradient ?? this.bgGradient),
       );
 }

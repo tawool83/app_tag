@@ -492,14 +492,15 @@ Widget buildPrettyQr(
   bool isDialog = false,
 }) {
   final centerImage = centerImageProvider(state);
-  // 로고 위치가 center일 때만 QR 내부에 embed (bottomRight는 _LogoWidget이 담당)
-  final embedInQr = centerImage != null &&
+  // 로고가 QR 위에 겹칠 때(center/bottomRight 모두) EC H 강제
+  final hasLogo = centerImage != null && state.logo.embedIcon;
+  final embedInQr = hasLogo &&
       state.sticker.logoPosition == LogoPosition.center;
   // 템플릿 그라디언트 우선, 없으면 사용자 커스텀 그라디언트
   final activeGradient = state.template.templateGradient ?? state.style.customGradient;
   final hasGradient = activeGradient != null;
   final ecLevel =
-      embedInQr ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
+      hasLogo ? QrErrorCorrectLevel.H : QrErrorCorrectLevel.M;
   final dotColor = hasGradient ? Colors.black : state.style.qrColor;
 
   // 맞춤 도트가 설정되면 PolarPolygon 기반 PrettyQrShape 사용 (QR 스펙 보존)

@@ -6,16 +6,13 @@ import 'dart:ui' as dart_ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_dot_style.dart';
-import '../domain/entities/qr_margin_pattern.dart';
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/user_shape_preset.dart';
 import '../data/datasources/local_user_shape_preset_datasource.dart';
 import '../../../l10n/app_localizations.dart';
 import '../utils/polar_polygon.dart';
 import '../utils/superellipse.dart';
-import '../utils/qr_boundary_clipper.dart';
 import '../domain/entities/qr_eye_shapes.dart';
 import '../domain/entities/qr_preview_mode.dart';
 import '../qr_result_provider.dart' show qrResultProvider, shapePreviewModeProvider;
@@ -25,12 +22,10 @@ part 'qr_shape_tab/editor_type.dart';
 part 'qr_shape_tab/shared.dart';
 part 'qr_shape_tab/dot_preset_row.dart';
 part 'qr_shape_tab/eye_row.dart';
-part 'qr_shape_tab/boundary_preset_row.dart';
 part 'qr_shape_tab/dot_editor.dart';
 part 'qr_shape_tab/eye_editor.dart';
-part 'qr_shape_tab/boundary_editor.dart';
 
-/// [모양] 탭: 도트 + 눈 + 외곽 프리셋 행 + "+" 편집기.
+/// [모양] 탭: 도트 + 눈 프리셋 행 + "+" 편집기.
 class QrShapeTab extends ConsumerStatefulWidget {
   final ValueChanged<QrEyeOuter> onEyeOuterChanged;
   final ValueChanged<QrEyeInner> onEyeInnerChanged;
@@ -58,13 +53,11 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
   // 편집기 임시 파라미터
   DotShapeParams _editDot = const DotShapeParams();
   EyeShapeParams _editEye = const EyeShapeParams();
-  QrBoundaryParams _editBoundary = const QrBoundaryParams();
 
   // 사용자 프리셋
   LocalUserShapePresetDatasource? _datasource;
   List<UserShapePreset> _dotPresets = [];
   List<UserShapePreset> _eyePresets = [];
-  List<UserShapePreset> _boundaryPresets = [];
 
   // 현재 선택된 사용자 프리셋 ID (null = 빌트인 또는 미선택)
   String? _selectedDotPresetId;
@@ -98,7 +91,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
     setState(() {
       _dotPresets = _datasource!.readAll(ShapePresetType.dot);
       _eyePresets = _datasource!.readAll(ShapePresetType.eye);
-      _boundaryPresets = _datasource!.readAll(ShapePresetType.boundary);
     });
   }
 
@@ -121,8 +113,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
               const DotShapeParams(vertices: 5, innerRadius: 0.5);
         case _EditorType.eye:
           _editEye = state.style.customEyeParams ?? const EyeShapeParams();
-        case _EditorType.boundary:
-          _editBoundary = state.style.boundaryParams;
       }
     });
     widget.onEditorModeChanged?.call(true);
@@ -132,7 +122,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
   String? activeEditorLabel(AppLocalizations l10n) => switch (_activeEditor) {
     _EditorType.dot => l10n.labelCustomDot,
     _EditorType.eye => l10n.labelCustomEye,
-    _EditorType.boundary => l10n.labelCustomBoundary,
     null => null,
   };
 
@@ -168,8 +157,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
         notifier.setCustomDotParams(_editDot);
       case _EditorType.eye:
         notifier.setCustomEyeParams(_editEye);
-      case _EditorType.boundary:
-        notifier.setBoundaryParams(_editBoundary);
     }
     ref.read(shapePreviewModeProvider.notifier).state = ShapePreviewMode.fullQr;
     setState(() { _activeEditor = null; _editingPresetId = null; });
@@ -300,8 +287,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
           setState(() => _selectedEyePresetId = existing.id);
           _loadPresets();
         }
-      case _EditorType.boundary:
-        break; // boundary 는 아직 미지원
     }
   }
 
@@ -346,11 +331,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
           createdAt: now, eyeParams: _editEye,
         );
         setState(() => _selectedEyePresetId = id);
-      case _EditorType.boundary:
-        preset = UserShapePreset(
-          id: id, name: id.substring(0, 8), type: ShapePresetType.boundary,
-          createdAt: now, boundaryParams: _editBoundary,
-        );
     }
     await _datasource!.save(preset);
     _loadPresets();
@@ -384,39 +364,34 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
             ],
           ),
           const SizedBox(height: 10),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeIn,
-            switchOutCurve: Curves.easeOut,
-            child: _DotPresetRow(
-              key: ValueKey(_dotPresets.map((p) => p.id).join(',')),
-              selectedPresetId: _selectedDotPresetId,
-              // customDotParams 없을 때만 현재 dotStyle 로 빌트인 칩 하이라이트
-              selectedBuiltinStyle: (_selectedDotPresetId == null && state.style.customDotParams == null)
-                  ? state.style.dotStyle
-                  : null,
-              userPresets: _dotPresets,
-              onBuiltinSelect: (style) {
-                setState(() => _selectedDotPresetId = null);
-                // setDotStyle 이 customDotParams 를 자동 clear
-                ref.read(qrResultProvider.notifier).setDotStyle(style);
-              },
-              onAdd: () => _openEditor(_EditorType.dot),
-              onUserSelect: (p) async {
-                setState(() => _selectedDotPresetId = p.id);
-                ref.read(qrResultProvider.notifier).setCustomDotParams(p.dotParams!);
-                await _datasource?.touchLastUsed(ShapePresetType.dot, p.id);
-                _delayedReloadPresets();
-              },
-              onUserLongPress: (p) async {
-                ref.read(qrResultProvider.notifier).setCustomDotParams(p.dotParams!);
-                setState(() => _selectedDotPresetId = p.id);
-                await _datasource?.touchLastUsed(ShapePresetType.dot, p.id);
-                _loadPresets();
-                _openEditor(_EditorType.dot, editingId: p.id);
-              },
-              onShowAll: () => _showDotGridModal(context, mode: _DotGridMode.view),
-            ),
+          _DotBuiltinRow(
+            selectedBuiltinStyle: (_selectedDotPresetId == null && state.style.customDotParams == null)
+                ? state.style.dotStyle
+                : null,
+            onBuiltinSelect: (style) {
+              setState(() => _selectedDotPresetId = null);
+              ref.read(qrResultProvider.notifier).setDotStyle(style);
+            },
+          ),
+          const SizedBox(height: 8),
+          _DotUserPresetRow(
+            selectedPresetId: _selectedDotPresetId,
+            userPresets: _dotPresets,
+            onAdd: () => _openEditor(_EditorType.dot),
+            onUserSelect: (p) async {
+              setState(() => _selectedDotPresetId = p.id);
+              ref.read(qrResultProvider.notifier).setCustomDotParams(p.dotParams!);
+              await _datasource?.touchLastUsed(ShapePresetType.dot, p.id);
+              _delayedReloadPresets();
+            },
+            onUserLongPress: (p) async {
+              ref.read(qrResultProvider.notifier).setCustomDotParams(p.dotParams!);
+              setState(() => _selectedDotPresetId = p.id);
+              await _datasource?.touchLastUsed(ShapePresetType.dot, p.id);
+              _loadPresets();
+              _openEditor(_EditorType.dot, editingId: p.id);
+            },
+            onShowAll: () => _showDotGridModal(context, mode: _DotGridMode.view),
           ),
           const SizedBox(height: 20),
           const Divider(height: 1),
@@ -480,29 +455,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
               onShowAll: () => _showEyeGridModal(context, mode: _EyeGridMode.view),
             ),
           ),
-          const SizedBox(height: 20),
-          const Divider(height: 1),
-          const SizedBox(height: 16),
-
-          // ⑤ QR 전체 외곽 (Boundary)
-          _sectionLabel(l10n.labelBoundaryShape),
-          const SizedBox(height: 10),
-          _BoundaryPresetRow(
-            selected: state.style.boundaryParams.type,
-            isFrameMode: state.style.boundaryParams.isFrameMode,
-            onPresetApply: (params) {
-              ref.read(qrResultProvider.notifier).setBoundaryParams(params);
-            },
-            presets: _boundaryPresets,
-            onAdd: () => _openEditor(_EditorType.boundary),
-            onPresetSelect: (p) {
-              ref.read(qrResultProvider.notifier).setBoundaryParams(p.boundaryParams!);
-            },
-            onPresetDelete: (p) async {
-              await _datasource?.delete(ShapePresetType.boundary, p.id);
-              _loadPresets();
-            },
-          ),
           const SizedBox(height: 16),
         ],
       ),
@@ -521,7 +473,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
               switch (_activeEditor!) {
                 _EditorType.dot => '',
                 _EditorType.eye => l10n.labelCustomEye,
-                _EditorType.boundary => l10n.labelCustomBoundary,
               },
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
@@ -549,18 +500,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
               onDragStart: () => ref.read(shapePreviewModeProvider.notifier).state = ShapePreviewMode.dedicatedEye,
               onDragEnd: (p) {
                 ref.read(qrResultProvider.notifier).setCustomEyeParams(p);
-                ref.read(shapePreviewModeProvider.notifier).state = ShapePreviewMode.fullQr;
-              },
-            ),
-            _EditorType.boundary => _BoundaryEditor(
-              params: _editBoundary,
-              onChanged: (p) {
-                setState(() => _editBoundary = p);
-                ref.read(qrResultProvider.notifier).setBoundaryParams(p);
-              },
-              onDragStart: () => ref.read(shapePreviewModeProvider.notifier).state = ShapePreviewMode.dedicatedBoundary,
-              onDragEnd: (p) {
-                ref.read(qrResultProvider.notifier).setBoundaryParams(p);
                 ref.read(shapePreviewModeProvider.notifier).state = ShapePreviewMode.fullQr;
               },
             ),
