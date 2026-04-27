@@ -81,6 +81,16 @@ class _LocationTagScreenState extends State<LocationTagScreen> {
         // 지도가 아직 준비되지 않았으면 보관 → onMapReady에서 처리
         setState(() => _pendingMove = current);
       }
+
+      // 최초 진입(_selected 가 아직 없음) 시 현재 위치를 기본 선택값으로 설정.
+      // 이미 사용자가 위치를 선택했거나 편집 모드(prefill) 인 경우 보존.
+      if (_selected == null) {
+        setState(() {
+          _selected = current;
+          _isGeocoding = true;
+        });
+        await _reverseGeocode(current);
+      }
     } catch (_) {
       // 위치 획득 실패 시 기본 위치(서울 시청) 유지
     }

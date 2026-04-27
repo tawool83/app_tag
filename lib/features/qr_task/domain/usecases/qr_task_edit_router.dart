@@ -6,7 +6,8 @@ import '../entities/qr_task.dart';
 /// QrTask 편집 시 tagType 에 따라 데이터 입력 화면으로 라우팅.
 ///
 /// 입력 화면이 있는 tagType → 해당 화면(prefill + editTaskId)
-/// 입력 화면이 없는 tagType (app 등) → 바로 /qr-result
+/// 앱 실행(Android 'null' / iOS 'app') → /app-picker, /ios-input 거치지 않고
+///   바로 /qr-result 로 진입 (이미 선택된 앱·단축어 정보가 task.meta 에 보존됨).
 class QrTaskEditRouter {
   QrTaskEditRouter._();
 
@@ -28,6 +29,9 @@ class QrTaskEditRouter {
     });
   }
 
+  /// tagType → 편집 시 진입할 데이터 입력 화면 경로.
+  /// null 반환 시 호출자가 /qr-result 로 직행.
+  /// 앱 실행 태그(null/'app')는 명시적으로 picker/input 화면 우회.
   static String? _tagTypeToRoute(String? tagType) => switch (tagType) {
     'clipboard' => '/clipboard-tag',
     'website' => '/website-tag',
@@ -37,6 +41,9 @@ class QrTaskEditRouter {
     'event' => '/event-tag',
     'email' => '/email-tag',
     'sms' => '/sms-tag',
+    // 앱 실행 — 편집 시 picker/input 거치지 않음
+    'app' => null,
+    null => null,
     _ => null,
   };
 
