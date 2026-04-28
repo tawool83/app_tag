@@ -204,6 +204,13 @@ class _QrTaskActionSheetState extends ConsumerState<QrTaskActionSheet> {
       );
     }
 
+    // 띠 사용 시 V5 강제 — 화면 렌더와 동일 정책 (qr_layer_stack 참조).
+    final hasBand = s.bandMode != 'none' &&
+        s.logoType == 'text' &&
+        s.logoText != null &&
+        s.logoText!.content.isNotEmpty;
+    final minTypeNumber = hasBand ? 5 : 1;
+
     final svgString = QrSvgGenerator.generate(
       data: task.meta.deepLink,
       dotParams: dotParams,
@@ -211,6 +218,7 @@ class _QrTaskActionSheetState extends ConsumerState<QrTaskActionSheet> {
       boundaryParams: boundaryParams,
       colorArgb: c.qrColorArgb,
       gradient: c.gradient,
+      minTypeNumber: minTypeNumber,
       logoSvgContent: logoSvgContent,
       logoBase64Png: logoBase64Png,
       logoText: logoText,

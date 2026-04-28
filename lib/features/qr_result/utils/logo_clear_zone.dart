@@ -76,13 +76,15 @@ ClearZone? computeLogoClearZone({
 /// [qrSize]: CustomQrPainter 가 그리는 영역(quiet zone 제외) 크기.
 /// [fontSize]: logoText.fontSize * scale (미리보기 크기 비례).
 ///
-/// 띠 크기(높이 또는 너비)는 QR 크기의 15% 이하로 제한.
+/// 띠 크기(높이 또는 너비)는 QR 크기의 12% 이하로 제한.
+/// (이전 15% → 12%: burst error 실효 정정 capacity 안쪽으로 진입,
+///  finder/timing pattern 침범 위험 감소)
 ClearZone computeBandClearZone({
   required Size qrSize,
   required BandMode bandMode,
   required double fontSize,
 }) {
-  final maxDimension = qrSize.width * 0.15;
+  final maxDimension = qrSize.width * 0.12;
 
   if (bandMode == BandMode.vertical) {
     final bandWidth = (fontSize * 1.4).clamp(0.0, maxDimension);

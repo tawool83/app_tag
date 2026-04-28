@@ -26,6 +26,10 @@ class QrSvgGenerator {
     int colorArgb = 0xFF000000,
     QrGradientData? gradient,
     double cellSize = 10.0,
+    // 자동 산출된 typeNumber 가 이 값보다 작으면 강제로 minTypeNumber 로 재생성.
+    // 띠 사용 시 V5(=37×37) 강제 — 짧은 데이터로 작은 QR 생성 시 띠가
+    // finder/timing pattern 침범하는 사고 방지.
+    int minTypeNumber = 1,
     // ── 로고 임베딩 ──
     String? logoSvgContent,
     String? logoBase64Png,
@@ -35,10 +39,13 @@ class QrSvgGenerator {
     SvgStickerText? topText,
     SvgStickerText? bottomText,
   }) {
-    final qrCode = QrCode.fromData(
+    var qrCode = QrCode.fromData(
       data: data,
       errorCorrectLevel: ecLevel,
     );
+    if (qrCode.typeNumber < minTypeNumber) {
+      qrCode = QrCode(minTypeNumber, ecLevel)..addData(data);
+    }
     final qrImage = QrImage(qrCode);
     final n = qrImage.moduleCount;
     final totalSize = n * cellSize;

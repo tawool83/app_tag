@@ -50,22 +50,30 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
   );
   ColorTargetMode? _flashTarget;
 
-  // (deepLink, ecLevel) 키가 같을 때 QrImage 재사용 — 애니메이션 중 parent rebuild 로
+  // (deepLink, ecLevel, minTypeNumber) 키가 같을 때 QrImage 재사용 — 애니메이션 중 parent rebuild 로
   // 60fps 재계산되던 QrCode.fromData() 를 제거해 매 프레임 비용을 0 에 가깝게 낮춘다.
   String? _cachedDeepLink;
   int? _cachedEcLevel;
+  int? _cachedMinTypeNumber;
   QrImage? _cachedQrImage;
 
-  QrImage _qrImageFor(String deepLink, int ecLevel) {
+  /// [minTypeNumber] 가 지정되면 자동 산출된 typeNumber 가 그보다 작을 때
+  /// 강제로 minTypeNumber 로 재생성. 띠 사용 시 V5 강제 (finder/timing 보호).
+  QrImage _qrImageFor(String deepLink, int ecLevel, {int minTypeNumber = 1}) {
     if (_cachedDeepLink == deepLink &&
         _cachedEcLevel == ecLevel &&
+        _cachedMinTypeNumber == minTypeNumber &&
         _cachedQrImage != null) {
       return _cachedQrImage!;
     }
-    final qrCode = QrCode.fromData(data: deepLink, errorCorrectLevel: ecLevel);
+    var qrCode = QrCode.fromData(data: deepLink, errorCorrectLevel: ecLevel);
+    if (qrCode.typeNumber < minTypeNumber) {
+      qrCode = QrCode(minTypeNumber, ecLevel)..addData(deepLink);
+    }
     final img = QrImage(qrCode);
     _cachedDeepLink = deepLink;
     _cachedEcLevel = ecLevel;
+    _cachedMinTypeNumber = minTypeNumber;
     _cachedQrImage = img;
     return img;
   }
@@ -274,7 +282,10 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
         (hasLogo || hasBand || hasTextCZ)
             ? QrErrorCorrectLevel.H
             : QrErrorCorrectLevel.M;
-    final qrImage = _qrImageFor(widget.deepLink, ecLevel);
+    // 띠 사용 시 V5(37×37) 강제 — 짧은 데이터로 작은 QR 생성 시
+    // 띠가 finder/timing pattern 침범하는 사고 방지.
+    final minTypeNumber = hasBand ? 5 : 1;
+    final qrImage = _qrImageFor(widget.deepLink, ecLevel, minTypeNumber: minTypeNumber);
 
     // 중앙 로고/이미지/텍스트(사각/원형) 뒤 QR 도트를 비울 영역
     // bottomRight 는 도트 비움 불필요 (EC H 로만 보호)
@@ -528,7 +539,9 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
         (hasLogo || hasBand || hasTextCZ)
             ? QrErrorCorrectLevel.H
             : QrErrorCorrectLevel.M;
-    final qrImage = _qrImageFor(widget.deepLink, ecLevel);
+    // 띠 사용 시 V5 강제 — _buildCustomQr 와 동일 정책.
+    final minTypeNumber = hasBand ? 5 : 1;
+    final qrImage = _qrImageFor(widget.deepLink, ecLevel, minTypeNumber: minTypeNumber);
 
     final qrAreaSize = widget.size / state.style.boundaryParams.frameScale;
     final clearZone = computeLogoClearZone(
@@ -613,7 +626,8 @@ class _BandTextWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxBandDim = qrSize * 0.15;
+    // 띠 두께 max 12% (이전 15% → burst error capacity 안쪽 + finder 보호)
+    final maxBandDim = qrSize * 0.12;
     final availWidth = qrSize * 0.8;
     final availHeight = qrSize * 0.8;
     final n = text.content.length.clamp(1, 999);
@@ -707,7 +721,7 @@ class _BandTextWidget extends StatelessWidget {
   }
 }
 
-// ── 🚫 모드 텍스트 (배경 없는 가로 오버레이, max 15%) ──────────────────────────
+// ── 🚫 모드 텍스트 (배경 없는 가로 오버레이, max 12%) ──────────────────────────
 
 class _NoneTextWidget extends StatelessWidget {
   final StickerText text;
@@ -720,11 +734,11 @@ class _NoneTextWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxFontSize = qrSize * 0.15;
+    final maxFontSize = qrSize * 0.12;
     final availWidth = qrSize * 0.8;
     final n = text.content.length.clamp(1, 999);
 
-    // 자동 피팅: max 15% 높이, 글자수 기반 너비 제한
+    // 자동 피팅: max 12% 높이, 글자수 기반 너비 제한
     final byHeight = maxFontSize;
     final byWidth = availWidth / n / 0.6;
     final autoFontSize = min(byHeight, byWidth).clamp(4.0, 200.0);
