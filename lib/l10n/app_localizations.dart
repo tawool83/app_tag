@@ -1788,6 +1788,18 @@ abstract class AppLocalizations {
   /// **'QR 전체 외곽'**
   String get labelBoundaryShape;
 
+  /// No description provided for @labelQuietZoneBorder.
+  ///
+  /// In ko, this message translates to:
+  /// **'테두리선'**
+  String get labelQuietZoneBorder;
+
+  /// No description provided for @labelBorderWidth.
+  ///
+  /// In ko, this message translates to:
+  /// **'두께'**
+  String get labelBorderWidth;
+
   /// No description provided for @labelAnimation.
   ///
   /// In ko, this message translates to:

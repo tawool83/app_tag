@@ -864,6 +864,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get labelBoundaryShape => 'QR外框形状';
 
   @override
+  String get labelQuietZoneBorder => '테두리선';
+
+  @override
+  String get labelBorderWidth => '두께';
+
+  @override
   String get labelAnimation => '动画';
 
   @override

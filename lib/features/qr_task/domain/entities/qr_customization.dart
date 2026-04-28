@@ -44,6 +44,10 @@ class QrCustomization {
   final int? bgColorArgb;
   final QrGradientData? bgGradient;
 
+  // ── quiet zone 테두리선 ──
+  final bool? quietZoneBorderEnabled;
+  final double? quietZoneBorderWidth;
+
   const QrCustomization({
     this.qrColorArgb = 0xFF000000,
     this.gradient,
@@ -65,6 +69,8 @@ class QrCustomization {
     this.animationParams,
     this.bgColorArgb,
     this.bgGradient,
+    this.quietZoneBorderEnabled,
+    this.quietZoneBorderWidth,
   });
 
   Map<String, dynamic> toJson() => {
@@ -88,6 +94,9 @@ class QrCustomization {
         if (animationParams != null) 'animationParams': animationParams,
         if (bgColorArgb != null) 'bgColorArgb': bgColorArgb,
         if (bgGradient != null) 'bgGradient': bgGradient!.toJson(),
+        if (quietZoneBorderEnabled == true) 'quietZoneBorderEnabled': true,
+        if (quietZoneBorderWidth != null && quietZoneBorderWidth != 1.0)
+          'quietZoneBorderWidth': quietZoneBorderWidth,
       };
 
   factory QrCustomization.fromJson(Map<String, dynamic> json) => QrCustomization(
@@ -120,6 +129,8 @@ class QrCustomization {
         bgGradient: json['bgGradient'] != null
             ? QrGradientData.fromJson(json['bgGradient'] as Map<String, dynamic>)
             : null,
+        quietZoneBorderEnabled: json['quietZoneBorderEnabled'] as bool?,
+        quietZoneBorderWidth: (json['quietZoneBorderWidth'] as num?)?.toDouble(),
       );
 
   QrCustomization copyWith({
@@ -154,6 +165,8 @@ class QrCustomization {
     bool clearBgColorArgb = false,
     QrGradientData? bgGradient,
     bool clearBgGradient = false,
+    bool? quietZoneBorderEnabled,
+    double? quietZoneBorderWidth,
   }) =>
       QrCustomization(
         qrColorArgb: qrColorArgb ?? this.qrColorArgb,
@@ -192,5 +205,7 @@ class QrCustomization {
             clearBgColorArgb ? null : (bgColorArgb ?? this.bgColorArgb),
         bgGradient:
             clearBgGradient ? null : (bgGradient ?? this.bgGradient),
+        quietZoneBorderEnabled: quietZoneBorderEnabled ?? this.quietZoneBorderEnabled,
+        quietZoneBorderWidth: quietZoneBorderWidth ?? this.quietZoneBorderWidth,
       );
 }

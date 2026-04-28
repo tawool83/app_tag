@@ -879,6 +879,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get labelBoundaryShape => 'Forma do contorno QR';
 
   @override
+  String get labelQuietZoneBorder => '테두리선';
+
+  @override
+  String get labelBorderWidth => '두께';
+
+  @override
   String get labelAnimation => 'Animação';
 
   @override

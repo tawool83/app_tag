@@ -45,6 +45,13 @@ ClearZone? computeLogoClearZone({
   if (sticker.logoPosition != LogoPosition.center) return null;
   final type = sticker.logoType;
   if (type == null || type == LogoType.none) return null;
+  // 배경색 alpha < 1.0 → QR 도트를 유지해야 반투명 효과가 보임 → clearing 비활성화
+  final bgAlpha = sticker.logoBackgroundColor?.a ?? 1.0;
+  if (bgAlpha < 1.0 &&
+      (sticker.logoBackground == LogoBackground.square ||
+       sticker.logoBackground == LogoBackground.circle)) {
+    return null;
+  }
   // text 타입: square/circle 배경 + 텍스트 있을 때만 clearing
   if (type == LogoType.text) {
     final bg = sticker.logoBackground;

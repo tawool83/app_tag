@@ -154,4 +154,18 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
     );
     _schedulePush();
   }
+
+  void setQuietZoneBorderEnabled(bool enabled) {
+    state = state.copyWith(
+      style: state.style.copyWith(quietZoneBorderEnabled: enabled),
+    );
+    _schedulePush();
+  }
+
+  void setQuietZoneBorderWidth(double width) {
+    state = state.copyWith(
+      style: state.style.copyWith(quietZoneBorderWidth: width.clamp(1.0, 4.0)),
+    );
+    _schedulePush();
+  }
 }

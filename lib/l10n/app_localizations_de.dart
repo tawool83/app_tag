@@ -886,6 +886,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get labelBoundaryShape => 'QR-Rahmenform';
 
   @override
+  String get labelQuietZoneBorder => '테두리선';
+
+  @override
+  String get labelBorderWidth => '두께';
+
+  @override
   String get labelAnimation => 'Animation';
 
   @override

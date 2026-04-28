@@ -162,9 +162,18 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
       return _buildFrameLayout(state, sticker, iconProvider, isTextLogo);
     }
 
+    // quiet zone 테두리선
+    final borderEnabled = state.style.quietZoneBorderEnabled;
+    final borderColor = state.style.bgColor ?? state.style.qrColor;
+    final borderWidth = state.style.quietZoneBorderWidth;
+    // 테두리는 안쪽으로 그려지므로, quiet zone 보존을 위해 borderInset 만큼 추가 여백
+    final borderInset = borderEnabled ? borderWidth : 0.0;
+
     // 콰이어트 존 패딩: QR 크기의 5% (최소 8px, 최대 20px)
     final quietPadding = (widget.size * 0.05).clamp(8.0, 20.0);
-    final qrSize = widget.size - quietPadding * 2;
+    // 내부 콘텐츠 총 여백 = 테두리 두께 + quiet zone
+    final contentInset = quietPadding + borderInset;
+    final qrSize = widget.size - contentInset * 2;
 
     // ── QR 렌더링 위젯 결정 ──
     final Widget qrWidget;
@@ -194,10 +203,10 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
-          // QR 코드 + quiet zone
+          // QR 코드 + quiet zone (테두리 안쪽에 배치)
           Positioned.fill(
             child: Padding(
-              padding: EdgeInsets.all(quietPadding),
+              padding: EdgeInsets.all(contentInset),
               child: qrWidget,
             ),
           ),
@@ -205,7 +214,7 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
           if (_shouldFlash(ColorTargetMode.qrOnly))
             Positioned.fill(
               child: Padding(
-                padding: EdgeInsets.all(quietPadding),
+                padding: EdgeInsets.all(contentInset),
                 child: _buildFlashOverlay(ColorTargetMode.qrOnly),
               ),
             ),
@@ -224,25 +233,43 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
               sticker: sticker,
               size: widget.size,
             ),
-          // 중앙 텍스트 (band 모드)
+          // 중앙 텍스트 (band 모드) — quiet zone 안쪽에 배치
           if (hasBand)
             Positioned.fill(
-              child: Center(
-                child: _BandTextWidget(
-                  text: sticker.logoText!,
-                  qrSize: widget.size,
-                  bandMode: sticker.bandMode,
-                  evenSpacing: sticker.centerTextEvenSpacing,
+              child: Padding(
+                padding: EdgeInsets.all(contentInset),
+                child: Center(
+                  child: _BandTextWidget(
+                    text: sticker.logoText!,
+                    qrSize: qrSize,
+                    bandMode: sticker.bandMode,
+                    evenSpacing: sticker.centerTextEvenSpacing,
+                    bgColor: sticker.logoBackgroundColor,
+                  ),
                 ),
               ),
             ),
-          // 🚫 모드: 배경 없는 가로 텍스트 오버레이
+          // 🚫 모드: 배경 없는 가로 텍스트 오버레이 — quiet zone 안쪽
           if (_hasNoneTextOverlay(sticker))
             Positioned.fill(
-              child: Center(
-                child: _NoneTextWidget(
-                  text: sticker.logoText!,
-                  qrSize: widget.size,
+              child: Padding(
+                padding: EdgeInsets.all(contentInset),
+                child: Center(
+                  child: _NoneTextWidget(
+                    text: sticker.logoText!,
+                    qrSize: qrSize,
+                  ),
+                ),
+              ),
+            ),
+          // quiet zone 테두리선 — QR 콘텐츠와 같은 z-level (최상위 레이어)
+          if (borderEnabled)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: borderColor, width: borderWidth),
+                  ),
                 ),
               ),
             ),
@@ -297,8 +324,10 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
     );
 
     // band ClearZone (🚫 모드는 ClearZone 없이 단순 오버레이)
+    // 배경색 alpha < 1.0 → QR 도트 유지 (반투명 배경 위로 도트가 비침)
     ClearZone? bandCZ;
-    if (hasBand) {
+    final bandBgAlpha = sticker.logoBackgroundColor?.a ?? 1.0;
+    if (hasBand && bandBgAlpha >= 1.0) {
       bandCZ = computeBandClearZone(
         qrSize: Size.square(qrSize),
         bandMode: sticker.bandMode,
@@ -470,25 +499,32 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
                       sticker: sticker,
                       size: qrAreaSize,
                     ),
-                  // 중앙 텍스트 (band 모드)
+                  // 중앙 텍스트 (band 모드) — quiet zone 안쪽에 배치
                   if (_hasBand(sticker))
                     Positioned.fill(
-                      child: Center(
-                        child: _BandTextWidget(
-                          text: sticker.logoText!,
-                          qrSize: qrAreaSize,
-                          bandMode: sticker.bandMode,
-                          evenSpacing: sticker.centerTextEvenSpacing,
+                      child: Padding(
+                        padding: EdgeInsets.all(quietPadding),
+                        child: Center(
+                          child: _BandTextWidget(
+                            text: sticker.logoText!,
+                            qrSize: effectiveQrSize,
+                            bandMode: sticker.bandMode,
+                            evenSpacing: sticker.centerTextEvenSpacing,
+                            bgColor: sticker.logoBackgroundColor,
+                          ),
                         ),
                       ),
                     ),
-                  // 🚫 모드: 배경 없는 가로 텍스트 오버레이
+                  // 🚫 모드: 배경 없는 가로 텍스트 오버레이 — quiet zone 안쪽
                   if (_hasNoneTextOverlay(sticker))
                     Positioned.fill(
-                      child: Center(
-                        child: _NoneTextWidget(
-                          text: sticker.logoText!,
-                          qrSize: qrAreaSize,
+                      child: Padding(
+                        padding: EdgeInsets.all(quietPadding),
+                        child: Center(
+                          child: _NoneTextWidget(
+                            text: sticker.logoText!,
+                            qrSize: effectiveQrSize,
+                          ),
                         ),
                       ),
                     ),
@@ -552,7 +588,8 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
     );
 
     ClearZone? bandCZ;
-    if (hasBand) {
+    final bandBgAlpha2 = sticker.logoBackgroundColor?.a ?? 1.0;
+    if (hasBand && bandBgAlpha2 >= 1.0) {
       bandCZ = computeBandClearZone(
         qrSize: Size.square(qrSize),
         bandMode: sticker.bandMode,
@@ -616,12 +653,14 @@ class _BandTextWidget extends StatelessWidget {
   final double qrSize;
   final BandMode bandMode;
   final bool evenSpacing;
+  final Color? bgColor;
 
   const _BandTextWidget({
     required this.text,
     required this.qrSize,
     required this.bandMode,
     this.evenSpacing = false,
+    this.bgColor,
   });
 
   @override
@@ -651,10 +690,25 @@ class _BandTextWidget extends StatelessWidget {
       height: 1.0,
     );
 
+    Widget content;
     if (bandMode == BandMode.vertical) {
-      return _buildVertical(style, availHeight, maxBandDim);
+      content = _buildVertical(style, availHeight, maxBandDim);
+    } else {
+      content = _buildHorizontal(style, availWidth, maxBandDim);
     }
-    return _buildHorizontal(style, availWidth, maxBandDim);
+
+    if (bgColor != null) {
+      // 배경은 QR 전체 너비/높이로 채움 (텍스트는 내부 80% 영역에 배치)
+      final w = bandMode == BandMode.vertical ? maxBandDim : qrSize;
+      final h = bandMode == BandMode.vertical ? qrSize : maxBandDim;
+      return Container(
+        width: w,
+        height: h,
+        color: bgColor,
+        child: Center(child: content),
+      );
+    }
+    return content;
   }
 
   Widget _buildHorizontal(TextStyle style, double availWidth, double maxBandDim) {
@@ -865,7 +919,10 @@ class _LogoWidget extends StatelessWidget {
   Widget _buildIconWithBackground(double iconSize) {
     // 로고 배경 fill 색상. null = 기본 흰색 (레거시 호환).
     final bgColor = sticker.logoBackgroundColor ?? Colors.white;
-    const shadow = BoxShadow(color: Colors.black12, blurRadius: 2);
+    // 반투명 배경일 때 그림자 비활성화 (그림자가 배경보다 진하게 보이는 문제 방지)
+    final shadow = bgColor.a < 1.0
+        ? null
+        : const BoxShadow(color: Colors.black12, blurRadius: 2);
 
     switch (sticker.logoBackground) {
       case LogoBackground.none:
@@ -881,7 +938,7 @@ class _LogoWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(6),
-            boxShadow: const [shadow],
+            boxShadow: shadow != null ? [shadow] : null,
           ),
           padding: const EdgeInsets.all(4),
           child: _buildContent(iconSize),
@@ -893,7 +950,7 @@ class _LogoWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: bgColor,
             shape: BoxShape.circle,
-            boxShadow: const [shadow],
+            boxShadow: shadow != null ? [shadow] : null,
           ),
           padding: const EdgeInsets.all(4),
           child: _buildContent(iconSize),
@@ -913,7 +970,7 @@ class _LogoWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(radius),
-              boxShadow: const [shadow],
+              boxShadow: shadow != null ? [shadow] : null,
             ),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             child: isText

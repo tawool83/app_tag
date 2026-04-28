@@ -56,6 +56,9 @@ class CustomizationMapper {
           : null,
       bgColorArgb: state.style.bgColor?.toARGB32(),
       bgGradient: _gradientToData(state.style.bgGradient),
+      quietZoneBorderEnabled: state.style.quietZoneBorderEnabled ? true : null,
+      quietZoneBorderWidth: state.style.quietZoneBorderWidth != 1.0
+          ? state.style.quietZoneBorderWidth : null,
     );
   }
 

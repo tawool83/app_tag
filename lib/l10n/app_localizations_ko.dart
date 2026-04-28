@@ -864,6 +864,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get labelBoundaryShape => 'QR 전체 외곽';
 
   @override
+  String get labelQuietZoneBorder => '테두리선';
+
+  @override
+  String get labelBorderWidth => '두께';
+
+  @override
   String get labelAnimation => '애니메이션';
 
   @override

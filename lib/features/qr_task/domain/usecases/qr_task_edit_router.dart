@@ -56,6 +56,8 @@ class QrTaskEditRouter {
       'wifi' => _parseWifiPrefill(meta.deepLink),
       'email' => _parseEmailPrefill(meta.deepLink),
       'sms' => _parseSmsPrefill(meta.deepLink),
+      'event' => _parseEventPrefill(meta.deepLink),
+      'location' => _parseLocationPrefill(meta.deepLink),
       _ => {},
     };
   }
@@ -110,5 +112,72 @@ class QrTaskEditRouter {
       return {'phone': deepLink.substring(4), 'message': ''};
     }
     return {};
+  }
+
+  static Map<String, dynamic> _parseEventPrefill(String deepLink) {
+    String? title, location, description;
+    DateTime? start, end;
+    for (final line in deepLink.split('\n')) {
+      final trimmed = line.trim();
+      if (trimmed.startsWith('SUMMARY:')) title = trimmed.substring(8);
+      if (trimmed.startsWith('LOCATION:')) location = trimmed.substring(9);
+      if (trimmed.startsWith('DESCRIPTION:')) {
+        description = trimmed.substring(12);
+      }
+      if (trimmed.startsWith('DTSTART:')) {
+        start = _parseVEventDateTime(trimmed.substring(8));
+      }
+      if (trimmed.startsWith('DTEND:')) {
+        end = _parseVEventDateTime(trimmed.substring(6));
+      }
+    }
+    return {
+      'title': title ?? '',
+      'location': location ?? '',
+      'description': description ?? '',
+      if (start != null) 'start': start.toIso8601String(),
+      if (end != null) 'end': end.toIso8601String(),
+    };
+  }
+
+  static Map<String, dynamic> _parseLocationPrefill(String deepLink) {
+    // geo:lat,lng
+    if (deepLink.startsWith('geo:')) {
+      final parts = deepLink.substring(4).split(',');
+      if (parts.length >= 2) {
+        return {
+          'lat': double.tryParse(parts[0]),
+          'lng': double.tryParse(parts[1]),
+        };
+      }
+    }
+    // https://maps.google.com/?q=label&ll=lat,lng
+    final uri = Uri.tryParse(deepLink);
+    if (uri != null && uri.queryParameters.containsKey('ll')) {
+      final ll = uri.queryParameters['ll']!.split(',');
+      final q = uri.queryParameters['q'];
+      if (ll.length >= 2) {
+        return {
+          'lat': double.tryParse(ll[0]),
+          'lng': double.tryParse(ll[1]),
+          if (q != null) 'label': q,
+        };
+      }
+    }
+    return {};
+  }
+
+  /// VEVENT 날짜/시간 형식 파싱: "20260426T153000"
+  static DateTime? _parseVEventDateTime(String s) {
+    if (s.length < 15) return null;
+    final year = int.tryParse(s.substring(0, 4));
+    final month = int.tryParse(s.substring(4, 6));
+    final day = int.tryParse(s.substring(6, 8));
+    final hour = int.tryParse(s.substring(9, 11));
+    final minute = int.tryParse(s.substring(11, 13));
+    if (year == null || month == null || day == null || hour == null || minute == null) {
+      return null;
+    }
+    return DateTime(year, month, day, hour, minute);
   }
 }

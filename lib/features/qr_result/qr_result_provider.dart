@@ -158,6 +158,8 @@ class QrResultNotifier extends StateNotifier<QrResultState>
           clearBgColor: c.bgColorArgb == null,
           bgGradient: CustomizationMapper.gradientFromData(c.bgGradient),
           clearBgGradient: c.bgGradient == null,
+          quietZoneBorderEnabled: c.quietZoneBorderEnabled ?? false,
+          quietZoneBorderWidth: c.quietZoneBorderWidth ?? 1.0,
         ),
         logo: state.logo.copyWith(
           embedIcon: c.embedIcon,

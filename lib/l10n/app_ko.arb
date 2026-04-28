@@ -335,6 +335,8 @@
   "labelSavePreset": "프리셋 저장",
   "hintPresetName": "프리셋 이름",
   "labelBoundaryShape": "QR 전체 외곽",
+  "labelQuietZoneBorder": "테두리선",
+  "labelBorderWidth": "두께",
   "labelAnimation": "애니메이션",
   "labelCustomDot": "맞춤 도트",
   "labelCustomEye": "맞춤 눈",

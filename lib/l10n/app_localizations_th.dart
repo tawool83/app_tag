@@ -873,6 +873,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get labelBoundaryShape => 'รูปทรงกรอบ QR';
 
   @override
+  String get labelQuietZoneBorder => '테두리선';
+
+  @override
+  String get labelBorderWidth => '두께';
+
+  @override
   String get labelAnimation => 'แอนิเมชัน';
 
   @override

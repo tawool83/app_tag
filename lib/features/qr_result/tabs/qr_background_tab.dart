@@ -246,6 +246,33 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
             onShowAll: () => _showBoundaryGridModal(context, mode: _BoundaryGridMode.view),
           ),
           const SizedBox(height: 16),
+          // ── 테두리선 섹션 ──
+          _sectionLabel(l10n.labelQuietZoneBorder),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            title: Text(l10n.labelQuietZoneBorder,
+                style: const TextStyle(fontSize: 14)),
+            value: state.style.quietZoneBorderEnabled,
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            onChanged: (v) => ref
+                .read(qrResultProvider.notifier)
+                .setQuietZoneBorderEnabled(v),
+          ),
+          if (state.style.quietZoneBorderEnabled)
+            _SliderRow(
+              label: l10n.labelBorderWidth,
+              value: state.style.quietZoneBorderWidth,
+              min: 1.0,
+              max: 4.0,
+              divisions: 6,
+              valueLabel:
+                  '${state.style.quietZoneBorderWidth.toStringAsFixed(1)}px',
+              onChanged: (v) => ref
+                  .read(qrResultProvider.notifier)
+                  .setQuietZoneBorderWidth(v),
+            ),
+          const SizedBox(height: 16),
         ],
       ),
     );

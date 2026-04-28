@@ -883,6 +883,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get labelBoundaryShape => 'Forme du contour QR';
 
   @override
+  String get labelQuietZoneBorder => '테두리선';
+
+  @override
+  String get labelBorderWidth => '두께';
+
+  @override
   String get labelAnimation => 'Animation';
 
   @override

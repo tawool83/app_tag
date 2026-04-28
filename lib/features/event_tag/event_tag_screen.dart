@@ -26,16 +26,25 @@ class _EventTagScreenState extends State<EventTagScreen> {
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
     if (widget.prefill != null) {
       _titleController.text = widget.prefill!['title'] as String? ?? '';
       _locationController.text = widget.prefill!['location'] as String? ?? '';
       _descController.text = widget.prefill!['description'] as String? ?? '';
+      final startStr = widget.prefill!['start'] as String?;
+      final endStr = widget.prefill!['end'] as String?;
+      final startDt = startStr != null ? DateTime.tryParse(startStr) : null;
+      final endDt = endStr != null ? DateTime.tryParse(endStr) : null;
+      _startDate = startDt ?? now;
+      _startTime = TimeOfDay.fromDateTime(startDt ?? now);
+      _endDate = endDt ?? now;
+      _endTime = TimeOfDay.fromDateTime(endDt ?? now.add(const Duration(hours: 1)));
+    } else {
+      _startDate = now;
+      _startTime = TimeOfDay.fromDateTime(now);
+      _endDate = now;
+      _endTime = TimeOfDay.fromDateTime(now.add(const Duration(hours: 1)));
     }
-    final now = DateTime.now();
-    _startDate = now;
-    _startTime = TimeOfDay.fromDateTime(now);
-    _endDate = now;
-    _endTime = TimeOfDay.fromDateTime(now.add(const Duration(hours: 1)));
   }
 
   @override

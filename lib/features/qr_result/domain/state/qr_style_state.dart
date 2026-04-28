@@ -32,6 +32,10 @@ class QrStyleState {
   final Color? bgColor;
   final QrGradient? bgGradient;
 
+  // ── quiet zone 테두리선 ──
+  final bool quietZoneBorderEnabled;
+  final double quietZoneBorderWidth;
+
   const QrStyleState({
     this.qrColor = const Color(0xFF000000),
     this.roundFactor = 0.0,
@@ -47,6 +51,8 @@ class QrStyleState {
     this.quietZoneColor = Colors.white,
     this.bgColor,
     this.bgGradient,
+    this.quietZoneBorderEnabled = false,
+    this.quietZoneBorderWidth = 1.0,
   });
 
   QrStyleState copyWith({
@@ -70,6 +76,8 @@ class QrStyleState {
     bool clearBgColor = false,
     QrGradient? bgGradient,
     bool clearBgGradient = false,
+    bool? quietZoneBorderEnabled,
+    double? quietZoneBorderWidth,
   }) =>
       QrStyleState(
         qrColor: qrColor ?? this.qrColor,
@@ -94,6 +102,8 @@ class QrStyleState {
         bgColor: clearBgColor ? null : (bgColor ?? this.bgColor),
         bgGradient:
             clearBgGradient ? null : (bgGradient ?? this.bgGradient),
+        quietZoneBorderEnabled: quietZoneBorderEnabled ?? this.quietZoneBorderEnabled,
+        quietZoneBorderWidth: quietZoneBorderWidth ?? this.quietZoneBorderWidth,
       );
 
   @override
@@ -113,7 +123,9 @@ class QrStyleState {
           other.animationParams == animationParams &&
           other.quietZoneColor == quietZoneColor &&
           other.bgColor == bgColor &&
-          other.bgGradient == bgGradient;
+          other.bgGradient == bgGradient &&
+          other.quietZoneBorderEnabled == quietZoneBorderEnabled &&
+          other.quietZoneBorderWidth == quietZoneBorderWidth;
 
   @override
   int get hashCode => Object.hash(
@@ -131,5 +143,7 @@ class QrStyleState {
         quietZoneColor,
         bgColor,
         bgGradient,
+        quietZoneBorderEnabled,
+        quietZoneBorderWidth,
       );
 }

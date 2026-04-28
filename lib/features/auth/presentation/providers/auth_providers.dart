@@ -87,7 +87,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signInWithGoogle() async {
-    if (_repo == null) return;
+    if (_repo == null) return _notConfigured();
     state = state.copyWith(status: AuthStatus.loading);
     final result = await _repo.signInWithGoogle();
     result.fold(
@@ -99,7 +99,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signInWithApple() async {
-    if (_repo == null) return;
+    if (_repo == null) return _notConfigured();
     state = state.copyWith(status: AuthStatus.loading);
     final result = await _repo.signInWithApple();
     result.fold(
@@ -111,7 +111,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signInWithEmail(String email, String password) async {
-    if (_repo == null) return;
+    if (_repo == null) return _notConfigured();
     state = state.copyWith(status: AuthStatus.loading);
     final result = await _repo.signInWithEmail(email, password);
     result.fold(
@@ -124,7 +124,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> signUpWithEmail(
       String email, String password, String nickname) async {
-    if (_repo == null) return;
+    if (_repo == null) return _notConfigured();
     state = state.copyWith(status: AuthStatus.loading);
     final result = await _repo.signUpWithEmail(email, password, nickname);
     result.fold(
@@ -139,8 +139,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _repo?.signOut();
   }
 
+  void _notConfigured() {
+    state = AuthState(
+      status: AuthStatus.error,
+      errorMessage: '서버가 설정되지 않았습니다. 관리자에게 문의하세요.',
+    );
+  }
+
   Future<void> deleteAccount() async {
-    if (_repo == null) return;
+    if (_repo == null) return _notConfigured();
     state = state.copyWith(status: AuthStatus.loading);
     final result = await _repo.deleteAccount();
     result.fold(
