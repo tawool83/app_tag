@@ -34,7 +34,7 @@ class QrResultScreen extends ConsumerStatefulWidget {
 }
 
 class _QrResultScreenState extends ConsumerState<QrResultScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _repaintKey = GlobalKey();
   final _colorTabKey = GlobalKey<QrColorTabState>();
   final _shapeTabKey = GlobalKey<QrShapeTabState>();
@@ -51,6 +51,16 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
 
   /// 편집기 활성 여부
   bool get _isEditorActive => _colorEditorMode || _shapeEditorMode || _backgroundEditorMode;
+
+  // ── 미리보기 드래그 확대/축소 ─────────────────────────────────────────────
+  /// 0.0 = compact (kPreviewCompactHeight), 1.0 = expanded (screenHeight × 0.7).
+  double _previewExtra = 0.0;
+  late final AnimationController _previewSnapController =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 300))
+        ..addListener(_onPreviewSnapTick);
+
+  static const double _kPreviewCompactHeight = 184.0;
+  static const double _kPreviewExpandedRatio = 0.7;
 
   @override
   void initState() {
@@ -196,7 +206,63 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     _nameController.dispose();
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
+    _previewSnapController.removeListener(_onPreviewSnapTick);
+    _previewSnapController.dispose();
     super.dispose();
+  }
+
+  // ── 미리보기 드래그 확대/축소 콜백 ────────────────────────────────────────
+
+  /// 스냅 애니메이션 진행 중 매 tick — 보간 값을 _previewExtra 에 반영.
+  /// _previewSnapTarget 이 시작값/종료값 사이를 controller.value 로 lerp.
+  double? _previewSnapStart;
+  double? _previewSnapTarget;
+
+  void _onPreviewSnapTick() {
+    final start = _previewSnapStart;
+    final target = _previewSnapTarget;
+    if (start == null || target == null) return;
+    setState(() {
+      _previewExtra = start + (target - start) * _previewSnapController.value;
+    });
+  }
+
+  void _animatePreviewTo(double target) {
+    _previewSnapStart = _previewExtra;
+    _previewSnapTarget = target.clamp(0.0, 1.0);
+    _previewSnapController
+      ..reset()
+      ..animateTo(1.0, curve: Curves.easeOut);
+  }
+
+  void _onPreviewDragStart() {
+    // 진행 중인 스냅 즉시 정지 (드래그 우선)
+    if (_previewSnapController.isAnimating) {
+      _previewSnapController.stop();
+    }
+  }
+
+  /// [dragRange] = expanded 와 compact 사이 픽셀 차이.
+  void _onPreviewDragUpdate(double deltaY, double dragRange) {
+    if (dragRange <= 0) return;
+    setState(() {
+      _previewExtra =
+          (_previewExtra + deltaY / dragRange).clamp(0.0, 1.0);
+    });
+  }
+
+  void _onPreviewDragEnd(double velocityY) {
+    // velocity > 500 → 강제 방향 스냅; 이외엔 0.5 임계값
+    const flingThreshold = 500.0;
+    final double target;
+    if (velocityY > flingThreshold) {
+      target = 1.0; // 빠르게 아래로 밀면 expand
+    } else if (velocityY < -flingThreshold) {
+      target = 0.0; // 빠르게 위로 밀면 compact
+    } else {
+      target = _previewExtra >= 0.5 ? 1.0 : 0.0;
+    }
+    _animatePreviewTo(target);
   }
 
   /// 편집기 취소 — AppBar 뒤로가기 시 호출
@@ -217,6 +283,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   Future<void> _confirmAndPop() async {
     await _persistName();
     await ref.read(qrResultProvider.notifier).flushPendingPush();
+    _forceCompactForCapture();
     await _recapture();
     if (mounted) Navigator.of(context).pop();
   }
@@ -225,6 +292,7 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
   Future<void> _saveAndGoHome() async {
     await _persistName();
     await ref.read(qrResultProvider.notifier).flushPendingPush();
+    _forceCompactForCapture();
     final bytes = await _captureThumbnail();
     if (bytes != null) {
       ref.read(qrResultProvider.notifier).setCapturedImage(bytes);
@@ -243,7 +311,19 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
     }
   }
 
+  /// 최종 캡처(저장/뒤로가기) 직전에만 호출. 미리보기를 즉시 compact (184) 로 강제 복귀해
+  /// 캡처 PNG 사이즈를 항상 동일하게 유지 (Q1=a).
+  /// 탭 조작에 의한 자동 재캡처(`_recapture`) 흐름에서는 호출하지 않음 — 사용자가
+  /// 확대해 둔 미리보기 상태를 보존해야 함.
+  void _forceCompactForCapture() {
+    if (_previewSnapController.isAnimating) _previewSnapController.stop();
+    if (_previewExtra != 0.0) {
+      setState(() => _previewExtra = 0.0);
+    }
+  }
+
   /// QR 위젯이 렌더링된 후 미리보기 이미지 캡처 + QrTask에 영속.
+  /// 진입 시 자동 호출 — 미리보기 사이즈는 그대로 (init 시 _previewExtra=0).
   Future<void> _captureThumbnailToState() async {
     await Future.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
@@ -359,14 +439,26 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
                 ),
               ],
       ),
-      body: Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // 가용 본문 높이 기반 expanded 미리보기 높이 산출.
+          final expandedHeight = (constraints.maxHeight * _kPreviewExpandedRatio)
+              .clamp(_kPreviewCompactHeight, constraints.maxHeight);
+          final dragRange = expandedHeight - _kPreviewCompactHeight;
+          final currentHeight =
+              _kPreviewCompactHeight + dragRange * _previewExtra;
+          return Column(
         children: [
-          // ① QR 미리보기
+          // ① QR 미리보기 — 드래그로 높이 확장
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: QrPreviewSection(
               repaintKey: _repaintKey,
               deepLink: deepLink,
+              height: currentHeight,
+              onDragStart: _onPreviewDragStart,
+              onDragUpdate: (dy) => _onPreviewDragUpdate(dy, dragRange),
+              onDragEnd: _onPreviewDragEnd,
             ),
           ),
 
@@ -434,6 +526,8 @@ class _QrResultScreenState extends ConsumerState<QrResultScreen>
           ),
 
         ],
+      );  // close Column (LayoutBuilder builder return)
+        },
       ),
     ),
     ),

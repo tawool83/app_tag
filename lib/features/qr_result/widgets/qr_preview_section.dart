@@ -7,7 +7,6 @@ import '../domain/entities/qr_dot_style.dart';
 import '../domain/entities/qr_template.dart';
 import '../domain/entities/logo_source.dart' show LogoType;
 import '../domain/entities/sticker_config.dart' show LogoPosition;
-import '../data/services/qr_readability_service.dart';
 import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/qr_eye_shapes.dart';
@@ -17,7 +16,6 @@ import '../utils/polar_polygon.dart';
 import '../utils/superellipse.dart';
 import '../utils/qr_boundary_clipper.dart';
 import '../utils/qr_margin_painter.dart';
-import '../../../l10n/app_localizations.dart';
 import 'qr_layer_stack.dart';
 
 /// 소형(160px) QR 미리보기 + 돋보기 확대 버튼.
@@ -32,10 +30,22 @@ class QrPreviewSection extends ConsumerWidget {
   final GlobalKey repaintKey;
   final String deepLink;
 
+  /// 미리보기 박스 높이. 부모에서 드래그 상태에 따라 동적으로 전달.
+  final double height;
+
+  /// 수직 드래그 콜백 — 부모(`_QrResultScreenState`) 가 _previewExtra 갱신.
+  final VoidCallback? onDragStart;
+  final ValueChanged<double>? onDragUpdate;   // dy (delta pixels)
+  final ValueChanged<double>? onDragEnd;      // velocity y px/s
+
   const QrPreviewSection({
     super.key,
     required this.repaintKey,
     required this.deepLink,
+    this.height = 184.0,
+    this.onDragStart,
+    this.onDragUpdate,
+    this.onDragEnd,
   });
 
   @override
@@ -43,40 +53,55 @@ class QrPreviewSection extends ConsumerWidget {
     final state = ref.watch(qrResultProvider);
     final previewMode = ref.watch(shapePreviewModeProvider);
 
-    // 고정 높이: QR 160 + padding 24 = 184 + deepLink 텍스트 ~18 = ~202
-    // 미리보기 모드 전환 시 레이아웃 점프 방지
-    const previewBoxHeight = 184.0;
-
     return Column(
       children: [
+        // 수직 드래그로 높이 조절 — onTap 동작 없음 (단일 탭 무시).
         GestureDetector(
-          onTap: previewMode == ShapePreviewMode.fullQr
-              ? () => _showQrZoomDialog(context, state, deepLink)
-              : null,
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragStart: (_) => onDragStart?.call(),
+          onVerticalDragUpdate: (d) => onDragUpdate?.call(d.delta.dy),
+          onVerticalDragEnd: (d) =>
+              onDragEnd?.call(d.velocity.pixelsPerSecond.dy),
           child: SizedBox(
-            height: previewBoxHeight,
+            height: height,
             child: ClipRect(
               child: RepaintBoundary(
                 key: repaintKey,
                 child: Container(
                   color: Colors.white,
                   padding: const EdgeInsets.all(12),
-                  child: Center(
-                    // 2-layer: fullQr 항상 bottom, dedicated overlay top.
-                    // dedicated 진입 = 즉시 show, 이탈 = 500ms fade-out (비대칭).
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: QrLayerStack(deepLink: deepLink, size: 160),
-                        ),
-                        _OverlayedDedicatedPreview(
-                          mode: previewMode,
-                          state: state,
-                        ),
-                      ],
-                    ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // 가용 정사각 = 가로/세로 중 작은 값. height 가 클수록 QR 도 비례 확대.
+                      final available = math
+                          .min(constraints.maxWidth, constraints.maxHeight)
+                          .clamp(80.0, double.infinity);
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // 2-layer: fullQr 항상 bottom, dedicated overlay top.
+                          // dedicated 진입 = 즉시 show, 이탈 = 500ms fade-out (비대칭).
+                          Center(
+                            child: QrLayerStack(
+                              deepLink: deepLink,
+                              size: available,
+                            ),
+                          ),
+                          Center(
+                            child: _OverlayedDedicatedPreview(
+                              mode: previewMode,
+                              state: state,
+                              size: available,
+                            ),
+                          ),
+                          // 드래그 핸들 (하단 안쪽)
+                          const Positioned(
+                            bottom: 4,
+                            child: _PreviewDragHandle(),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -95,6 +120,23 @@ class QrPreviewSection extends ConsumerWidget {
   }
 }
 
+/// 미리보기 드래그 가능 시각 단서. 16×4 알약.
+class _PreviewDragHandle extends StatelessWidget {
+  const _PreviewDragHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 4,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade400,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+  }
+}
+
 // ── Overlayed Dedicated Preview (비대칭 fade 제어) ───────────────────────────
 //
 // Layer 2 — dedicated 미리보기 overlay.
@@ -106,8 +148,13 @@ class QrPreviewSection extends ConsumerWidget {
 class _OverlayedDedicatedPreview extends StatefulWidget {
   final ShapePreviewMode mode;
   final QrResultState state;
+  final double size;
 
-  const _OverlayedDedicatedPreview({required this.mode, required this.state});
+  const _OverlayedDedicatedPreview({
+    required this.mode,
+    required this.state,
+    required this.size,
+  });
 
   @override
   State<_OverlayedDedicatedPreview> createState() =>
@@ -163,20 +210,23 @@ class _OverlayedDedicatedPreviewState extends State<_OverlayedDedicatedPreview>
     super.dispose();
   }
 
-  Widget _buildDedicatedFor(ShapePreviewMode mode) {
+  Widget _buildDedicatedFor(ShapePreviewMode mode, double size) {
     final s = widget.state.style;
     return switch (mode) {
       ShapePreviewMode.dedicatedDot => _DotShapePreview(
           params: s.customDotParams ?? s.dotStyle.toDotShapeParams(),
           color: s.qrColor,
+          size: size,
         ),
       ShapePreviewMode.dedicatedEye => _EyeShapePreview(
           params: s.customEyeParams ?? const EyeShapeParams(),
           color: s.qrColor,
+          size: size,
         ),
       ShapePreviewMode.dedicatedBoundary => _BoundaryShapePreview(
           params: s.boundaryParams,
           color: s.qrColor,
+          size: size,
         ),
       _ => const SizedBox.shrink(),
     };
@@ -188,10 +238,7 @@ class _OverlayedDedicatedPreviewState extends State<_OverlayedDedicatedPreview>
     if (mode == null) return const SizedBox.shrink();
     return FadeTransition(
       opacity: _fade,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: _buildDedicatedFor(mode),
-      ),
+      child: _buildDedicatedFor(mode, widget.size),
     );
   }
 }
@@ -202,14 +249,19 @@ class _OverlayedDedicatedPreviewState extends State<_OverlayedDedicatedPreview>
 class _DotShapePreview extends StatelessWidget {
   final DotShapeParams params;
   final Color color;
+  final double size;
 
-  const _DotShapePreview({required this.params, required this.color});
+  const _DotShapePreview({
+    required this.params,
+    required this.color,
+    required this.size,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 160,
-      height: 160,
+      width: size,
+      height: size,
       child: CustomPaint(
         painter: _DotPreviewPainter(params: params, color: color),
       ),
@@ -240,8 +292,13 @@ class _DotPreviewPainter extends CustomPainter {
 class _EyeShapePreview extends StatelessWidget {
   final EyeShapeParams params;
   final Color color;
+  final double size;
 
-  const _EyeShapePreview({required this.params, required this.color});
+  const _EyeShapePreview({
+    required this.params,
+    required this.color,
+    required this.size,
+  });
 
   static const _labelStyle = TextStyle(
     fontSize: 13,
@@ -263,8 +320,8 @@ class _EyeShapePreview extends StatelessWidget {
     // 슬라이더 Q1~Q4 의 위치를 미리보기 사분면에 "1,2,3,4" 숫자 라벨로 표시.
     // Q1 = top-right(1), Q2 = top-left(2), Q3 = bottom-left(3), Q4 = bottom-right(4).
     return SizedBox(
-      width: 160,
-      height: 160,
+      width: size,
+      height: size,
       child: Stack(
         children: [
           Positioned.fill(
@@ -311,14 +368,19 @@ class _EyePreviewPainter extends CustomPainter {
 class _BoundaryShapePreview extends StatelessWidget {
   final QrBoundaryParams params;
   final Color color;
+  final double size;
 
-  const _BoundaryShapePreview({required this.params, required this.color});
+  const _BoundaryShapePreview({
+    required this.params,
+    required this.color,
+    required this.size,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 160,
-      height: 160,
+      width: size,
+      height: size,
       child: CustomPaint(
         painter: _BoundaryPreviewPainter(params: params, color: color),
       ),
@@ -443,53 +505,11 @@ class _BoundaryPreviewPainter extends CustomPainter {
       params != old.params || color != old.color;
 }
 
-// ── 확대 다이얼로그 ────────────────────────────────────────────────────────────
-
-void _showQrZoomDialog(
-    BuildContext context, QrResultState state, String deepLink) {
-  showDialog(
-    context: context,
-    barrierColor: Colors.black87,
-    builder: (_) => GestureDetector(
-      onTap: () => Navigator.pop(context),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Center(
-            child: LayoutBuilder(
-              builder: (_, constraints) {
-                // 기기가 지원하는 최대 크기 (가로/세로 중 작은 값, 패딩 제외)
-                final maxSide =
-                    constraints.biggest.shortestSide - 48; // 양쪽 24px 여백
-                final double qrSize = maxSide.clamp(100.0, 600.0);
-                return GestureDetector(
-                  onTap: () {}, // 내부 탭 시 닫힘 방지
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: QrLayerStack(
-                        deepLink: deepLink, size: qrSize, isDialog: true),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 /// QrResultState 기반 PrettyQrView 위젯 빌더.
-/// QrPreviewSection과 확대 팝업에서 공용 사용.
 Widget buildPrettyQr(
   QrResultState state, {
   required String deepLink,
   required double size,
-  bool isDialog = false,
 }) {
   final centerImage = centerImageProvider(state);
   // 로고가 QR 위에 겹칠 때(center/bottomRight 모두) EC H 강제
@@ -525,9 +545,7 @@ Widget buildPrettyQr(
 
   // ValueKey: decoration 관련 state가 변경될 때 위젯을 강제 재생성해
   // PrettyQrRenderView 내부 repaint boundary 이슈를 우회합니다.
-  // isDialog: 팝업에서 같은 key 충돌 방지
   final qrKey = ValueKey(Object.hash(
-    isDialog,
     deepLink,
     state.style.dotStyle,
     state.style.customDotParams,
