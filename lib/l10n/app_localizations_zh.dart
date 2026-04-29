@@ -696,6 +696,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsReadabilityAlert => '识别率提醒';
 
   @override
+  String get settingsMoreBarcodes => '더 많은 바코드 사용';
+
+  @override
+  String get settingsMoreBarcodesInfoTitle => '지원 예정 바코드';
+
+  @override
+  String get settingsMoreBarcodesInfoBody =>
+      '켜면 향후 다음 바코드를 사용할 수 있습니다.\n\n• 2D: PDF417, DataMatrix, Aztec\n• 1D 일반: Code128, Code39, Code93\n• 1D 산업: Codabar\n• 1D 소매: EAN-8, EAN-13, UPC-A, UPC-E\n\n현재는 설정만 저장되며 실제 사용은 추후 업데이트에서 제공됩니다.';
+
+  @override
   String get platformAndroid => 'Android';
 
   @override

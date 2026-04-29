@@ -47,6 +47,8 @@ class QrCustomization {
   // ── quiet zone 테두리선 ──
   final bool? quietZoneBorderEnabled;
   final double? quietZoneBorderWidth;
+  /// QuietZoneBorderStyle.name : 'solid' | 'dashed' | 'dotted' (null = solid fallback)
+  final String? quietZoneBorderStyleName;
 
   const QrCustomization({
     this.qrColorArgb = 0xFF000000,
@@ -71,6 +73,7 @@ class QrCustomization {
     this.bgGradient,
     this.quietZoneBorderEnabled,
     this.quietZoneBorderWidth,
+    this.quietZoneBorderStyleName,
   });
 
   Map<String, dynamic> toJson() => {
@@ -97,6 +100,8 @@ class QrCustomization {
         if (quietZoneBorderEnabled == true) 'quietZoneBorderEnabled': true,
         if (quietZoneBorderWidth != null && quietZoneBorderWidth != 1.0)
           'quietZoneBorderWidth': quietZoneBorderWidth,
+        if (quietZoneBorderStyleName != null && quietZoneBorderStyleName != 'solid')
+          'quietZoneBorderStyle': quietZoneBorderStyleName,
       };
 
   factory QrCustomization.fromJson(Map<String, dynamic> json) => QrCustomization(
@@ -131,6 +136,7 @@ class QrCustomization {
             : null,
         quietZoneBorderEnabled: json['quietZoneBorderEnabled'] as bool?,
         quietZoneBorderWidth: (json['quietZoneBorderWidth'] as num?)?.toDouble(),
+        quietZoneBorderStyleName: json['quietZoneBorderStyle'] as String?,
       );
 
   QrCustomization copyWith({
@@ -167,6 +173,7 @@ class QrCustomization {
     bool clearBgGradient = false,
     bool? quietZoneBorderEnabled,
     double? quietZoneBorderWidth,
+    String? quietZoneBorderStyleName,
   }) =>
       QrCustomization(
         qrColorArgb: qrColorArgb ?? this.qrColorArgb,
@@ -207,5 +214,7 @@ class QrCustomization {
             clearBgGradient ? null : (bgGradient ?? this.bgGradient),
         quietZoneBorderEnabled: quietZoneBorderEnabled ?? this.quietZoneBorderEnabled,
         quietZoneBorderWidth: quietZoneBorderWidth ?? this.quietZoneBorderWidth,
+        quietZoneBorderStyleName:
+            quietZoneBorderStyleName ?? this.quietZoneBorderStyleName,
       );
 }

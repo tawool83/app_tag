@@ -279,6 +279,18 @@
     }
   },
   "settingsReadabilityAlert": "인식률 알림 사용",
+  "settingsMoreBarcodes": "더 많은 바코드 사용",
+  "@settingsMoreBarcodes": {
+    "description": "Toggle to enable additional barcode types (PDF417, DataMatrix, EAN, UPC, etc.). Default OFF."
+  },
+  "settingsMoreBarcodesInfoTitle": "지원 예정 바코드",
+  "@settingsMoreBarcodesInfoTitle": {
+    "description": "AlertDialog title shown when user taps the info icon next to 'more barcodes' toggle"
+  },
+  "settingsMoreBarcodesInfoBody": "켜면 향후 다음 바코드를 사용할 수 있습니다.\n\n• 2D: PDF417, DataMatrix, Aztec\n• 1D 일반: Code128, Code39, Code93\n• 1D 산업: Codabar\n• 1D 소매: EAN-8, EAN-13, UPC-A, UPC-E\n\n현재는 설정만 저장되며 실제 사용은 추후 업데이트에서 제공됩니다.",
+  "@settingsMoreBarcodesInfoBody": {
+    "description": "AlertDialog body listing 11 supported barcode types and noting that actual functionality is not yet implemented"
+  },
   "platformAndroid": "Android",
   "platformIos": "iOS",
   "labelCustomGradient": "맞춤 그라디언트",

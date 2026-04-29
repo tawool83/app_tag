@@ -168,4 +168,11 @@ mixin _StyleSetters on StateNotifier<QrResultState> {
     );
     _schedulePush();
   }
+
+  void setQuietZoneBorderStyle(QuietZoneBorderStyle borderStyle) {
+    state = state.copyWith(
+      style: state.style.copyWith(quietZoneBorderStyle: borderStyle),
+    );
+    _schedulePush();
+  }
 }

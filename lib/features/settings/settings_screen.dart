@@ -30,6 +30,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _readabilityAlert = false;
+  bool _moreBarcodesEnabled = false;
 
   @override
   void initState() {
@@ -38,8 +39,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final alert = await SettingsService.getReadabilityAlert();
-    if (mounted) setState(() => _readabilityAlert = alert);
+    final results = await Future.wait([
+      SettingsService.getReadabilityAlert(),
+      SettingsService.getMoreBarcodesEnabled(),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _readabilityAlert = results[0];
+      _moreBarcodesEnabled = results[1];
+    });
+  }
+
+  void _showMoreBarcodesInfo(BuildContext context, AppLocalizations l10n) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.settingsMoreBarcodesInfoTitle),
+        content: Text(l10n.settingsMoreBarcodesInfoBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.actionConfirm),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -88,6 +112,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onChanged: (v) {
               setState(() => _readabilityAlert = v);
               SettingsService.saveReadabilityAlert(v);
+            },
+          ),
+          // 더 많은 바코드 사용 (PDF417, DataMatrix, EAN, UPC, ... 마스터 게이트)
+          // 본 cycle 에서는 설정값만 저장. 토글 ON 시 다른 화면 변화 없음.
+          SwitchListTile(
+            secondary: const Icon(Icons.qr_code_2_outlined),
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(child: Text(l10n.settingsMoreBarcodes)),
+                const SizedBox(width: 4),
+                InkResponse(
+                  onTap: () => _showMoreBarcodesInfo(context, l10n),
+                  radius: 16,
+                  child: Icon(Icons.info_outline,
+                      size: 18, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+            value: _moreBarcodesEnabled,
+            onChanged: (v) {
+              setState(() => _moreBarcodesEnabled = v);
+              SettingsService.saveMoreBarcodesEnabled(v);
             },
           ),
         ],

@@ -24,6 +24,7 @@ import 'domain/state/qr_logo_state.dart';
 import 'domain/state/qr_meta_state.dart';
 import 'domain/state/qr_style_state.dart';
 import 'domain/state/qr_template_state.dart';
+import 'domain/entities/quiet_zone_border_style.dart';
 import 'utils/customization_mapper.dart';
 
 // ── 파트 분리: notifier/ 하위 mixin 들 ──────────────────────────────────────
@@ -160,6 +161,8 @@ class QrResultNotifier extends StateNotifier<QrResultState>
           clearBgGradient: c.bgGradient == null,
           quietZoneBorderEnabled: c.quietZoneBorderEnabled ?? false,
           quietZoneBorderWidth: c.quietZoneBorderWidth ?? 1.0,
+          quietZoneBorderStyle: CustomizationMapper.borderStyleFromName(
+              c.quietZoneBorderStyleName),
         ),
         logo: state.logo.copyWith(
           embedIcon: c.embedIcon,

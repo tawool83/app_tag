@@ -10,6 +10,7 @@ const _kQrCenterEmoji = 'qr_center_emoji';
 const _kActiveTemplateId = 'active_template_id';
 const _kLocaleCode = 'app_locale';
 const _kReadabilityAlert = 'readability_alert';
+const _kMoreBarcodes = 'more_barcodes_enabled';
 
 class SettingsService {
   // 앱 생명주기 동안 SharedPreferences Future 를 재사용 — 매 호출 getInstance() 반복 제거.
@@ -39,6 +40,13 @@ class SettingsService {
       (await _prefs).getBool(_kReadabilityAlert) ?? false;
   static Future<void> saveReadabilityAlert(bool enabled) async =>
       (await _prefs).setBool(_kReadabilityAlert, enabled);
+
+  // ── More barcodes (PDF417, DataMatrix, EAN, UPC, Code128, ... 마스터 게이트) ──
+  // 본 cycle 에서는 설정값만 저장. 실제 분기 동작은 향후 cycle 에서 구현.
+  static Future<bool> getMoreBarcodesEnabled() async =>
+      (await _prefs).getBool(_kMoreBarcodes) ?? false;
+  static Future<void> saveMoreBarcodesEnabled(bool enabled) async =>
+      (await _prefs).setBool(_kMoreBarcodes, enabled);
 
   // ── Print size ──
   static Future<double> getLastPrintSizeCm() async =>

@@ -1452,6 +1452,24 @@ abstract class AppLocalizations {
   /// **'인식률 알림 사용'**
   String get settingsReadabilityAlert;
 
+  /// Toggle to enable additional barcode types (PDF417, DataMatrix, EAN, UPC, etc.). Default OFF.
+  ///
+  /// In ko, this message translates to:
+  /// **'더 많은 바코드 사용'**
+  String get settingsMoreBarcodes;
+
+  /// AlertDialog title shown when user taps the info icon next to 'more barcodes' toggle
+  ///
+  /// In ko, this message translates to:
+  /// **'지원 예정 바코드'**
+  String get settingsMoreBarcodesInfoTitle;
+
+  /// AlertDialog body listing 11 supported barcode types and noting that actual functionality is not yet implemented
+  ///
+  /// In ko, this message translates to:
+  /// **'켜면 향후 다음 바코드를 사용할 수 있습니다.\n\n• 2D: PDF417, DataMatrix, Aztec\n• 1D 일반: Code128, Code39, Code93\n• 1D 산업: Codabar\n• 1D 소매: EAN-8, EAN-13, UPC-A, UPC-E\n\n현재는 설정만 저장되며 실제 사용은 추후 업데이트에서 제공됩니다.'**
+  String get settingsMoreBarcodesInfoBody;
+
   /// No description provided for @platformAndroid.
   ///
   /// In ko, this message translates to:

@@ -6,6 +6,7 @@ import '../entities/qr_dot_style.dart';
 import '../entities/qr_eye_shapes.dart';
 import '../entities/qr_shape_params.dart';
 import '../entities/qr_template.dart' show QrGradient;
+import '../entities/quiet_zone_border_style.dart';
 
 export '../entities/qr_eye_shapes.dart' show QrEyeOuter, QrEyeInner;
 
@@ -35,6 +36,7 @@ class QrStyleState {
   // ── quiet zone 테두리선 ──
   final bool quietZoneBorderEnabled;
   final double quietZoneBorderWidth;
+  final QuietZoneBorderStyle quietZoneBorderStyle;
 
   const QrStyleState({
     this.qrColor = const Color(0xFF000000),
@@ -53,6 +55,7 @@ class QrStyleState {
     this.bgGradient,
     this.quietZoneBorderEnabled = false,
     this.quietZoneBorderWidth = 1.0,
+    this.quietZoneBorderStyle = QuietZoneBorderStyle.solid,
   });
 
   QrStyleState copyWith({
@@ -78,6 +81,7 @@ class QrStyleState {
     bool clearBgGradient = false,
     bool? quietZoneBorderEnabled,
     double? quietZoneBorderWidth,
+    QuietZoneBorderStyle? quietZoneBorderStyle,
   }) =>
       QrStyleState(
         qrColor: qrColor ?? this.qrColor,
@@ -104,6 +108,7 @@ class QrStyleState {
             clearBgGradient ? null : (bgGradient ?? this.bgGradient),
         quietZoneBorderEnabled: quietZoneBorderEnabled ?? this.quietZoneBorderEnabled,
         quietZoneBorderWidth: quietZoneBorderWidth ?? this.quietZoneBorderWidth,
+        quietZoneBorderStyle: quietZoneBorderStyle ?? this.quietZoneBorderStyle,
       );
 
   @override
@@ -125,7 +130,8 @@ class QrStyleState {
           other.bgColor == bgColor &&
           other.bgGradient == bgGradient &&
           other.quietZoneBorderEnabled == quietZoneBorderEnabled &&
-          other.quietZoneBorderWidth == quietZoneBorderWidth;
+          other.quietZoneBorderWidth == quietZoneBorderWidth &&
+          other.quietZoneBorderStyle == quietZoneBorderStyle;
 
   @override
   int get hashCode => Object.hash(
@@ -145,5 +151,6 @@ class QrStyleState {
         bgGradient,
         quietZoneBorderEnabled,
         quietZoneBorderWidth,
+        quietZoneBorderStyle,
       );
 }

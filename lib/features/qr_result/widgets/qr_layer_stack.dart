@@ -7,6 +7,7 @@ import '../domain/entities/color_target_mode.dart';
 import '../domain/entities/logo_source.dart' show LogoType;
 import '../domain/entities/qr_dot_style.dart' show QrDotStyleToParams;
 import '../domain/entities/qr_eye_shapes.dart' show eyeEnumsToParams;
+import '../domain/entities/quiet_zone_border_style.dart';
 import '../domain/entities/sticker_config.dart';
 import '../qr_result_provider.dart';
 import '../utils/logo_clear_zone.dart';
@@ -23,16 +24,18 @@ import 'qr_preview_section.dart' show buildPrettyQr, centerImageProvider, buildQ
 ///
 /// customDotParams 또는 customEyeParams가 설정된 경우 CustomQrPainter를 사용하고,
 /// 그렇지 않으면 기존 buildPrettyQr()로 폴백합니다.
+/// quiet-zone 테두리 두께 슬라이더의 최대값 (style_setters.dart 의 `width.clamp(1.0, 4.0)` 와 일치).
+/// 외각에 이만큼의 reserve 영역을 항상 확보 → 두께 조절 시 quiet zone 영역 절대 불변.
+const double _kMaxBorderWidth = 4.0;
+
 class QrLayerStack extends ConsumerStatefulWidget {
   final String deepLink;
   final double size;
-  final bool isDialog;
 
   const QrLayerStack({
     super.key,
     required this.deepLink,
     this.size = 160,
-    this.isDialog = false,
   });
 
   @override
@@ -162,17 +165,20 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
       return _buildFrameLayout(state, sticker, iconProvider, isTextLogo);
     }
 
-    // quiet zone 테두리선
+    // quiet zone 테두리선 — QR 사양상의 quiet-zone 경계 시각화.
+    // 외각 모양(boundaryParams.type) 과 무관하게 항상 직사각형으로 그려짐.
     final borderEnabled = state.style.quietZoneBorderEnabled;
     final borderColor = state.style.bgColor ?? state.style.qrColor;
     final borderWidth = state.style.quietZoneBorderWidth;
-    // 테두리는 안쪽으로 그려지므로, quiet zone 보존을 위해 borderInset 만큼 추가 여백
-    final borderInset = borderEnabled ? borderWidth : 0.0;
+    final borderStyle = state.style.quietZoneBorderStyle;
 
-    // 콰이어트 존 패딩: QR 크기의 5% (최소 8px, 최대 20px)
-    final quietPadding = (widget.size * 0.05).clamp(8.0, 20.0);
-    // 내부 콘텐츠 총 여백 = 테두리 두께 + quiet zone
-    final contentInset = quietPadding + borderInset;
+    // 렌더링 순서 (안쪽 → 바깥): QR → quiet zone → 테두리 → 배경.
+    //   - QR 스펙 4 모듈 quiet zone 보장 (12% 비율, V5 기준 ≈ 4.4 모듈, CLAUDE.md §5).
+    //   - 테두리: 안쪽 가장자리 = quiet zone 외곽(고정), 외곽 가장자리 = 두께만큼 *바깥(배경 방향)* 확장.
+    //   - 두께 조절 시 quiet zone 절대 불변 — 슬라이더 max(=4.0) 만큼의 reserve 영역을 미리 외곽에 확보.
+    final quietPadding = (widget.size * 0.12).clamp(12.0, 32.0);
+    final borderReserve = borderEnabled ? _kMaxBorderWidth : 0.0;
+    final contentInset = quietPadding + borderReserve;
     final qrSize = widget.size - contentInset * 2;
 
     // ── QR 렌더링 위젯 결정 ──
@@ -184,7 +190,6 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
         state,
         deepLink: widget.deepLink,
         size: qrSize,
-        isDialog: widget.isDialog,
       );
     }
 
@@ -262,13 +267,22 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
                 ),
               ),
             ),
-          // quiet zone 테두리선 — QR 콘텐츠와 같은 z-level (최상위 레이어)
+          // quiet zone 테두리선 — 안쪽 가장자리 = quiet zone 외곽(고정), 외곽 가장자리 = 두께만큼 바깥 확장.
+          // Padding 으로 painter 영역을 (kMaxBorderWidth - borderWidth) 만큼 inset →
+          //   stroke 외곽이 widget.size 외곽으로부터 (kMaxBorderWidth - borderWidth) 안쪽에 위치.
+          //   stroke 안쪽 가장자리는 항상 (widget.size 외곽 - kMaxBorderWidth) 위치 = quiet zone 외곽 (고정).
+          // 두께 max(=4) → 외곽이 widget.size 외곽 닿음. 두께 < max → 외곽 너머 배경 영역 (quietZoneColor).
           if (borderEnabled)
             Positioned.fill(
               child: IgnorePointer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: borderColor, width: borderWidth),
+                child: Padding(
+                  padding: EdgeInsets.all(_kMaxBorderWidth - borderWidth),
+                  child: CustomPaint(
+                    painter: _QuietZoneBorderPainter(
+                      color: borderColor,
+                      width: borderWidth,
+                      style: borderStyle,
+                    ),
                   ),
                 ),
               ),
@@ -403,8 +417,13 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
     final totalSize = widget.size;
     final frameScale = state.style.boundaryParams.frameScale;
     final qrAreaSize = totalSize / frameScale;
-    final quietPadding = (qrAreaSize * 0.05).clamp(4.0, 12.0);
-    final effectiveQrSize = qrAreaSize - quietPadding * 2;
+    // QR 스펙 4 모듈 quiet zone 보장 — 12% 비율 + min 8 / max 24 px (frame 안쪽 영역이라 일반 모드보다 작게).
+    final quietPadding = (qrAreaSize * 0.12).clamp(8.0, 24.0);
+    // border reserve: 슬라이더 max(=4) 만큼 외부 여백 항상 확보 → 두께 조절 시 quiet zone 절대 불변.
+    final borderReserve =
+        state.style.quietZoneBorderEnabled ? _kMaxBorderWidth : 0.0;
+    final innerInset = quietPadding + borderReserve;
+    final effectiveQrSize = qrAreaSize - innerInset * 2;
 
     final qrPainter = _buildFrameQrPainter(state, effectiveQrSize);
 
@@ -461,12 +480,12 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
               Positioned.fill(
                 child: _buildFlashOverlay(ColorTargetMode.bgOnly),
               ),
-            // Layer 1: QR 코드 (정사각형, 중앙)
+            // Layer 1: QR 코드 (정사각형, 중앙). padding = quiet zone + border reserve.
             Container(
               width: qrAreaSize,
               height: qrAreaSize,
               color: state.style.quietZoneColor,
-              padding: EdgeInsets.all(quietPadding),
+              padding: EdgeInsets.all(innerInset),
               child: qrWidget,
             ),
             // QR 레이어 플래시 (QR 영역만)
@@ -475,6 +494,29 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
                 width: qrAreaSize,
                 height: qrAreaSize,
                 child: _buildFlashOverlay(ColorTargetMode.qrOnly),
+              ),
+            // Layer 1.5: quiet zone 테두리선 — 외각(frame) 모양과 별개로 동작.
+            // 안쪽 가장자리 = quiet zone 외곽(고정), 외곽 가장자리 = 두께만큼 바깥(qrAreaSize 외곽 방향) 확장.
+            // SizedBox(qrAreaSize) 위에 Padding(_kMaxBorderWidth - currentWidth) 으로 painter 영역 inset.
+            // 두께 max → 외곽이 qrAreaSize 외곽 닿음. 두께 < max → 외곽 너머 quietZoneColor 영역.
+            if (state.style.quietZoneBorderEnabled)
+              IgnorePointer(
+                child: SizedBox(
+                  width: qrAreaSize,
+                  height: qrAreaSize,
+                  child: Padding(
+                    padding: EdgeInsets.all(
+                      _kMaxBorderWidth - state.style.quietZoneBorderWidth,
+                    ),
+                    child: CustomPaint(
+                      painter: _QuietZoneBorderPainter(
+                        color: state.style.bgColor ?? state.style.qrColor,
+                        width: state.style.quietZoneBorderWidth,
+                        style: state.style.quietZoneBorderStyle,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             // Layer 2: 로고/중앙 텍스트 (QR 영역 내)
             SizedBox(
@@ -503,7 +545,7 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
                   if (_hasBand(sticker))
                     Positioned.fill(
                       child: Padding(
-                        padding: EdgeInsets.all(quietPadding),
+                        padding: EdgeInsets.all(innerInset),
                         child: Center(
                           child: _BandTextWidget(
                             text: sticker.logoText!,
@@ -519,7 +561,7 @@ class _QrLayerStackState extends ConsumerState<QrLayerStack>
                   if (_hasNoneTextOverlay(sticker))
                     Positioned.fill(
                       child: Padding(
-                        padding: EdgeInsets.all(quietPadding),
+                        padding: EdgeInsets.all(innerInset),
                         child: Center(
                           child: _NoneTextWidget(
                             text: sticker.logoText!,
@@ -984,4 +1026,75 @@ class _LogoWidget extends StatelessWidget {
         );
     }
   }
+}
+
+// ── Quiet-zone 테두리선 painter ──────────────────────────────────────────────
+//
+// QR 사양상의 quiet-zone 경계를 시각적으로 표시한다.
+// 외각 모양(boundaryParams.type) 과 무관하게 항상 직사각형.
+// dashed/dotted 는 사각형 4변 각각 line drawing 으로 처리 (PathMetric 미사용).
+class _QuietZoneBorderPainter extends CustomPainter {
+  final Color color;
+  final double width;
+  final QuietZoneBorderStyle style;
+
+  const _QuietZoneBorderPainter({
+    required this.color,
+    required this.width,
+    required this.style,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // stroke 가 path 양쪽으로 그려지므로 width/2 inset 으로 외부 cropping 방지.
+    final rect = Rect.fromLTWH(
+      width / 2, width / 2,
+      size.width - width, size.height - width,
+    );
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..isAntiAlias = true;
+
+    switch (style) {
+      case QuietZoneBorderStyle.solid:
+        canvas.drawRect(rect, paint);
+      case QuietZoneBorderStyle.dashed:
+        paint.strokeCap = StrokeCap.butt;
+        _drawDashedRect(canvas, rect, paint,
+            dashLength: width * 4, gapLength: width * 2);
+      case QuietZoneBorderStyle.dotted:
+        paint.strokeCap = StrokeCap.round;
+        _drawDashedRect(canvas, rect, paint,
+            dashLength: width, gapLength: width * 2);
+    }
+  }
+
+  void _drawDashedRect(Canvas canvas, Rect r, Paint paint,
+      {required double dashLength, required double gapLength}) {
+    _drawDashedLine(canvas, r.topLeft, r.topRight, paint, dashLength, gapLength);
+    _drawDashedLine(canvas, r.topRight, r.bottomRight, paint, dashLength, gapLength);
+    _drawDashedLine(canvas, r.bottomRight, r.bottomLeft, paint, dashLength, gapLength);
+    _drawDashedLine(canvas, r.bottomLeft, r.topLeft, paint, dashLength, gapLength);
+  }
+
+  void _drawDashedLine(Canvas canvas, Offset a, Offset b, Paint paint,
+      double dashLength, double gapLength) {
+    final total = (b - a).distance;
+    if (total <= 0) return;
+    final dir = (b - a) / total;
+    double drawn = 0;
+    while (drawn < total) {
+      final segLen = min(dashLength, total - drawn);
+      final start = a + dir * drawn;
+      final end = a + dir * (drawn + segLen);
+      canvas.drawLine(start, end, paint);
+      drawn += dashLength + gapLength;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_QuietZoneBorderPainter old) =>
+      color != old.color || width != old.width || style != old.style;
 }

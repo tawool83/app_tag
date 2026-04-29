@@ -11,6 +11,7 @@ import '../domain/entities/qr_dot_style.dart';
 import '../domain/entities/qr_eye_shapes.dart';
 import '../domain/entities/qr_shape_params.dart';
 import '../domain/entities/qr_template.dart';
+import '../domain/entities/quiet_zone_border_style.dart';
 import '../domain/entities/sticker_config.dart';
 import '../../qr_task/domain/entities/qr_customization.dart';
 import '../../qr_task/domain/entities/qr_gradient_data.dart';
@@ -59,8 +60,15 @@ class CustomizationMapper {
       quietZoneBorderEnabled: state.style.quietZoneBorderEnabled ? true : null,
       quietZoneBorderWidth: state.style.quietZoneBorderWidth != 1.0
           ? state.style.quietZoneBorderWidth : null,
+      quietZoneBorderStyleName:
+          state.style.quietZoneBorderStyle != QuietZoneBorderStyle.solid
+              ? state.style.quietZoneBorderStyle.name
+              : null,
     );
   }
+
+  static QuietZoneBorderStyle borderStyleFromName(String? name) =>
+      enumFromName(QuietZoneBorderStyle.values, name, QuietZoneBorderStyle.solid);
 
   // ── Customization → 일부 State 필드 (복원용) ───────────────────────
   // 복원은 Notifier 에서 copyWith 로 적용 — 여기서는 변환만 제공.
