@@ -19,6 +19,7 @@ class _SolidRow extends StatelessWidget {
   final ValueChanged<UserColorPalette> onUserSelect;
   final ValueChanged<UserColorPalette> onUserLongPress;
   final VoidCallback onShowAll;
+  final ValueChanged<Set<String>>? onInlineIdsChanged;
 
   const _SolidRow({
     required this.builtinSelected,
@@ -29,6 +30,7 @@ class _SolidRow extends StatelessWidget {
     required this.onUserSelect,
     required this.onUserLongPress,
     required this.onShowAll,
+    this.onInlineIdsChanged,
   });
 
   static const _chipSize = 36.0;
@@ -69,6 +71,13 @@ class _SolidRow extends StatelessWidget {
                   ? (maxSlots - 1).clamp(0, userPresets.length)
                   : maxSlots.clamp(0, userPresets.length);
               final inlinePresets = userPresets.sublist(0, inlineCount);
+
+              if (onInlineIdsChanged != null) {
+                final ids = inlinePresets.map((p) => p.id).toSet();
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  onInlineIdsChanged!(ids);
+                });
+              }
 
               return Row(
                 children: [

@@ -16,21 +16,18 @@ class _ColorGridEditResult extends _ColorGridResult {
   _ColorGridEditResult(this.preset);
 }
 
-class _ColorGridSelectResult extends _ColorGridResult {
-  final UserColorPalette preset;
-  _ColorGridSelectResult(this.preset);
-}
-
 class _ColorGridModal extends StatefulWidget {
   final List<UserColorPalette> presets;
   final _ColorGridMode mode;
   final bool isGradient;
   final String? selectedPresetId;
+  final ValueChanged<UserColorPalette> onSelect;
 
   const _ColorGridModal({
     required this.presets,
     required this.mode,
     required this.isGradient,
+    required this.onSelect,
     this.selectedPresetId,
   });
 
@@ -40,9 +37,16 @@ class _ColorGridModal extends StatefulWidget {
 
 class _ColorGridModalState extends State<_ColorGridModal> {
   final _markedForDeletion = <String>{};
+  String? _localSelectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    _localSelectedId = widget.selectedPresetId;
+  }
 
   bool _isSelected(UserColorPalette preset) =>
-      preset.id == widget.selectedPresetId;
+      preset.id == _localSelectedId;
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +95,8 @@ class _ColorGridModalState extends State<_ColorGridModal> {
                         }
                       });
                     } else {
-                      Navigator.pop(context, _ColorGridSelectResult(preset));
+                      setState(() => _localSelectedId = preset.id);
+                      widget.onSelect(preset);
                     }
                   },
                   // 그라디언트만 롱프레스로 편집 진입 (solid 는 모달에서 편집 지원 X — 메인 행에서만)

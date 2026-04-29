@@ -12,6 +12,7 @@ class _CustomEyeRow extends StatelessWidget {
   final ValueChanged<UserShapePreset> onUserSelect;
   final ValueChanged<UserShapePreset> onUserLongPress;
   final VoidCallback onShowAll;
+  final ValueChanged<Set<String>>? onInlineIdsChanged;
 
   const _CustomEyeRow({
     super.key,
@@ -22,6 +23,7 @@ class _CustomEyeRow extends StatelessWidget {
     required this.onUserSelect,
     required this.onUserLongPress,
     required this.onShowAll,
+    this.onInlineIdsChanged,
   });
 
   static const _chipSize = 48.0;
@@ -46,6 +48,13 @@ class _CustomEyeRow extends StatelessWidget {
                 ? (maxSlots - 1).clamp(0, presets.length)
                 : maxSlots.clamp(0, presets.length);
             final inlinePresets = presets.sublist(0, inlineCount);
+
+            if (onInlineIdsChanged != null) {
+              final ids = inlinePresets.map((p) => p.id).toSet();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                onInlineIdsChanged!(ids);
+              });
+            }
 
             return Row(
               children: [
@@ -114,16 +123,17 @@ enum _EyeGridMode { view, delete }
 sealed class _EyeGridResult {}
 class _EyeGridDeleteResult extends _EyeGridResult { final Set<String> deletedIds; _EyeGridDeleteResult(this.deletedIds); }
 class _EyeGridEditResult extends _EyeGridResult { final UserShapePreset preset; _EyeGridEditResult(this.preset); }
-class _EyeGridSelectResult extends _EyeGridResult { final UserShapePreset preset; _EyeGridSelectResult(this.preset); }
 
 class _EyeGridModal extends StatefulWidget {
   final List<UserShapePreset> presets;
   final _EyeGridMode mode;
   final String? selectedPresetId;
+  final ValueChanged<UserShapePreset> onSelect;
 
   const _EyeGridModal({
     required this.presets,
     required this.mode,
+    required this.onSelect,
     this.selectedPresetId,
   });
 
@@ -133,9 +143,16 @@ class _EyeGridModal extends StatefulWidget {
 
 class _EyeGridModalState extends State<_EyeGridModal> {
   final _markedForDeletion = <String>{};
+  String? _localSelectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    _localSelectedId = widget.selectedPresetId;
+  }
 
   bool _isSelected(UserShapePreset preset) =>
-      preset.id == widget.selectedPresetId;
+      preset.id == _localSelectedId;
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +199,8 @@ class _EyeGridModalState extends State<_EyeGridModal> {
                         }
                       });
                     } else {
-                      Navigator.pop(context, _EyeGridSelectResult(preset));
+                      setState(() => _localSelectedId = preset.id);
+                      widget.onSelect(preset);
                     }
                   },
                   onLongPress: isDelete

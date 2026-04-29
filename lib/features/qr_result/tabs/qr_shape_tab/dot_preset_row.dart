@@ -44,6 +44,7 @@ class _DotUserPresetRow extends StatelessWidget {
   final ValueChanged<UserShapePreset> onUserSelect;
   final ValueChanged<UserShapePreset> onUserLongPress;
   final VoidCallback onShowAll;
+  final ValueChanged<Set<String>>? onInlineIdsChanged;
 
   const _DotUserPresetRow({
     required this.selectedPresetId,
@@ -52,6 +53,7 @@ class _DotUserPresetRow extends StatelessWidget {
     required this.onUserSelect,
     required this.onUserLongPress,
     required this.onShowAll,
+    this.onInlineIdsChanged,
   });
 
   static const _chipSize = 48.0;
@@ -73,6 +75,13 @@ class _DotUserPresetRow extends StatelessWidget {
               ? (maxSlots - 1).clamp(0, userPresets.length)
               : maxSlots.clamp(0, userPresets.length);
           final inlinePresets = userPresets.sublist(0, inlineCount);
+
+          if (onInlineIdsChanged != null) {
+            final ids = inlinePresets.map((p) => p.id).toSet();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              onInlineIdsChanged!(ids);
+            });
+          }
 
           return Row(
             children: [
@@ -190,16 +199,17 @@ enum _DotGridMode { view, delete }
 sealed class _DotGridResult {}
 class _DotGridDeleteResult extends _DotGridResult { final Set<String> deletedIds; _DotGridDeleteResult(this.deletedIds); }
 class _DotGridEditResult extends _DotGridResult { final UserShapePreset preset; _DotGridEditResult(this.preset); }
-class _DotGridSelectResult extends _DotGridResult { final UserShapePreset preset; _DotGridSelectResult(this.preset); }
 
 class _DotGridModal extends StatefulWidget {
   final List<UserShapePreset> presets;
   final _DotGridMode mode;
   final String? selectedPresetId;
+  final ValueChanged<UserShapePreset> onSelect;
 
   const _DotGridModal({
     required this.presets,
     required this.mode,
+    required this.onSelect,
     this.selectedPresetId,
   });
 
@@ -209,9 +219,16 @@ class _DotGridModal extends StatefulWidget {
 
 class _DotGridModalState extends State<_DotGridModal> {
   final _markedForDeletion = <String>{};
+  String? _localSelectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    _localSelectedId = widget.selectedPresetId;
+  }
 
   bool _isSelected(UserShapePreset preset) {
-    return preset.id == widget.selectedPresetId;
+    return preset.id == _localSelectedId;
   }
 
   @override
@@ -260,7 +277,8 @@ class _DotGridModalState extends State<_DotGridModal> {
                         }
                       });
                     } else {
-                      Navigator.pop(context, _DotGridSelectResult(preset));
+                      setState(() => _localSelectedId = preset.id);
+                      widget.onSelect(preset);
                     }
                   },
                   onLongPress: isDelete

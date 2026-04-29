@@ -1,6 +1,5 @@
 library;
 
-import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as dart_ui;
 import 'package:flutter/material.dart';
@@ -63,22 +62,18 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
   String? _selectedDotPresetId;
   String? _selectedEyePresetId;
 
+  // inline row 에 보이는 프리셋 id 집합 (LayoutBuilder 결과 통보 받음).
+  // sheet 에서 inline-only 판정에 사용.
+  Set<String> _inlineDotIds = const {};
+  Set<String> _inlineEyeIds = const {};
+
   // 편집 중인 기존 프리셋 ID (null = 새로 만들기, non-null = 기존 수정)
   String? _editingPresetId;
-
-  // 프리셋 재정렬 지연 타이머
-  Timer? _reorderTimer;
 
   @override
   void initState() {
     super.initState();
     _initDatasource();
-  }
-
-  @override
-  void dispose() {
-    _reorderTimer?.cancel();
-    super.dispose();
   }
 
   Future<void> _initDatasource() async {
@@ -91,14 +86,6 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
     setState(() {
       _dotPresets = _datasource!.readAll(ShapePresetType.dot);
       _eyePresets = _datasource!.readAll(ShapePresetType.eye);
-    });
-  }
-
-  /// 선택 하이라이트를 먼저 보여주고, 500ms 뒤에 재정렬.
-  void _delayedReloadPresets() {
-    _reorderTimer?.cancel();
-    _reorderTimer = Timer(const Duration(milliseconds: 100), () {
-      if (mounted) _loadPresets();
     });
   }
 
@@ -165,6 +152,7 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
 
   Future<void> _showEyeGridModal(BuildContext context, {required _EyeGridMode mode}) async {
     if (_eyePresets.isEmpty) return;
+    final beforeSelectedId = _selectedEyePresetId;
     final result = await showModalBottomSheet<_EyeGridResult>(
       context: context,
       isScrollControlled: true,
@@ -175,9 +163,19 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
         presets: _eyePresets,
         mode: mode,
         selectedPresetId: _selectedEyePresetId,
+        onSelect: _onSheetSelectEye,
       ),
     );
-    if (result == null) return;
+    if (result == null) {
+      final after = _selectedEyePresetId;
+      if (after != null
+          && after != beforeSelectedId
+          && !_inlineEyeIds.contains(after)) {
+        await _datasource?.touchLastUsed(ShapePresetType.eye, after);
+        _loadPresets();
+      }
+      return;
+    }
     switch (result) {
       case _EyeGridDeleteResult(:final deletedIds):
         if (deletedIds.contains(_selectedEyePresetId)) {
@@ -194,12 +192,12 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
         await _datasource?.touchLastUsed(ShapePresetType.eye, preset.id);
         _loadPresets();
         _openEditor(_EditorType.eye, editingId: preset.id);
-      case _EyeGridSelectResult(:final preset):
-        ref.read(qrResultProvider.notifier).setCustomEyeParams(preset.eyeParams!);
-        setState(() => _selectedEyePresetId = preset.id);
-        await _datasource?.touchLastUsed(ShapePresetType.eye, preset.id);
-        _loadPresets();
     }
+  }
+
+  void _onSheetSelectEye(UserShapePreset p) {
+    setState(() => _selectedEyePresetId = p.id);
+    ref.read(qrResultProvider.notifier).setCustomEyeParams(p.eyeParams!);
   }
 
   /// 빌트인 눈 모양 선택: customEye 해제 + 프리셋 선택 상태 해제 후 부모 콜백 호출.
@@ -221,6 +219,7 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
 
   Future<void> _showDotGridModal(BuildContext context, {required _DotGridMode mode}) async {
     if (_dotPresets.isEmpty) return;
+    final beforeSelectedId = _selectedDotPresetId;
     final result = await showModalBottomSheet<_DotGridResult>(
       context: context,
       isScrollControlled: true,
@@ -231,9 +230,19 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
         presets: _dotPresets,
         mode: mode,
         selectedPresetId: _selectedDotPresetId,
+        onSelect: _onSheetSelectDot,
       ),
     );
-    if (result == null) return;
+    if (result == null) {
+      final after = _selectedDotPresetId;
+      if (after != null
+          && after != beforeSelectedId
+          && !_inlineDotIds.contains(after)) {
+        await _datasource?.touchLastUsed(ShapePresetType.dot, after);
+        _loadPresets();
+      }
+      return;
+    }
     switch (result) {
       case _DotGridDeleteResult(:final deletedIds):
         if (deletedIds.contains(_selectedDotPresetId)) {
@@ -250,12 +259,12 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
         await _datasource?.touchLastUsed(ShapePresetType.dot, preset.id);
         _loadPresets();
         _openEditor(_EditorType.dot, editingId: preset.id);
-      case _DotGridSelectResult(:final preset):
-        ref.read(qrResultProvider.notifier).setCustomDotParams(preset.dotParams!);
-        setState(() => _selectedDotPresetId = preset.id);
-        await _datasource?.touchLastUsed(ShapePresetType.dot, preset.id);
-        _loadPresets();
     }
+  }
+
+  void _onSheetSelectDot(UserShapePreset p) {
+    setState(() => _selectedDotPresetId = p.id);
+    ref.read(qrResultProvider.notifier).setCustomDotParams(p.dotParams!);
   }
 
   /// 기존 프리셋을 현재 편집 값으로 덮어쓰기 (수정 모드용).
@@ -378,11 +387,9 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
             selectedPresetId: _selectedDotPresetId,
             userPresets: _dotPresets,
             onAdd: () => _openEditor(_EditorType.dot),
-            onUserSelect: (p) async {
+            onUserSelect: (p) {
               setState(() => _selectedDotPresetId = p.id);
               ref.read(qrResultProvider.notifier).setCustomDotParams(p.dotParams!);
-              await _datasource?.touchLastUsed(ShapePresetType.dot, p.id);
-              _delayedReloadPresets();
             },
             onUserLongPress: (p) async {
               ref.read(qrResultProvider.notifier).setCustomDotParams(p.dotParams!);
@@ -392,6 +399,7 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
               _openEditor(_EditorType.dot, editingId: p.id);
             },
             onShowAll: () => _showDotGridModal(context, mode: _DotGridMode.view),
+            onInlineIdsChanged: (ids) => _inlineDotIds = ids,
           ),
           const SizedBox(height: 20),
           const Divider(height: 1),
@@ -439,11 +447,9 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
               dimmed: isRandom || state.style.customEyeParams == null,
               presets: _eyePresets,
               onAdd: () => _openEditor(_EditorType.eye),
-              onUserSelect: (p) async {
+              onUserSelect: (p) {
                 setState(() => _selectedEyePresetId = p.id);
                 ref.read(qrResultProvider.notifier).setCustomEyeParams(p.eyeParams!);
-                await _datasource?.touchLastUsed(ShapePresetType.eye, p.id);
-                _delayedReloadPresets();
               },
               onUserLongPress: (p) async {
                 ref.read(qrResultProvider.notifier).setCustomEyeParams(p.eyeParams!);
@@ -453,6 +459,7 @@ class QrShapeTabState extends ConsumerState<QrShapeTab>
                 _openEditor(_EditorType.eye, editingId: p.id);
               },
               onShowAll: () => _showEyeGridModal(context, mode: _EyeGridMode.view),
+              onInlineIdsChanged: (ids) => _inlineEyeIds = ids,
             ),
           ),
           const SizedBox(height: 16),

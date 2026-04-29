@@ -1,12 +1,12 @@
 library;
 
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/entities/qr_border_style.dart';
 import '../domain/entities/qr_boundary_params.dart';
 import '../domain/entities/qr_margin_pattern.dart';
+import '../domain/entities/quiet_zone_border_style.dart';
 import '../domain/entities/user_shape_preset.dart';
 import '../data/datasources/local_user_shape_preset_datasource.dart';
 import '../../../l10n/app_localizations.dart';
@@ -42,19 +42,12 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
 
   LocalUserShapePresetDatasource? _datasource;
   List<UserShapePreset> _boundaryPresets = [];
-
-  Timer? _reorderTimer;
+  Set<String> _inlineBoundaryIds = const {};
 
   @override
   void initState() {
     super.initState();
     _initDatasource();
-  }
-
-  @override
-  void dispose() {
-    _reorderTimer?.cancel();
-    super.dispose();
   }
 
   Future<void> _initDatasource() async {
@@ -119,6 +112,14 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
   Future<void> _saveCurrentAsPreset() async {
     if (_datasource == null || !_isEditorOpen) return;
 
+    final dupeId = _findDuplicateBoundaryPresetId(_editBoundary);
+    if (dupeId != null) {
+      await _datasource!.touchLastUsed(ShapePresetType.boundary, dupeId);
+      setState(() => _selectedBoundaryPresetId = dupeId);
+      _loadPresets();
+      return;
+    }
+
     final id = const Uuid().v4();
     final preset = UserShapePreset(
       id: id, name: id.substring(0, 8), type: ShapePresetType.boundary,
@@ -128,16 +129,21 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
     _loadPresets();
   }
 
-  /// 선택 하이라이트를 먼저 보여주고, 잠시 뒤에 재정렬.
-  void _delayedReloadPresets() {
-    _reorderTimer?.cancel();
-    _reorderTimer = Timer(const Duration(milliseconds: 100), () {
-      if (mounted) _loadPresets();
-    });
+  /// boundaryParams 가 동일한 기존 프리셋의 id (없으면 null).
+  String? _findDuplicateBoundaryPresetId(
+    QrBoundaryParams params, {
+    String? excludeId,
+  }) {
+    for (final p in _boundaryPresets) {
+      if (p.id == excludeId) continue;
+      if (p.boundaryParams == params) return p.id;
+    }
+    return null;
   }
 
   Future<void> _showBoundaryGridModal(BuildContext context, {required _BoundaryGridMode mode}) async {
     if (_boundaryPresets.isEmpty) return;
+    final beforeSelectedId = _selectedBoundaryPresetId;
     final result = await showModalBottomSheet<_BoundaryGridResult>(
       context: context,
       isScrollControlled: true,
@@ -147,9 +153,21 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
       builder: (_) => _BoundaryGridModal(
         presets: _boundaryPresets,
         mode: mode,
+        selectedPresetId: _selectedBoundaryPresetId,
+        onSelect: _onSheetSelectBoundary,
       ),
     );
-    if (result == null) return;
+    if (result == null) {
+      // 바깥 탭/dismiss — 마지막 선택이 sheet-only 였으면 reorder 1회.
+      final after = _selectedBoundaryPresetId;
+      if (after != null
+          && after != beforeSelectedId
+          && !_inlineBoundaryIds.contains(after)) {
+        await _datasource?.touchLastUsed(ShapePresetType.boundary, after);
+        _loadPresets();
+      }
+      return;
+    }
     switch (result) {
       case _BoundaryGridDeleteResult(:final deletedIds):
         if (deletedIds.contains(_selectedBoundaryPresetId)) {
@@ -165,12 +183,13 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
         await _datasource?.touchLastUsed(ShapePresetType.boundary, preset.id);
         _loadPresets();
         _openEditor(editingId: preset.id);
-      case _BoundaryGridSelectResult(:final preset):
-        ref.read(qrResultProvider.notifier).setBoundaryParams(preset.boundaryParams!);
-        setState(() => _selectedBoundaryPresetId = preset.id);
-        await _datasource?.touchLastUsed(ShapePresetType.boundary, preset.id);
-        _loadPresets();
     }
+  }
+
+  /// sheet 안 셀 탭 콜백. 미리보기·선택만 즉시 적용. reorder 는 시트 닫힘 시점에 처리.
+  void _onSheetSelectBoundary(UserShapePreset p) {
+    setState(() => _selectedBoundaryPresetId = p.id);
+    ref.read(qrResultProvider.notifier).setBoundaryParams(p.boundaryParams!);
   }
 
   /// 기존 프리셋을 현재 편집 값으로 덮어쓰기 (수정 모드용).
@@ -230,11 +249,9 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
             selectedPresetId: _selectedBoundaryPresetId,
             userPresets: _boundaryPresets,
             onAdd: () => _openEditor(),
-            onUserSelect: (p) async {
+            onUserSelect: (p) {
               setState(() => _selectedBoundaryPresetId = p.id);
               ref.read(qrResultProvider.notifier).setBoundaryParams(p.boundaryParams!);
-              await _datasource?.touchLastUsed(ShapePresetType.boundary, p.id);
-              _delayedReloadPresets();
             },
             onUserLongPress: (p) async {
               ref.read(qrResultProvider.notifier).setBoundaryParams(p.boundaryParams!);
@@ -244,22 +261,22 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
               _openEditor(editingId: p.id);
             },
             onShowAll: () => _showBoundaryGridModal(context, mode: _BoundaryGridMode.view),
+            onInlineIdsChanged: (ids) => _inlineBoundaryIds = ids,
           ),
           const SizedBox(height: 16),
-          // ── 테두리선 섹션 ──
-          _sectionLabel(l10n.labelQuietZoneBorder),
-          const SizedBox(height: 8),
-          SwitchListTile(
-            title: Text(l10n.labelQuietZoneBorder,
-                style: const TextStyle(fontSize: 14)),
-            value: state.style.quietZoneBorderEnabled,
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            onChanged: (v) => ref
-                .read(qrResultProvider.notifier)
-                .setQuietZoneBorderEnabled(v),
+          // ── 테두리선 섹션 (헤더: 소제목 + 토글 한 줄) ──
+          Row(
+            children: [
+              Expanded(child: _sectionLabel(l10n.labelQuietZoneBorder)),
+              Switch(
+                value: state.style.quietZoneBorderEnabled,
+                onChanged: (v) => ref
+                    .read(qrResultProvider.notifier)
+                    .setQuietZoneBorderEnabled(v),
+              ),
+            ],
           ),
-          if (state.style.quietZoneBorderEnabled)
+          if (state.style.quietZoneBorderEnabled) ...[
             _SliderRow(
               label: l10n.labelBorderWidth,
               value: state.style.quietZoneBorderWidth,
@@ -272,6 +289,47 @@ class QrBackgroundTabState extends ConsumerState<QrBackgroundTab>
                   .read(qrResultProvider.notifier)
                   .setQuietZoneBorderWidth(v),
             ),
+            // 선 종류
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 80,
+                    child: Text(l10n.labelBorderStyle,
+                        style: const TextStyle(fontSize: 12)),
+                  ),
+                  Expanded(
+                    child: SegmentedButton<QuietZoneBorderStyle>(
+                      style: SegmentedButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      segments: const [
+                        ButtonSegment(
+                          value: QuietZoneBorderStyle.solid,
+                          icon: Icon(Icons.horizontal_rule, size: 18),
+                        ),
+                        ButtonSegment(
+                          value: QuietZoneBorderStyle.dashed,
+                          icon: Icon(Icons.more_horiz, size: 18),
+                        ),
+                        ButtonSegment(
+                          value: QuietZoneBorderStyle.dotted,
+                          icon: Icon(Icons.more_vert, size: 18),
+                        ),
+                      ],
+                      selected: {state.style.quietZoneBorderStyle},
+                      onSelectionChanged: (s) => ref
+                          .read(qrResultProvider.notifier)
+                          .setQuietZoneBorderStyle(s.first),
+                      showSelectedIcon: false,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
         ],
       ),

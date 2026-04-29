@@ -51,6 +51,11 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
   String? _selectedSolidPresetId;
   String? _selectedGradientPresetId;
 
+  // inline row 에 보이는 프리셋 id 집합 (LayoutBuilder 결과 통보 받음).
+  // sheet 에서 inline-only 판정에 사용.
+  Set<String> _inlineSolidIds = const {};
+  Set<String> _inlineGradientIds = const {};
+
   // ── 그라디언트 편집기 상태 ──
   bool _showGradientEditor = false;
   String? _editingGradientPresetId;
@@ -291,13 +296,12 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
     _applyColor(c);
   }
 
-  Future<void> _onUserSolidSelect(UserColorPalette p) async {
+  /// 단색 프리셋 선택 (inline + sheet 공용 — reorder 는 sheet 닫힘 시점에 처리).
+  void _onUserSolidSelect(UserColorPalette p) {
     if (p.solidColorArgb == null) return;
     setState(() => _selectedSolidPresetId = p.id);
     _applyGradient(null);
     _applyColor(Color(p.solidColorArgb!));
-    await _datasource?.touchLastUsed(p.id);
-    _delayedReloadPresets();
   }
 
   Future<void> _onUserSolidLongPress(UserColorPalette p) async {
@@ -313,12 +317,11 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
     _applyGradient(g);
   }
 
-  Future<void> _onUserGradientSelect(UserColorPalette p) async {
+  /// 그라디언트 프리셋 선택 (inline + sheet 공용 — reorder 는 sheet 닫힘 시점에 처리).
+  void _onUserGradientSelect(UserColorPalette p) {
     final g = _qrGradientFromPalette(p);
     setState(() => _selectedGradientPresetId = p.id);
     _applyGradient(g);
-    await _datasource?.touchLastUsed(p.id);
-    _delayedReloadPresets();
   }
 
   void _onUserGradientLongPress(UserColorPalette p) {
@@ -329,6 +332,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
 
   Future<void> _showSolidGridModal({required _ColorGridMode mode}) async {
     if (_solidPresets.isEmpty) return;
+    final beforeSelectedId = _selectedSolidPresetId;
     final result = await showModalBottomSheet<_ColorGridResult>(
       context: context,
       isScrollControlled: true,
@@ -340,9 +344,19 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
         mode: mode,
         isGradient: false,
         selectedPresetId: _selectedSolidPresetId,
+        onSelect: _onUserSolidSelect,
       ),
     );
-    if (result == null) return;
+    if (result == null) {
+      final after = _selectedSolidPresetId;
+      if (after != null
+          && after != beforeSelectedId
+          && !_inlineSolidIds.contains(after)) {
+        await _datasource?.touchLastUsed(after);
+        _delayedReloadPresets();
+      }
+      return;
+    }
     switch (result) {
       case _ColorGridDeleteResult(:final deletedIds):
         if (deletedIds.contains(_selectedSolidPresetId)) {
@@ -352,8 +366,6 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
           await _datasource?.delete(id);
         }
         _loadPresets();
-      case _ColorGridSelectResult(:final preset):
-        await _onUserSolidSelect(preset);
       case _ColorGridEditResult():
         // solid 는 modal 에서 편집 진입 없음 (롱프레스는 null 콜백)
         break;
@@ -362,6 +374,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
 
   Future<void> _showGradientGridModal({required _ColorGridMode mode}) async {
     if (_gradientPresets.isEmpty) return;
+    final beforeSelectedId = _selectedGradientPresetId;
     final result = await showModalBottomSheet<_ColorGridResult>(
       context: context,
       isScrollControlled: true,
@@ -373,9 +386,19 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
         mode: mode,
         isGradient: true,
         selectedPresetId: _selectedGradientPresetId,
+        onSelect: _onUserGradientSelect,
       ),
     );
-    if (result == null) return;
+    if (result == null) {
+      final after = _selectedGradientPresetId;
+      if (after != null
+          && after != beforeSelectedId
+          && !_inlineGradientIds.contains(after)) {
+        await _datasource?.touchLastUsed(after);
+        _delayedReloadPresets();
+      }
+      return;
+    }
     switch (result) {
       case _ColorGridDeleteResult(:final deletedIds):
         if (deletedIds.contains(_selectedGradientPresetId)) {
@@ -386,8 +409,6 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
           await _datasource?.delete(id);
         }
         _loadPresets();
-      case _ColorGridSelectResult(:final preset):
-        await _onUserGradientSelect(preset);
       case _ColorGridEditResult(:final preset):
         _openGradientEditor(editingId: preset.id, preset: preset);
     }
@@ -689,6 +710,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
             onUserSelect: _onUserSolidSelect,
             onUserLongPress: _onUserSolidLongPress,
             onShowAll: () => _showSolidGridModal(mode: _ColorGridMode.view),
+            onInlineIdsChanged: (ids) => _inlineSolidIds = ids,
           ),
           const SizedBox(height: 24),
 
@@ -710,6 +732,7 @@ class QrColorTabState extends ConsumerState<QrColorTab> {
             onUserLongPress: _onUserGradientLongPress,
             onShowAll: () =>
                 _showGradientGridModal(mode: _ColorGridMode.view),
+            onInlineIdsChanged: (ids) => _inlineGradientIds = ids,
           ),
 
         ],

@@ -42,6 +42,7 @@ class _BoundaryUserPresetRow extends StatelessWidget {
   final ValueChanged<UserShapePreset> onUserSelect;
   final ValueChanged<UserShapePreset> onUserLongPress;
   final VoidCallback onShowAll;
+  final ValueChanged<Set<String>>? onInlineIdsChanged;
 
   const _BoundaryUserPresetRow({
     required this.selectedPresetId,
@@ -50,6 +51,7 @@ class _BoundaryUserPresetRow extends StatelessWidget {
     required this.onUserSelect,
     required this.onUserLongPress,
     required this.onShowAll,
+    this.onInlineIdsChanged,
   });
 
   static const _chipSize = 48.0;
@@ -70,6 +72,13 @@ class _BoundaryUserPresetRow extends StatelessWidget {
               ? (maxSlots - 1).clamp(0, userPresets.length)
               : maxSlots.clamp(0, userPresets.length);
           final inlinePresets = userPresets.sublist(0, inlineCount);
+
+          if (onInlineIdsChanged != null) {
+            final ids = inlinePresets.map((p) => p.id).toSet();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              onInlineIdsChanged!(ids);
+            });
+          }
 
           return Row(
             children: [
@@ -136,15 +145,18 @@ enum _BoundaryGridMode { view, delete }
 sealed class _BoundaryGridResult {}
 class _BoundaryGridDeleteResult extends _BoundaryGridResult { final Set<String> deletedIds; _BoundaryGridDeleteResult(this.deletedIds); }
 class _BoundaryGridEditResult extends _BoundaryGridResult { final UserShapePreset preset; _BoundaryGridEditResult(this.preset); }
-class _BoundaryGridSelectResult extends _BoundaryGridResult { final UserShapePreset preset; _BoundaryGridSelectResult(this.preset); }
 
 class _BoundaryGridModal extends StatefulWidget {
   final List<UserShapePreset> presets;
   final _BoundaryGridMode mode;
+  final String? selectedPresetId;
+  final ValueChanged<UserShapePreset> onSelect;
 
   const _BoundaryGridModal({
     required this.presets,
     required this.mode,
+    required this.onSelect,
+    this.selectedPresetId,
   });
 
   @override
@@ -153,6 +165,13 @@ class _BoundaryGridModal extends StatefulWidget {
 
 class _BoundaryGridModalState extends State<_BoundaryGridModal> {
   final _markedForDeletion = <String>{};
+  String? _localSelectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    _localSelectedId = widget.selectedPresetId;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -188,6 +207,8 @@ class _BoundaryGridModalState extends State<_BoundaryGridModal> {
               itemBuilder: (context, i) {
                 final preset = widget.presets[i];
                 final isMarked = _markedForDeletion.contains(preset.id);
+                final isCurrent =
+                    !isDelete && preset.id == _localSelectedId;
                 return GestureDetector(
                   onTap: () {
                     if (isDelete) {
@@ -199,7 +220,8 @@ class _BoundaryGridModalState extends State<_BoundaryGridModal> {
                         }
                       });
                     } else {
-                      Navigator.pop(context, _BoundaryGridSelectResult(preset));
+                      setState(() => _localSelectedId = preset.id);
+                      widget.onSelect(preset);
                     }
                   },
                   onLongPress: isDelete
@@ -210,11 +232,17 @@ class _BoundaryGridModalState extends State<_BoundaryGridModal> {
                     decoration: BoxDecoration(
                       color: isMarked
                           ? Colors.red.shade50
-                          : Colors.grey.shade100,
+                          : isCurrent
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: isMarked ? Colors.red : Colors.grey.shade300,
-                        width: isMarked ? 2 : 1,
+                        color: isMarked
+                            ? Colors.red
+                            : isCurrent
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.grey.shade300,
+                        width: (isMarked || isCurrent) ? 2 : 1,
                       ),
                     ),
                     child: Stack(
@@ -229,6 +257,14 @@ class _BoundaryGridModalState extends State<_BoundaryGridModal> {
                           const Center(
                             child: Icon(Icons.delete_outline,
                                 color: Colors.red, size: 24),
+                          ),
+                        if (isCurrent && !isMarked)
+                          Positioned(
+                            right: 4,
+                            bottom: 4,
+                            child: Icon(Icons.check_circle,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 14),
                           ),
                       ],
                     ),
